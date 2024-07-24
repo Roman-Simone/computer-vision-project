@@ -5,3 +5,4 @@ dataset
 venv
 .DS_STORE
 samples
+__pycache__/

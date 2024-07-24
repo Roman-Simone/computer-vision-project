@@ -3,8 +3,21 @@ import os
 import numpy as np
 import cv2
 import re
+import csv
 from pathlib import Path
 from cameraInfo import CameraInfo
+import pickle
+
+def salva_camerasInfo_pickle(camerasInfo, filename):
+    with open(filename, 'wb') as file:
+        pickle.dump(camerasInfo, file)
+
+
+def carica_camerasInfo_pickle(filename):
+    with open(filename, 'rb') as file:
+        camerasInfo = pickle.load(file)
+    return camerasInfo
+
 
 def trova_file_mp4(cartella):
     file_mp4 = []
@@ -50,7 +63,6 @@ def findPoints(path_video, cameraInfo, debug=True):
             os.remove(os.path.join(output_dir, file))
         
 
-
     frame_count = 0
     skip_frames = 15
 
@@ -72,6 +84,7 @@ def findPoints(path_video, cameraInfo, debug=True):
 
         # If found, add object points, image points (after refining them)
         if ret == True:
+            ret_gray = gray
             
             retObjpoints.append(objp)
 
@@ -84,7 +97,7 @@ def findPoints(path_video, cameraInfo, debug=True):
                 # Save the image with detected corners
                 cv2.imwrite(f"{output_dir}/frame{frame_count}.jpg", img)
     
-    return retObjpoints, retImgpoints, gray
+    return retObjpoints, retImgpoints, ret_gray
 
 
 def compute_calibration(camerasInfo):
@@ -97,7 +110,7 @@ def compute_calibration(camerasInfo):
 
 
     videosCalibration = trova_file_mp4(path_videos)
-
+    
     for video in videosCalibration:
         numero_camera = re.findall(r'\d+', video.replace(".mp4", ""))
         numero_camera = int(numero_camera[0])
@@ -111,6 +124,12 @@ def compute_calibration(camerasInfo):
 
         ret, camerasInfo[pos_camera].mtx, camerasInfo[pos_camera].dist, camerasInfo[pos_camera].rvecs, camerasInfo[pos_camera].tvecs = cv2.calibrateCamera(camerasInfo[pos_camera].objpoints, camerasInfo[pos_camera].imgpoints, gray.shape[::-1], None, None)
 
+        h,  w = gray.shape[:2]
+
+        camerasInfo[pos_camera].newcameramtx, roi = cv2.getOptimalNewCameraMatrix(camerasInfo[pos_camera].mtx, camerasInfo[pos_camera].dist, (w,h), 1, (w,h))
+
+    
+    salva_camerasInfo_pickle(camerasInfo, "calibration.pkl")
 
 
 

@@ -5,6 +5,7 @@ class CameraInfo:
         self.objpoints = []
         self.imgpoints = []
         self.mtx = None
+        self.newcameramtx = None
         self.dist = None
         self.rvecs = None
         self.tvecs = None
