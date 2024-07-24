@@ -1,30 +1,9 @@
-
 import os
-import numpy as np
-import cv2
 import re
-import csv
-from pathlib import Path
+import cv2
+import numpy as np
 from cameraInfo import CameraInfo
-import pickle
-
-def salva_camerasInfo_pickle(camerasInfo, filename):
-    with open(filename, 'wb') as file:
-        pickle.dump(camerasInfo, file)
-
-
-def carica_camerasInfo_pickle(filename):
-    with open(filename, 'rb') as file:
-        camerasInfo = pickle.load(file)
-    return camerasInfo
-
-
-def trova_file_mp4(cartella):
-    file_mp4 = []
-    for file in os.listdir(cartella):
-        if file.endswith(".mp4"):
-            file_mp4.append(file)
-    return file_mp4
+from utils import *
 
 
 def findPoints(path_video, cameraInfo, debug=True):
@@ -120,16 +99,17 @@ def compute_calibration(camerasInfo):
         
         path_video = os.path.join(path_videos, video)
 
-        camerasInfo[pos_camera].objpoints, camerasInfo[pos_camera].imgpoints, gray = findPoints(path_video, camerasInfo[pos_camera], debug=True)
+        camerasInfo[pos_camera].objpoints, camerasInfo[pos_camera].imgpoints, gray = findPoints(path_video, camerasInfo[pos_camera], debug=False)
 
         ret, camerasInfo[pos_camera].mtx, camerasInfo[pos_camera].dist, camerasInfo[pos_camera].rvecs, camerasInfo[pos_camera].tvecs = cv2.calibrateCamera(camerasInfo[pos_camera].objpoints, camerasInfo[pos_camera].imgpoints, gray.shape[::-1], None, None)
 
         h,  w = gray.shape[:2]
 
-        camerasInfo[pos_camera].newcameramtx, roi = cv2.getOptimalNewCameraMatrix(camerasInfo[pos_camera].mtx, camerasInfo[pos_camera].dist, (w,h), 1, (w,h))
+        camerasInfo[pos_camera].newcameramtx, camerasInfo[pos_camera].roi = cv2.getOptimalNewCameraMatrix(camerasInfo[pos_camera].mtx, camerasInfo[pos_camera].dist, (w,h), 1, (w,h))
 
     
     salva_camerasInfo_pickle(camerasInfo, "calibration.pkl")
+    return camerasInfo
 
 
 
@@ -146,5 +126,5 @@ if __name__ == '__main__':
     
 
 
-    compute_calibration(camerasInfo)
+    camerasInfo = compute_calibration(camerasInfo)
 

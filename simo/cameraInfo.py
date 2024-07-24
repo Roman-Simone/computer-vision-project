@@ -9,3 +9,4 @@ class CameraInfo:
         self.dist = None
         self.rvecs = None
         self.tvecs = None
+        self.roi = None
