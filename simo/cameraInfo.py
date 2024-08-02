@@ -10,3 +10,13 @@ class CameraInfo:
         self.rvecs = None
         self.tvecs = None
         self.roi = None
+
+
+
+class InterCameraInfo:
+    def __init__(self, cameras_number):
+        self.cameras_number = cameras_number
+        self.fundamental_matrix = None
+        self.corners_cam1 = []  #order: top_left, top_right, bottom_left, bottom_right
+        self.corners_cam2 = []  #order: top_left, top_right, bottom_left, bottom_right
+        

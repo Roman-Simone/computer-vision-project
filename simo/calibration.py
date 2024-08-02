@@ -2,7 +2,7 @@ import os
 import re
 import cv2
 import numpy as np
-from cameraInfo import CameraInfo
+from cameraInfo import *
 from utils import *
 
 
@@ -108,7 +108,7 @@ def compute_calibration(camerasInfo):
         camerasInfo[pos_camera].newcameramtx, camerasInfo[pos_camera].roi = cv2.getOptimalNewCameraMatrix(camerasInfo[pos_camera].mtx, camerasInfo[pos_camera].dist, (w,h), 1, (w,h))
 
     
-    salva_camerasInfo_pickle(camerasInfo, "calibration.pkl")
+    save_pickle(camerasInfo, "calibration.pkl")
     return camerasInfo
 
 
