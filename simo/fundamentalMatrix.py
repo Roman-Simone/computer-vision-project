@@ -9,12 +9,11 @@ current_path = os.path.dirname(os.path.abspath(__file__))
 parent_path = os.path.join(current_path, os.pardir)
 parent_path = os.path.abspath(parent_path)
 
-calibration_file = os.path.join(parent_path, "data/calibrationMatrix/calibration.pkl")
-csv_file = os.path.join(parent_path, "data/fundamentalMatrix/points4Fundamentals.csv")
 path_video_1 = os.path.join(parent_path, "data/dataset/video/out1.mp4")
 path_video_2 = os.path.join(parent_path, "data/dataset/video/out2.mp4")
-homographic_file = os.path.join(parent_path, "data/fundamentalMatrix/provaH.pkl")
-output_path = os.path.join(parent_path, "data/fundamentalMatrix/provaF.pkl")
+calibration_file = os.path.join(parent_path, "data/calibrationMatrix/calibration.pkl")
+homographic_file = os.path.join(parent_path, "data/homographyMatrix/H_12.pkl")
+fundamental_file = os.path.join(parent_path, "data/fundamentalMatrix/F_23.pkl")
 
 def find_points_sift(img1, img2):
     sift = cv2.SIFT_create()
@@ -90,7 +89,7 @@ def calculate_F_matrix():
     pts1 = pts1[mask.ravel()==1]
     pts2 = pts2[mask.ravel()==1]
 
-    save_pickle(F, output_path)
+    save_pickle(F, fundamental_file)
 
 
 if __name__ == '__main__':

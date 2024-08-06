@@ -4,5 +4,5 @@ bonnie_stitching/out11.mp4
 dataset
 venv
 .DS_STORE
-samples
+samples_calibration
 __pycache__/

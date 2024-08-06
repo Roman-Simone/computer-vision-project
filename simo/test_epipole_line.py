@@ -8,12 +8,11 @@ current_path = os.path.dirname(os.path.abspath(__file__))
 parent_path = os.path.join(current_path, os.pardir)
 parent_path = os.path.abspath(parent_path)
 
-calibration_file = os.path.join(parent_path, "data/calibrationMatrix/calibration.pkl")
-csv_file = os.path.join(parent_path, "data/fundamentalMatrix/points4Fundamentals.csv")
 path_video_1 = os.path.join(parent_path, "data/dataset/video/out1.mp4")
 path_video_2 = os.path.join(parent_path, "data/dataset/video/out2.mp4")
-fundamental_file = os.path.join(parent_path, "data/fundamentalMatrix/provaF.pkl")
-homographic_file = os.path.join(parent_path, "data/fundamentalMatrix/provaH.pkl")
+calibration_file = os.path.join(parent_path, "data/calibrationMatrix/calibration.pkl")
+fundamental_file = os.path.join(parent_path, "data/fundamentalMatrix/F_12.pkl")
+homographic_file = os.path.join(parent_path, "data/homographyMatrix/H_12.pkl")
 
 def click_event(event, x, y, flags, param):
     global img1, img2, F
