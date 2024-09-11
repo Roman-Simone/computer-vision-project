@@ -2,27 +2,15 @@ import os
 import re
 import cv2
 import numpy as np
-from utils import *
 from cameraInfo import *
-
-
-current_path = os.path.dirname(os.path.abspath(__file__))
-parent_path = os.path.join(current_path, os.pardir)
-parent_path = os.path.abspath(parent_path)
-path_videos_calibration = os.path.join(parent_path, 'data/dataset/calibration')
-path_videos = os.path.join(parent_path, 'data/dataset/video')
-path_calibrationMTX = os.path.join(parent_path, 'data/calibrationMatrix/calibration.pkl')
-
-valid_camera_numbers = [1, 2, 3, 4, 5, 6, 7, 8, 12, 13]
-all_chessboard_sizes = {1: (5, 7), 2: (5, 7), 3: (5, 7), 4: (5, 7), 5: (6, 9), 6: (6, 9), 7: (5, 7), 8: (6, 9), 12: (5, 7), 13: (5, 7)}
-
-SKIP_FRAME = 15
+from utils import *
 
 
 def findPoints(path_video, cameraInfo, debug=True):
 
     chess_width = cameraInfo.chessboard_size[0]
     chess_height = cameraInfo.chessboard_size[1]
+
 
     # termination criteria
     criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
@@ -55,6 +43,7 @@ def findPoints(path_video, cameraInfo, debug=True):
         
 
     frame_count = 0
+    skip_frames = 15
 
     while True:
 
@@ -63,7 +52,7 @@ def findPoints(path_video, cameraInfo, debug=True):
         ret, img = video_capture.read()
         if not ret:
             break  # Break the loop if we've reached the end of the video
-        if frame_count % SKIP_FRAME  != 0:
+        if frame_count % skip_frames  != 0:
             continue
 
 
@@ -92,17 +81,23 @@ def findPoints(path_video, cameraInfo, debug=True):
 
 def compute_calibration(camerasInfo):
 
-    videosCalibration = find_file_mp4(path_videos_calibration)
+    current_path = os.path.dirname(os.path.abspath(__file__))
+    parent_path = os.path.join(current_path, os.pardir)
+    parent_path = os.path.abspath(parent_path)
+
+    path_videos = os.path.join(parent_path, 'dataset/calibration')
+
+
+    videosCalibration = trova_file_mp4(path_videos)
     
     for video in videosCalibration:
         numero_camera = re.findall(r'\d+', video.replace(".mp4", ""))
         numero_camera = int(numero_camera[0])
-        # pos_camera = [camera.camera_number for camera in camerasInfo].index(numero_camera)
-        pos_camera = numero_camera - 1
+        pos_camera = [camera.camera_number for camera in camerasInfo].index(numero_camera)
 
-        # print("Starting calibration for camera ", numero_camera, pos_camera)
+        print("Starting calibration for camera ", numero_camera)
         
-        path_video = os.path.join(path_videos_calibration, video)
+        path_video = os.path.join(path_videos, video)
 
         camerasInfo[pos_camera].objpoints, camerasInfo[pos_camera].imgpoints, gray = findPoints(path_video, camerasInfo[pos_camera], debug=False)
 
@@ -116,7 +111,12 @@ def compute_calibration(camerasInfo):
     save_pickle(camerasInfo, "calibration.pkl")
     return camerasInfo
 
-def calibrate():
+
+
+if __name__ == '__main__':
+
+    all_chessboard_sizes = {1: (5, 7), 2: (5, 7), 3: (5, 7), 4: (5, 7), 5: (6, 9), 6: (6, 9), 7: (5, 7), 8: (6, 9), 12: (5, 7), 13: (5, 7)}
+    
     camerasInfo = []
     
     for camera_number in all_chessboard_sizes.keys():
@@ -127,47 +127,4 @@ def calibrate():
 
 
     camerasInfo = compute_calibration(camerasInfo)
-
-
-def test_calibration():
-
-    videos = find_file_mp4(path_videos)
-    calibrationMTX = load_pickle(path_calibrationMTX)
-
-    for video in videos:
-
-        camera_number = re.findall(r'\d+', video.replace(".mp4", ""))
-        camera_number = int(camera_number[0])
-        if camera_number not in valid_camera_numbers:
-            continue
-
-        # open the video
-        camera_info = calibrationMTX[camera_number-1]
-        path_video = os.path.join(path_videos, video)
-        video_capture = cv2.VideoCapture(path_video)
-
-        # Show the video
-        while True:
-            ret, frame = video_capture.read()
-            if not ret:
-                break
-
-            undistorted_frame = undistorted(frame, camera_info)
-            undistorted_frame = cv2.resize(undistorted_frame, (frame.shape[1], frame.shape[0]))
-            comparison_frame = np.hstack((frame, undistorted_frame))
-
-            cv2.imshow('Original (Left) vs Undistorted (Right)', comparison_frame)
-
-            if cv2.waitKey(1) & 0xFF == ord('q'):
-                break
-
-            
-
-
-if __name__ == '__main__':
-
-
-    # calibrate()
-
-    test_calibration()
 

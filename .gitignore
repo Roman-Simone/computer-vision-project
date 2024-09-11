@@ -5,4 +5,6 @@ dataset
 venv
 .DS_STORE
 samples_calibration
-__pycache__/
+__pycache__
+simo/__pycache__/cameraInfo.cpython-310.pyc
+

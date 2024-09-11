@@ -9,7 +9,7 @@ current_path = os.path.dirname(os.path.abspath(__file__))
 parent_path = os.path.join(current_path, os.pardir)
 parent_path = os.path.abspath(parent_path)
 
-path_video_1 = os.path.join(parent_path, "data/dataset/video/out3.mp4")
+path_video_1 = os.path.join(parent_path, "data/dataset/video/out1.mp4")
 path_video_2 = os.path.join(parent_path, "data/dataset/video/out2.mp4")
 calibration_file = os.path.join(parent_path, "data/calibrationMatrix/calibration.pkl")
 homographic_file = os.path.join(parent_path, "data/homographyMatrix/H_23.pkl")

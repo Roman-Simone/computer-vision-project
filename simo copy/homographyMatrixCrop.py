@@ -21,6 +21,17 @@ camera_number_2 = 2
 cropping_coords = []
 
 def find_homographic(kp1, kp2, matches):
+    """
+    Finds the homography matrix and its inverse given keypoints and matches.
+    Parameters:
+    - kp1 (list): List of keypoints from image 1.
+    - kp2 (list): List of keypoints from image 2.
+    - matches (list): List of matches between keypoints.
+    Returns:
+    - H (ndarray): Homography matrix.
+    - H_inv (ndarray): Inverse of the homography matrix.
+    """
+
     src_pts = np.float32([kp1[m.queryIdx].pt for m in matches]).reshape(-1, 1, 2)
     dst_pts = np.float32([kp2[m.trainIdx].pt for m in matches]).reshape(-1, 1, 2)
 
@@ -33,6 +44,17 @@ def find_homographic(kp1, kp2, matches):
     return H, H_inv
 
 def find_points_sift(img1, img2):
+    """
+    Finds keypoints and descriptors using SIFT algorithm for two input images.
+    Parameters:
+    - img1: The first input image.
+    - img2: The second input image.
+    Returns:
+    - kp1: List of keypoints detected in the first image.
+    - kp2: List of keypoints detected in the second image.
+    - good_matches: List of good matches between keypoints in the two images.
+    """
+    
     sift = cv2.SIFT_create()
 
     # find the keypoints and descriptors with SIFT

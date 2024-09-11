@@ -14,6 +14,8 @@ path_video_2 = os.path.join(parent_path, "data/dataset/video/out2.mp4")
 calibration_file = os.path.join(parent_path, "data/calibrationMatrix/calibration.pkl")
 homographic_file = os.path.join(parent_path, "data/homographyMatrix/H_12.pkl")
 fundamental_file = os.path.join(parent_path, "data/fundamentalMatrix/F_23.pkl")
+camera_number_1 = 1
+camera_number_2 = 2
 
 def find_points_sift(img1, img2):
     sift = cv2.SIFT_create()
@@ -57,9 +59,6 @@ def calculate_F_matrix():
     video_capture_2 = cv2.VideoCapture(path_video_2)
     ret1, frame1 = video_capture_1.read()
     ret2, frame2 = video_capture_2.read()
-
-    camera_number_1 = 1
-    camera_number_2 = 2
 
     camera_info_1 = find_cameraInfo(camera_number_1, calibration_file)
     camera_info_2 = find_cameraInfo(camera_number_2, calibration_file)
