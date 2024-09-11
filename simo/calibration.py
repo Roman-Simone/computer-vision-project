@@ -116,6 +116,7 @@ def compute_calibration(camerasInfo):
     save_pickle(camerasInfo, "calibration.pkl")
     return camerasInfo
 
+
 def calibrate():
     camerasInfo = []
     
@@ -124,15 +125,13 @@ def calibrate():
         camera.chessboard_size = all_chessboard_sizes[camera_number]
         camerasInfo.append(camera)
     
-
-
     camerasInfo = compute_calibration(camerasInfo)
 
 
 def test_calibration():
 
     videos = find_file_mp4(path_videos)
-    calibrationMTX = load_pickle(path_calibrationMTX)
+    camera_infos = load_pickle(path_calibrationMTX)
 
     for video in videos:
 
@@ -142,7 +141,7 @@ def test_calibration():
             continue
 
         # open the video
-        camera_info = calibrationMTX[camera_number-1]
+        camera_info = next((cam for cam in camera_infos if cam.camera_number == camera_number), None)
         path_video = os.path.join(path_videos, video)
         video_capture = cv2.VideoCapture(path_video)
 
@@ -166,8 +165,9 @@ def test_calibration():
 
 if __name__ == '__main__':
 
-
+    # CALIBRATE THE CAM
     # calibrate()
 
+    # ONLY FOR TESTING
     test_calibration()
 
