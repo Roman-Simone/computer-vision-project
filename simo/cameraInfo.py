@@ -20,4 +20,3 @@ class InterCameraInfo:
         self.fundamental_matrix = None
         self.corners_cam1 = []  #order: top_left, top_right, bottom_left, bottom_right
         self.corners_cam2 = []  #order: top_left, top_right, bottom_left, bottom_right
-        

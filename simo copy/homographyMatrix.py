@@ -14,8 +14,8 @@ path_video_2 = os.path.join(parent_path, "data/dataset/video/out2.mp4")
 calibration_file = os.path.join(parent_path, "data/calibrationMatrix/calibration.pkl")
 homographic_file = os.path.join(parent_path, "data/homographyMatrix/H_23.pkl")
 
-camera_number_1 = 3
-camera_number_2 = 2
+camera_number_1 = 4
+camera_number_2 = 3
 
 def find_homographic(kp1, kp2, matches):
     src_pts = np.float32([kp1[m.queryIdx].pt for m in matches]).reshape(-1, 1, 2)

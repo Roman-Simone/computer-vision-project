@@ -10,7 +10,7 @@ path_yaml = os.path.join(parent_path, 'data/points.yaml')
 path_calibrationMTX = os.path.join(parent_path, 'data/calibrationMatrix/calibration.pkl')
 
 def calculate_extrinsics():
-    camera_number = 2
+    camera_number = 3
 
     with open("/Users/simoneroman/Desktop/CV/Computer_Vision_project/data/points.yaml", "r") as file:
         data = yaml.safe_load(file)
@@ -94,6 +94,7 @@ def plot_camera(extrinsic_matrix, all_camera_coordinates, size):
 
     for camera_number, coordinates in all_camera_coordinates.items():
         ax.text(coordinates[0], coordinates[1], coordinates[2], str(camera_number))
+        print(coordinates)
 
     # Plot volleyball court points
     volleyball_points = np.array(
