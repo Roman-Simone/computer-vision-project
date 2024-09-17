@@ -10,7 +10,7 @@ path_yaml = os.path.join(parent_path, 'data/points.yaml')
 path_calibrationMTX = os.path.join(parent_path, 'data/calibrationMatrix/calibration.pkl')
 
 def calculate_extrinsics():
-    camera_number = 2
+    camera_number = 3
 
     with open("/Users/simoneroman/Desktop/CV/Computer_Vision_project/data/points.yaml", "r") as file:
         data = yaml.safe_load(file)
@@ -33,7 +33,6 @@ def calculate_extrinsics():
 
 
     camera_matrix = camera_info.mtx
-
     distortion_coefficients = np.zeros((1, 5), dtype=np.float32)
 
     success, rotation_vector, translation_vector = cv2.solvePnP(
@@ -48,10 +47,6 @@ def calculate_extrinsics():
 
     extrinsic_matrix = np.hstack((inverse_rotation_matrix, inverse_translation_vector))
     extrinsic_matrix = np.vstack((extrinsic_matrix, [0, 0, 0, 1]))
-
-
-
-    print(f"Camera {camera_number} extrinsic matrix:")
 
     pretty_print_matrix(extrinsic_matrix)
 
