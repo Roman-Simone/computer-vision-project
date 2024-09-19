@@ -31,25 +31,24 @@ points = {
     (745, 75): 0
 }
 
-worldPoints = {
-    (-9, 4.5): (),
-    (-9, -4.5): (),
-    (-3, -4.5): (),
-    (3, -4.5): (),
-    (9, -4.5): (),
-    (9, 4.5): (),
-    (3, 4.5): (),
-    (-3, 4.5): (),
-    (-14, 7.5): (),
-    (-14, -7.5): (),
-    (14, -7.5): (),
-    (14, 7.5): ()
-}
+worldPoints = [
+    (-9, 4.5),
+    (-9, -4.5),
+    (-3, -4.5),
+    (3, -4.5),
+    (9, -4.5),
+    (9, 4.5),
+    (3, 4.5),
+    (-3, 4.5),
+    (-14, 7.5),
+    (-14, -7.5),
+    (14, -7.5),
+    (14, 7.5)
+]
 
-
-
-world_image_Points = []
+# Global variables
 clicked_point = ()
+all_world_points = {}  # Dictionary to store world-image points for all cameras
 
 
 # Mouse callback function
@@ -141,6 +140,7 @@ def takePoints(imageUndistorted, courtImg, rightCameraFlag):
     cv2.setMouseCallback(window_name, on_mouse)
 
     img_copy = imageUndistorted.copy()
+    image_points = []
 
     for point in points:
         if points[point] == 0:
