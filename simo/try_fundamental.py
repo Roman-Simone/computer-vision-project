@@ -1,6 +1,7 @@
 from prova_BONNIE import *
 import numpy as np
 import cv2
+import json
 from matplotlib import pyplot as plt
  
 cap = cv2.VideoCapture('/home/bonnie/Desktop/computer vision/project/Computer_Vision_project/23_09_23 amichevole trento volley/out1.mp4')
@@ -11,7 +12,7 @@ if not ret:
     print("Error reading video file")
 
 # Convert the frame to grayscale
-img1 = cv2.cv2tColor(frame, cv2.COLOR_BGR2GRAY)
+img1 = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
 # Release the video capture object
 cap.release()
@@ -24,15 +25,60 @@ if not ret:
     print("Error reading video file")
 
 # Convert the frame to grayscale
-img2 = cv2.cv2tColor(frame, cv2.COLOR_BGR2GRAY)
+img2 = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+
+
+with open('/home/bonnie/Desktop/computer vision/project/Computer_Vision_project/data/world_points_all_cameras.json', 'r') as file:
+    points = json.load(file)
 
 # Release the video capture object
 cap.release()
 
+num_cam1 = 1
+num_cam2 = 2
+
+image_coords_1 = {tuple(item['world_coordinate']): item['image_coordinate'] for item in points[str(num_cam1)]}
+
+# Crea un dizionario per le coordinate delle immagini per il gruppo 2
+image_coords_2 = {tuple(item['world_coordinate']): item['image_coordinate'] for item in points[str(num_cam2)]}
+
+# Trova i punti comuni tra i due gruppi
+common_points = sorted(set(image_coords_1.keys()) & set(image_coords_2.keys()))
+
+# # Stampa le coordinate delle immagini corrispondenti
+# for point in common_points:
+#     print(f"World Coordinate: {point}")
+#     print(f"Image Coordinate Camera 1: {image_coords_1[point]}")
+#     print(f"Image Coordinate Camera 2: {image_coords_2[point]}")
+#     print()
+
+for point1 in common_points:
+    for point2 in common_points:
+        if (point1[0] == point2[0] or point1[1] == point2[1]) and (point1 != point2):
+            break
+
+print("Same coordinates: ", point1, " ", point2)
+            
+            
+
+# Crea liste ordinate di coordinate delle immagini
+pts1 = [image_coords_1[point] for point in common_points]
+pts2 = [image_coords_2[point] for point in common_points]
+
+# Stampa le coordinate ordinate
+print("Ordered Image Coordinates for Camera 1:")
+for coord in pts1:
+    print(coord)
+
+print("\nOrdered Image Coordinates for Camera 2:")
+for coord in pts2:
+    print(coord)
+
 
 pts1 = np.int32(pts1)
 pts2 = np.int32(pts2)
-F, mask = cv2.findFundamentalMat(pts1,pts2,cv2.FM_LMEDS)
+
+F, mask = cv2.findFundamentalMat(pts1,pts2,cv2.FM_RANSAC)
  
 # We select only inlier points
 pts1 = pts1[mask.ravel()==1]
