@@ -11,7 +11,7 @@ with open('/home/bonnie/Desktop/computer vision/project/Computer_Vision_project/
     camerasInfo = pickle.load(file)
 
 # Carica il video e leggi il primo fotogramma
-cap = cv2.VideoCapture('/home/bonnie/Desktop/computer vision/project/Computer_Vision_project/data/dataset/video/out'+str(n_cam)+'.mp4')
+cap = cv2.VideoCapture('/home/bonnie/Desktop/computer vision/project/Computer_Vision_project/data/dataset/video/out'+ str(n_cam) +'.mp4')
 ret, image = cap.read()
 cap.release()
 
