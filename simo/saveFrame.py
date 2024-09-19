@@ -31,10 +31,26 @@ points = {
     (745, 75): 0
 }
 
+worldPoints = {
+    (-9, 4.5): (),
+    (-9, -4.5): (),
+    (-3, -4.5): (),
+    (3, -4.5): (),
+    (9, -4.5): (),
+    (9, 4.5): (),
+    (3, 4.5): (),
+    (-3, 4.5): (),
+    (-14, 7.5): (),
+    (-14, -7.5): (),
+    (14, -7.5): (),
+    (14, 7.5): ()
+}
+
 
 
 world_image_Points = []
 clicked_point = ()
+
 
 # Mouse callback function
 def on_mouse(event, x, y, flags, param):
@@ -117,7 +133,7 @@ def edit_image(image):
     return image
 
 
-def takePoints(imageUndistorted, courtImg):
+def takePoints(imageUndistorted, courtImg, rightCameraFlag):
     global clicked_point, points
     print("Select the corners of the court")
     window_name = 'Select Points'
@@ -131,7 +147,7 @@ def takePoints(imageUndistorted, courtImg):
             while True:
                 # img_with_points = edit_image(img_copy.copy())
                 courtImgEdited = edit_image(courtImg)
-                image = unifyImages(img_copy, courtImgEdited, False)
+                image = unifyImages(img_copy, courtImgEdited, rightCameraFlag)
 
                 cv2.imshow(window_name, image)
                 key = cv2.waitKey(1) & 0xFF
@@ -140,8 +156,11 @@ def takePoints(imageUndistorted, courtImg):
                     # User clicked on the image so Update the point with the clicked coordinates
                     points[point] = 1
                     print(f"Point {point} selected at {clicked_point}")
-                    
 
+                    for worldPoint in worldPoints:
+                        if worldPoints[worldPoint] == ():
+                            worldPoints[worldPoint] = clicked_point
+                            break
                     # Save and Reset clicked_point
                     clicked_point = ()
 
@@ -150,6 +169,10 @@ def takePoints(imageUndistorted, courtImg):
                     # User wants to skip this point
                     points[point] = 2
                     print(f"Point {point} skipped.")
+                    for worldPoint in worldPoints:
+                        if worldPoints[worldPoint] == ():
+                            worldPoints[worldPoint] = (0, 0)
+                            break
                     break
                 elif key == ord('q'):
                     print("Exiting...")
@@ -159,6 +182,9 @@ def takePoints(imageUndistorted, courtImg):
     # Reset the points
     for point in points:
         points[point] = 0
+    
+    for worldPoint in worldPoints:
+        worldPoints[worldPoint] = ()
     
 
     cv2.destroyWindow(window_name)
@@ -207,8 +233,9 @@ def saveFrames():
             if key == ord('s'):
                 frame_filename = os.path.join(path_frames, f"cam_{camera_number}.png")
                 cv2.imwrite(frame_filename, undistorted_frame)
+                cv2.destroyAllWindows()
 
-                takePoints(undistorted_frame_copy, courtImg)
+                takePoints(undistorted_frame_copy, courtImg, rightCameraFlag)
                 
                 print(f"Frame saved as {frame_filename}")
 
