@@ -68,8 +68,6 @@ def homography():
     # all possible combinations of camera numbers
     combinations = list(itertools.combinations(valid_camera_numbers, 2))
 
-    
-
     for camera1, camera2 in combinations:
         camera_info1 = next((cam for cam in camera_infos if cam.camera_number == camera1), None)
         camera_info2 = next((cam for cam in camera_infos if cam.camera_number == camera2), None)

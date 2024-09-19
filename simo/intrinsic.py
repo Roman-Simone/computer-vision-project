@@ -111,7 +111,6 @@ def compute_calibration(camerasInfo):
         h,  w = gray.shape[:2]
 
         camerasInfo[pos_camera].newcameramtx, camerasInfo[pos_camera].roi = cv2.getOptimalNewCameraMatrix(camerasInfo[pos_camera].mtx, camerasInfo[pos_camera].dist, (w,h), 1, (w,h))
-
     
     save_pickle(camerasInfo, "calibration.pkl")
     return camerasInfo
@@ -133,6 +132,9 @@ def test_calibration():
     videos = find_file_mp4(path_videos)
     camera_infos = load_pickle(path_calibrationMTX)
 
+    for camera_info in camera_infos:
+        print(f"Camera {camera_info.camera_number} rvecs: {camera_info.rvecs}")
+    
     for video in videos:
 
         camera_number = re.findall(r'\d+', video.replace(".mp4", ""))
@@ -154,6 +156,8 @@ def test_calibration():
             undistorted_frame = undistorted(frame, camera_info)
             undistorted_frame = cv2.resize(undistorted_frame, (frame.shape[1], frame.shape[0]))
             comparison_frame = np.hstack((frame, undistorted_frame))
+            comparison_frame = cv2.resize(comparison_frame, (int(comparison_frame.shape[1]/5), int(comparison_frame.shape[0]/5)))
+
 
             cv2.imshow('Original (Left) vs Undistorted (Right)', comparison_frame)
 
