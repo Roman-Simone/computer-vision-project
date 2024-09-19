@@ -10,9 +10,9 @@ path_yaml = os.path.join(parent_path, 'data/points.yaml')
 path_calibrationMTX = os.path.join(parent_path, 'data/calibrationMatrix/calibration.pkl')
 
 def calculate_extrinsics():
-    camera_number = 3
+    camera_number = 1
 
-    with open("/Users/simoneroman/Desktop/CV/Computer_Vision_project/data/points.yaml", "r") as file:
+    with open("/home/bonnie/Desktop/computer vision/project/Computer_Vision_project/data/points.yaml", "r") as file:
         data = yaml.safe_load(file)
 
         camera_points = data[camera_number]["undistorted_with_crop"]
