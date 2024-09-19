@@ -12,7 +12,7 @@ path_calibrationMTX = os.path.join(parent_path, 'data/calibrationMatrix/calibrat
 def calculate_extrinsics():
     camera_number = 1
 
-    with open("/home/bonnie/Desktop/computer vision/project/Computer_Vision_project/data/points.yaml", "r") as file:
+    with open(path_yaml, "r") as file:
         data = yaml.safe_load(file)
 
         camera_points = data[camera_number]["undistorted_with_crop"]

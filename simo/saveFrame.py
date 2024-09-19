@@ -3,6 +3,7 @@
 import os
 import re
 import cv2
+import json
 from utils import *
 from cameraInfo import *
 
@@ -13,6 +14,7 @@ path_frames = os.path.join(parent_path, 'data/dataset/singleFrame')
 path_videos = os.path.join(parent_path, 'data/dataset/video')
 path_calibrationMTX = os.path.join(parent_path, 'data/calibrationMatrix/calibration.pkl')
 path_court = os.path.join(parent_path, 'data/images/courts.jpg')
+path_json = os.path.join(parent_path, 'data/world_points_all_cameras.json')
 
 valid_camera_numbers = [1, 2, 3, 4, 5, 6, 7, 8, 12, 13]
 rightCamera = [5, 12, 13]
@@ -31,20 +33,36 @@ points = {
     (745, 75): 0
 }
 
-worldPoints = [
-    (-9, 4.5),
-    (-9, -4.5),
-    (-3, -4.5),
-    (3, -4.5),
-    (9, -4.5),
-    (9, 4.5),
-    (3, 4.5),
-    (-3, 4.5),
-    (-14, 7.5),
-    (-14, -7.5),
-    (14, -7.5),
-    (14, 7.5)
-]
+worldPoints = {
+    (-9, 4.5): (),
+    (-9, -4.5): (),
+    (-3, -4.5): (),
+    (3, -4.5): (),
+    (9, -4.5): (),
+    (9, 4.5): (),
+    (3, 4.5): (),
+    (-3, 4.5): (),
+    (-14, 7.5): (),
+    (-14, -7.5): (),
+    (14, -7.5): (),
+    (14, 7.5): ()
+}
+
+# Define camera coordinates for specific cameras
+camera_coordinates_dict = {
+    1: [14.5, 17.7, 6.2],
+    2: [0.0, 17.7, 6.2],
+    3: [22.0, 10.0, 6.6],
+    4: [-14.5, 17.7, 6.2],
+    5: [22.0, -10.0, 5.8],
+    6: [0.0, -10.0, 6.3],
+    7: [-25.0, 0.0, 6.4],
+    8: [-22.0, -10.0, 6.3],
+    12: [-22.0, 10.0, 6.9],
+    13: [22.0, 0.0, 7.0]
+
+}
+
 
 # Global variables
 clicked_point = ()
@@ -182,12 +200,36 @@ def takePoints(imageUndistorted, courtImg, rightCameraFlag):
     # Reset the points
     for point in points:
         points[point] = 0
+
+    retCoords = {}
     
     for worldPoint in worldPoints:
+        if worldPoints[worldPoint] != (0, 0):
+            retCoords[worldPoint] = worldPoints[worldPoint]
         worldPoints[worldPoint] = ()
     
-
     cv2.destroyWindow(window_name)
+
+    return retCoords
+
+
+def commonList(camera_number, world_image_coordinates):
+    # Include 'camera_coordinates' in the data
+    data_list = []
+    for coordinate in world_image_coordinates:
+        data_list.append({
+            "world_coordinate": list(coordinate),
+            "image_coordinate": world_image_coordinates[coordinate]
+        })
+
+    if data_list:
+        # Add to the global all_world_points dictionary
+        all_world_points[str(camera_number)] = {
+            "camera_coordinates": camera_coordinates_dict.get(camera_number, []),
+            "points": data_list
+        }
+    else:
+        print(f"No valid points selected for camera {camera_number}. Data not saved.")
 
 
 def saveFrames():
@@ -196,6 +238,7 @@ def saveFrames():
     camera_infos = load_pickle(path_calibrationMTX)
 
     for video in videos:
+        print(video)
 
         camera_number = re.findall(r'\d+', video.replace(".mp4", ""))
         camera_number = int(camera_number[0])
@@ -224,9 +267,9 @@ def saveFrames():
 
             courtImg = cv2.imread(path_court)
 
-            courtImg_with_points = edit_image(courtImg)
+            # courtImg_with_points = edit_image(courtImg)
 
-            undistorted_frame = unifyImages(undistorted_frame, courtImg_with_points, rightCameraFlag)
+            # undistorted_frame = unifyImages(undistorted_frame, courtImg_with_points, rightCameraFlag)
 
             cv2.imshow('image', undistorted_frame)
             key = cv2.waitKey(0)
@@ -235,13 +278,25 @@ def saveFrames():
                 cv2.imwrite(frame_filename, undistorted_frame)
                 cv2.destroyAllWindows()
 
-                takePoints(undistorted_frame_copy, courtImg, rightCameraFlag)
-                
-                print(f"Frame saved as {frame_filename}")
+                world_image_coordinates = takePoints(undistorted_frame_copy, courtImg, rightCameraFlag)
 
+                print(world_image_coordinates)
+                # Save worldPoints and imagePoints to the global dictionary
+                # Save worldPoints and imagePoints to the global dictionary
+                commonList(camera_number, world_image_coordinates)
                 break
 
+        cv2.destroyAllWindows()
+        video_capture.release()
+
     cv2.destroyAllWindows()
+    # After processing all videos, save the combined JSON file
+    if all_world_points:
+        with open(path_json, 'w') as json_file:
+            json.dump(all_world_points, json_file, indent=4)
+        print(f"All world points saved to {path_json}")
+    else:
+        print("No valid points selected for any camera. No data saved.")
             
 
 if __name__ == '__main__':
