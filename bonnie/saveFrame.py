@@ -62,8 +62,6 @@ camera_coordinates_dict = {
     13: [22.0, 0.0, 7.0]
 
 }
-
-
 # Global variables
 clicked_point = ()
 all_world_points = {}  # Dictionary to store world-image points for all cameras
@@ -231,7 +229,6 @@ def commonList(camera_number, world_image_coordinates):
     else:
         print(f"No valid points selected for camera {camera_number}. Data not saved.")
 
-
 def saveFrames():
 
     videos = find_file_mp4(path_videos)
@@ -266,7 +263,7 @@ def saveFrames():
             undistorted_frame_copy = undistorted_frame.copy()
 
             courtImg = cv2.imread(path_court)
-
+            
             # courtImg_with_points = edit_image(courtImg)
 
             # undistorted_frame = unifyImages(undistorted_frame, courtImg_with_points, rightCameraFlag)

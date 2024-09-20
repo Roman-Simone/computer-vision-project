@@ -13,6 +13,7 @@ def calculate_extrinsics():
     camera_number = 1
 
     with open(path_yaml, "r") as file:
+
         data = yaml.safe_load(file)
 
         camera_points = data[camera_number]["undistorted_with_crop"]

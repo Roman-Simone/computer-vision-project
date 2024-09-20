@@ -4,62 +4,64 @@ import cv2
 import json
 from matplotlib import pyplot as plt
  
-cap = cv2.VideoCapture('/home/bonnie/Desktop/computer vision/project/Computer_Vision_project/23_09_23 amichevole trento volley/out1.mp4')
+import numpy as np
+import cv2
+import json
+from matplotlib import pyplot as plt
 
-# Read the first frame
+def find_points_on_line(img, pt1, pt2):
+    ''' Find points on a line segment in an image '''
+    pts = []
+    rows, cols = img.shape[:2]
+    # Define line segment endpoints
+    x0, y0 = pt1
+    x1, y1 = pt2
+    # Calculate the line equation parameters
+    A = y1 - y0
+    B = x0 - x1
+    C = x1*y0 - x0*y1
+    for x in range(cols):
+        for y in range(rows):
+            if abs(A*x + B*y + C) < 1:  # Tolerance for the line
+                pts.append((x, y))
+    return pts
+
+def project_points_on_line(pt1, pt2, img):
+    ''' Project points from one image to another along a line '''
+    # Draw the line in the first image
+    line_img = cv2.line(np.zeros_like(img), pt1, pt2, (255, 255, 255), 1)
+    points_on_line = np.argwhere(line_img[:, :, 0] == 255)
+    return points_on_line
+
+# Load the first video
+cap = cv2.VideoCapture('/home/bonnie/Desktop/computer vision/project/Computer_Vision_project/23_09_23 amichevole trento volley/out1.mp4')
 ret, frame = cap.read()
 if not ret:
     print("Error reading video file")
-
-# Convert the frame to grayscale
 img1 = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-
-# Release the video capture object
 cap.release()
 
+# Load the second video
 cap = cv2.VideoCapture('/home/bonnie/Desktop/computer vision/project/Computer_Vision_project/23_09_23 amichevole trento volley/out2.mp4')
-
-# Read the first frame
 ret, frame = cap.read()
 if not ret:
     print("Error reading video file")
-
-# Convert the frame to grayscale
 img2 = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+cap.release()
 
-
+# Load the JSON file
 with open('/home/bonnie/Desktop/computer vision/project/Computer_Vision_project/data/world_points_all_cameras.json', 'r') as file:
     points = json.load(file)
-
-# Release the video capture object
-cap.release()
 
 num_cam1 = 1
 num_cam2 = 2
 
+# Create dictionaries for image coordinates
 image_coords_1 = {tuple(item['world_coordinate']): item['image_coordinate'] for item in points[str(num_cam1)]}
-
-# Crea un dizionario per le coordinate delle immagini per il gruppo 2
 image_coords_2 = {tuple(item['world_coordinate']): item['image_coordinate'] for item in points[str(num_cam2)]}
 
-# Trova i punti comuni tra i due gruppi
+# Find common points
 common_points = sorted(set(image_coords_1.keys()) & set(image_coords_2.keys()))
-
-# # Stampa le coordinate delle immagini corrispondenti
-# for point in common_points:
-#     print(f"World Coordinate: {point}")
-#     print(f"Image Coordinate Camera 1: {image_coords_1[point]}")
-#     print(f"Image Coordinate Camera 2: {image_coords_2[point]}")
-#     print()
-
-for point1 in common_points:
-    for point2 in common_points:
-        if (point1[0] == point2[0] or point1[1] == point2[1]) and (point1 != point2):
-            break
-
-print("Same coordinates: ", point1, " ", point2)
-            
-            
 
 # Crea liste ordinate di coordinate delle immagini
 pts1 = [image_coords_1[point] for point in common_points]
@@ -73,6 +75,40 @@ for coord in pts1:
 print("\nOrdered Image Coordinates for Camera 2:")
 for coord in pts2:
     print(coord)
+
+
+# Initialize ORB detector
+orb = cv2.ORB_create()
+
+# Find the keypoints and descriptors with ORB
+kp1, des1 = orb.detectAndCompute(img1, None)
+kp2, des2 = orb.detectAndCompute(img2, None)
+
+# Create BFMatcher object
+bf = cv2.BFMatcher(cv2.NORM_HAMMING, crossCheck=True)
+
+# Match descriptors
+matches = bf.match(des1, des2)
+
+# Sort them in ascending order of distance
+matches = sorted(matches, key=lambda x: x.distance)
+
+# Draw first 10 matches
+img_matches = cv2.drawMatches(img1, kp1, img2, kp2, matches[:10], None, flags=cv2.DrawMatchesFlags_NOT_DRAW_SINGLE_POINTS)
+def thick_lines(img_matches, matches, kp1, kp2, thickness=3):
+    for match in matches:
+        pt1 = tuple(np.round(kp1[match.queryIdx].pt).astype(int))
+        pt2 = tuple(np.round(kp2[match.trainIdx].pt).astype(int))
+        cv2.line(img_matches, pt1, (pt2[0] + img1.shape[1], pt2[1]), (0, 255, 0), thickness)
+    return img_matches
+
+# Amplia le linee delle corrispondenze
+img_matches_thick = thick_lines(img_matches, matches[:10], kp1, kp2)
+
+# Show the result
+plt.imshow(img_matches)
+plt.show()
+
 
 
 pts1 = np.int32(pts1)
