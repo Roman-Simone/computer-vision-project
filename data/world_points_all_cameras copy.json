@@ -9,7 +9,8 @@
             {
                 "world_coordinate": [
                     -9,
-                    4.5
+                    4.5,
+                    0.0
                 ],
                 "image_coordinate": [
                     751,
@@ -19,7 +20,8 @@
             {
                 "world_coordinate": [
                     -9,
-                    -4.5
+                    -4.5,
+                    0.0
                 ],
                 "image_coordinate": [
                     2696,
@@ -29,7 +31,8 @@
             {
                 "world_coordinate": [
                     -3,
-                    -4.5
+                    -4.5,
+                    0.0
                 ],
                 "image_coordinate": [
                     2453,
@@ -39,7 +42,8 @@
             {
                 "world_coordinate": [
                     3,
-                    -4.5
+                    -4.5,
+                    0.0
                 ],
                 "image_coordinate": [
                     2315,
@@ -49,7 +53,8 @@
             {
                 "world_coordinate": [
                     9,
-                    -4.5
+                    -4.5,
+                    0.0
                 ],
                 "image_coordinate": [
                     2218,
@@ -59,7 +64,8 @@
             {
                 "world_coordinate": [
                     9,
-                    4.5
+                    4.5,
+                    0.0
                 ],
                 "image_coordinate": [
                     1262,
@@ -69,7 +75,8 @@
             {
                 "world_coordinate": [
                     3,
-                    4.5
+                    4.5,
+                    0.0
                 ],
                 "image_coordinate": [
                     1167,
@@ -79,7 +86,8 @@
             {
                 "world_coordinate": [
                     -3,
-                    4.5
+                    4.5,
+                    0.0
                 ],
                 "image_coordinate": [
                     1015,
@@ -89,7 +97,8 @@
             {
                 "world_coordinate": [
                     14,
-                    -7.5
+                    -7.5,
+                    0.0
                 ],
                 "image_coordinate": [
                     2443,
@@ -99,7 +108,8 @@
             {
                 "world_coordinate": [
                     14,
-                    7.5
+                    7.5,
+                    0.0
                 ],
                 "image_coordinate": [
                     1039,
@@ -118,7 +128,8 @@
             {
                 "world_coordinate": [
                     -9,
-                    4.5
+                    4.5,
+                    0.0
                 ],
                 "image_coordinate": [
                     798,
@@ -128,7 +139,8 @@
             {
                 "world_coordinate": [
                     -9,
-                    -4.5
+                    -4.5,
+                    0.0
                 ],
                 "image_coordinate": [
                     277,
@@ -138,7 +150,8 @@
             {
                 "world_coordinate": [
                     -3,
-                    -4.5
+                    -4.5,
+                    0.0
                 ],
                 "image_coordinate": [
                     1040,
@@ -148,7 +161,8 @@
             {
                 "world_coordinate": [
                     3,
-                    -4.5
+                    -4.5,
+                    0.0
                 ],
                 "image_coordinate": [
                     1973,
@@ -158,7 +172,8 @@
             {
                 "world_coordinate": [
                     9,
-                    -4.5
+                    -4.5,
+                    0.0
                 ],
                 "image_coordinate": [
                     2758,
@@ -168,7 +183,8 @@
             {
                 "world_coordinate": [
                     9,
-                    4.5
+                    4.5,
+                    0.0
                 ],
                 "image_coordinate": [
                     2228,
@@ -178,7 +194,8 @@
             {
                 "world_coordinate": [
                     3,
-                    4.5
+                    4.5,
+                    0.0
                 ],
                 "image_coordinate": [
                     1758,
@@ -188,7 +205,8 @@
             {
                 "world_coordinate": [
                     -3,
-                    4.5
+                    4.5,
+                    0.0
                 ],
                 "image_coordinate": [
                     1266,
@@ -198,7 +216,8 @@
             {
                 "world_coordinate": [
                     -14,
-                    7.5
+                    7.5,
+                    0.0
                 ],
                 "image_coordinate": [
                     594,
@@ -208,7 +227,8 @@
             {
                 "world_coordinate": [
                     14,
-                    7.5
+                    7.5,
+                    0.0
                 ],
                 "image_coordinate": [
                     2441,
@@ -227,7 +247,8 @@
             {
                 "world_coordinate": [
                     -9,
-                    4.5
+                    4.5,
+                    0.0
                 ],
                 "image_coordinate": [
                     1548,
@@ -237,7 +258,8 @@
             {
                 "world_coordinate": [
                     -9,
-                    -4.5
+                    -4.5,
+                    0.0
                 ],
                 "image_coordinate": [
                     2040,
@@ -247,7 +269,8 @@
             {
                 "world_coordinate": [
                     -3,
-                    -4.5
+                    -4.5,
+                    0.0
                 ],
                 "image_coordinate": [
                     1225,
@@ -257,7 +280,8 @@
             {
                 "world_coordinate": [
                     3,
-                    -4.5
+                    -4.5,
+                    0.0
                 ],
                 "image_coordinate": [
                     518,
@@ -267,7 +291,8 @@
             {
                 "world_coordinate": [
                     -3,
-                    4.5
+                    4.5,
+                    0.0
                 ],
                 "image_coordinate": [
                     419,
@@ -277,7 +302,8 @@
             {
                 "world_coordinate": [
                     -14,
-                    7.5
+                    7.5,
+                    0.0
                 ],
                 "image_coordinate": [
                     2656,
@@ -287,7 +313,8 @@
             {
                 "world_coordinate": [
                     -14,
-                    -7.5
+                    -7.5,
+                    0.0
                 ],
                 "image_coordinate": [
                     2838,
@@ -306,7 +333,8 @@
             {
                 "world_coordinate": [
                     9,
-                    4.5
+                    4.5,
+                    0.0
                 ],
                 "image_coordinate": [
                     2024,
@@ -316,7 +344,8 @@
             {
                 "world_coordinate": [
                     3,
-                    4.5
+                    4.5,
+                    0.0
                 ],
                 "image_coordinate": [
                     1134,
@@ -326,7 +355,8 @@
             {
                 "world_coordinate": [
                     -3,
-                    4.5
+                    4.5,
+                    0.0
                 ],
                 "image_coordinate": [
                     498,
@@ -336,7 +366,8 @@
             {
                 "world_coordinate": [
                     14,
-                    7.5
+                    7.5,
+                    0.0
                 ],
                 "image_coordinate": [
                     3515,
@@ -355,7 +386,8 @@
             {
                 "world_coordinate": [
                     -9,
-                    -4.5
+                    -4.5,
+                    0.0
                 ],
                 "image_coordinate": [
                     3588,
@@ -365,7 +397,8 @@
             {
                 "world_coordinate": [
                     -3,
-                    -4.5
+                    -4.5,
+                    0.0
                 ],
                 "image_coordinate": [
                     2995,
@@ -375,7 +408,8 @@
             {
                 "world_coordinate": [
                     3,
-                    -4.5
+                    -4.5,
+                    0.0
                 ],
                 "image_coordinate": [
                     2305,
@@ -385,7 +419,8 @@
             {
                 "world_coordinate": [
                     9,
-                    -4.5
+                    -4.5,
+                    0.0
                 ],
                 "image_coordinate": [
                     1466,
@@ -395,7 +430,8 @@
             {
                 "world_coordinate": [
                     9,
-                    4.5
+                    4.5,
+                    0.0
                 ],
                 "image_coordinate": [
                     1933,
@@ -405,7 +441,8 @@
             {
                 "world_coordinate": [
                     3,
-                    4.5
+                    4.5,
+                    0.0
                 ],
                 "image_coordinate": [
                     3075,
@@ -415,7 +452,8 @@
             {
                 "world_coordinate": [
                     14,
-                    -7.5
+                    -7.5,
+                    0.0
                 ],
                 "image_coordinate": [
                     634,
@@ -425,7 +463,8 @@
             {
                 "world_coordinate": [
                     14,
-                    7.5
+                    7.5,
+                    0.0
                 ],
                 "image_coordinate": [
                     765,
@@ -444,7 +483,8 @@
             {
                 "world_coordinate": [
                     -9,
-                    4.5
+                    4.5,
+                    0.0
                 ],
                 "image_coordinate": [
                     1697,
@@ -454,7 +494,8 @@
             {
                 "world_coordinate": [
                     -9,
-                    -4.5
+                    -4.5,
+                    0.0
                 ],
                 "image_coordinate": [
                     1524,
@@ -464,7 +505,8 @@
             {
                 "world_coordinate": [
                     -3,
-                    -4.5
+                    -4.5,
+                    0.0
                 ],
                 "image_coordinate": [
                     1306,
@@ -474,7 +516,8 @@
             {
                 "world_coordinate": [
                     3,
-                    -4.5
+                    -4.5,
+                    0.0
                 ],
                 "image_coordinate": [
                     1084,
@@ -484,7 +527,8 @@
             {
                 "world_coordinate": [
                     9,
-                    -4.5
+                    -4.5,
+                    0.0
                 ],
                 "image_coordinate": [
                     856,
@@ -494,7 +538,8 @@
             {
                 "world_coordinate": [
                     9,
-                    4.5
+                    4.5,
+                    0.0
                 ],
                 "image_coordinate": [
                     666,
@@ -504,7 +549,8 @@
             {
                 "world_coordinate": [
                     3,
-                    4.5
+                    4.5,
+                    0.0
                 ],
                 "image_coordinate": [
                     1014,
@@ -514,7 +560,8 @@
             {
                 "world_coordinate": [
                     -3,
-                    4.5
+                    4.5,
+                    0.0
                 ],
                 "image_coordinate": [
                     1366,
@@ -524,7 +571,8 @@
             {
                 "world_coordinate": [
                     -14,
-                    7.5
+                    7.5,
+                    0.0
                 ],
                 "image_coordinate": [
                     2135,
@@ -534,7 +582,8 @@
             {
                 "world_coordinate": [
                     -14,
-                    -7.5
+                    -7.5,
+                    0.0
                 ],
                 "image_coordinate": [
                     1645,
@@ -544,7 +593,8 @@
             {
                 "world_coordinate": [
                     14,
-                    -7.5
+                    -7.5,
+                    0.0
                 ],
                 "image_coordinate": [
                     732,
@@ -554,7 +604,8 @@
             {
                 "world_coordinate": [
                     14,
-                    7.5
+                    7.5,
+                    0.0
                 ],
                 "image_coordinate": [
                     158,
@@ -573,7 +624,8 @@
             {
                 "world_coordinate": [
                     -3,
-                    -4.5
+                    -4.5,
+                    0.0
                 ],
                 "image_coordinate": [
                     3363,
@@ -583,7 +635,8 @@
             {
                 "world_coordinate": [
                     3,
-                    -4.5
+                    -4.5,
+                    0.0
                 ],
                 "image_coordinate": [
                     2734,
@@ -593,7 +646,8 @@
             {
                 "world_coordinate": [
                     9,
-                    -4.5
+                    -4.5,
+                    0.0
                 ],
                 "image_coordinate": [
                     1885,
@@ -603,7 +657,8 @@
             {
                 "world_coordinate": [
                     9,
-                    4.5
+                    4.5,
+                    0.0
                 ],
                 "image_coordinate": [
                     3646,
@@ -613,7 +668,8 @@
             {
                 "world_coordinate": [
                     14,
-                    -7.5
+                    -7.5,
+                    0.0
                 ],
                 "image_coordinate": [
                     602,
@@ -632,7 +688,8 @@
             {
                 "world_coordinate": [
                     -9,
-                    4.5
+                    4.5,
+                    0.0
                 ],
                 "image_coordinate": [
                     543,
@@ -642,7 +699,8 @@
             {
                 "world_coordinate": [
                     -9,
-                    -4.5
+                    -4.5,
+                    0.0
                 ],
                 "image_coordinate": [
                     931,
@@ -652,7 +710,8 @@
             {
                 "world_coordinate": [
                     -3,
-                    -4.5
+                    -4.5,
+                    0.0
                 ],
                 "image_coordinate": [
                     783,
@@ -662,7 +721,8 @@
             {
                 "world_coordinate": [
                     3,
-                    -4.5
+                    -4.5,
+                    0.0
                 ],
                 "image_coordinate": [
                     682,
@@ -672,7 +732,8 @@
             {
                 "world_coordinate": [
                     9,
-                    -4.5
+                    -4.5,
+                    0.0
                 ],
                 "image_coordinate": [
                     598,
@@ -682,7 +743,8 @@
             {
                 "world_coordinate": [
                     9,
-                    4.5
+                    4.5,
+                    0.0
                 ],
                 "image_coordinate": [
                     327,
@@ -692,7 +754,8 @@
             {
                 "world_coordinate": [
                     3,
-                    4.5
+                    4.5,
+                    0.0
                 ],
                 "image_coordinate": [
                     377,
@@ -702,7 +765,8 @@
             {
                 "world_coordinate": [
                     -3,
-                    4.5
+                    4.5,
+                    0.0
                 ],
                 "image_coordinate": [
                     442,
@@ -712,7 +776,8 @@
             {
                 "world_coordinate": [
                     -14,
-                    7.5
+                    7.5,
+                    0.0
                 ],
                 "image_coordinate": [
                     446,
@@ -722,7 +787,8 @@
             {
                 "world_coordinate": [
                     -14,
-                    -7.5
+                    -7.5,
+                    0.0
                 ],
                 "image_coordinate": [
                     1200,
@@ -732,7 +798,8 @@
             {
                 "world_coordinate": [
                     14,
-                    -7.5
+                    -7.5,
+                    0.0
                 ],
                 "image_coordinate": [
                     625,
@@ -742,7 +809,8 @@
             {
                 "world_coordinate": [
                     14,
-                    7.5
+                    7.5,
+                    0.0
                 ],
                 "image_coordinate": [
                     191,
@@ -761,7 +829,8 @@
             {
                 "world_coordinate": [
                     -9,
-                    4.5
+                    4.5,
+                    0.0
                 ],
                 "image_coordinate": [
                     2066,
@@ -771,7 +840,8 @@
             {
                 "world_coordinate": [
                     -9,
-                    -4.5
+                    -4.5,
+                    0.0
                 ],
                 "image_coordinate": [
                     1149,
@@ -781,7 +851,8 @@
             {
                 "world_coordinate": [
                     -3,
-                    -4.5
+                    -4.5,
+                    0.0
                 ],
                 "image_coordinate": [
                     1047,
@@ -791,7 +862,8 @@
             {
                 "world_coordinate": [
                     3,
-                    -4.5
+                    -4.5,
+                    0.0
                 ],
                 "image_coordinate": [
                     887,
@@ -801,7 +873,8 @@
             {
                 "world_coordinate": [
                     9,
-                    -4.5
+                    -4.5,
+                    0.0
                 ],
                 "image_coordinate": [
                     617,
@@ -811,7 +884,8 @@
             {
                 "world_coordinate": [
                     9,
-                    4.5
+                    4.5,
+                    0.0
                 ],
                 "image_coordinate": [
                     2555,
@@ -821,7 +895,8 @@
             {
                 "world_coordinate": [
                     3,
-                    4.5
+                    4.5,
+                    0.0
                 ],
                 "image_coordinate": [
                     2300,
@@ -831,7 +906,8 @@
             {
                 "world_coordinate": [
                     -3,
-                    4.5
+                    4.5,
+                    0.0
                 ],
                 "image_coordinate": [
                     2162,
@@ -841,7 +917,8 @@
             {
                 "world_coordinate": [
                     -14,
-                    7.5
+                    7.5,
+                    0.0
                 ],
                 "image_coordinate": [
                     2274,
@@ -851,7 +928,8 @@
             {
                 "world_coordinate": [
                     -14,
-                    -7.5
+                    -7.5,
+                    0.0
                 ],
                 "image_coordinate": [
                     934,
@@ -870,7 +948,8 @@
             {
                 "world_coordinate": [
                     -9,
-                    4.5
+                    4.5,
+                    0.0
                 ],
                 "image_coordinate": [
                     1397,
@@ -880,7 +959,8 @@
             {
                 "world_coordinate": [
                     -9,
-                    -4.5
+                    -4.5,
+                    0.0
                 ],
                 "image_coordinate": [
                     3533,
@@ -890,7 +970,8 @@
             {
                 "world_coordinate": [
                     9,
-                    4.5
+                    4.5,
+                    0.0
                 ],
                 "image_coordinate": [
                     3486,
@@ -900,7 +981,8 @@
             {
                 "world_coordinate": [
                     3,
-                    4.5
+                    4.5,
+                    0.0
                 ],
                 "image_coordinate": [
                     3001,
@@ -910,7 +992,8 @@
             {
                 "world_coordinate": [
                     -3,
-                    4.5
+                    4.5,
+                    0.0
                 ],
                 "image_coordinate": [
                     2343,
@@ -920,7 +1003,8 @@
             {
                 "world_coordinate": [
                     14,
-                    7.5
+                    7.5,
+                    0.0
                 ],
                 "image_coordinate": [
                     3419,

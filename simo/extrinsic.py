@@ -1,36 +1,45 @@
-import yaml
+import os
+import cv2
 import numpy as np
 from utils import *
 import matplotlib.pyplot as plt
 
+
+
 current_path = os.path.dirname(os.path.abspath(__file__))
 parent_path = os.path.join(current_path, os.pardir)
 parent_path = os.path.abspath(parent_path)
-path_yaml = os.path.join(parent_path, 'data/points.yaml')
+path_json = os.path.join(parent_path, 'data/world_points_all_cameras.json')
 path_calibrationMTX = os.path.join(parent_path, 'data/calibrationMatrix/calibration.pkl')
 
 def calculate_extrinsics():
-    camera_number = 1
+    camera_number = 2
 
-    with open(path_yaml, "r") as file:
-        data = yaml.safe_load(file)
+    # Read the data
+    coordinates_by_camera = read_json_file_and_structure_data(path_json)
 
-        camera_points = data[camera_number]["undistorted_with_crop"]
+    all_camera_coordinates = {}
 
-        world_points = camera_points["world_points"]
-        image_points = camera_points["image_points"]
+    for camera_id, coords in coordinates_by_camera.items():
+        print(f"Camera {camera_id}:")
+        if int(camera_id) == camera_number:
+            world_points = np.array(coords["world_coordinates"], dtype=np.float32)
+            image_points = np.array(coords["image_coordinates"], dtype=np.float32)
 
-        world_points = np.array(world_points, dtype=np.float32)
-        image_points = np.array(image_points, dtype=np.float32)
+        # Collect all camera coordinates (assuming they are provided)
+        # If 'camera_coordinates' are available in 'coords', collect them
+        if "camera_coordinates" in coords:
+            cam_coords = np.array(coords["camera_coordinates"], dtype=np.float32)
+            all_camera_coordinates[camera_id] = cam_coords
 
-        all_camera_coordinates = {}
-        for key in data.keys():
-            all_camera_coordinates[key] = np.array(data[key]["coordinates"], dtype=np.float32)
+    print("World points:")
+    print(world_points)
+    print("Image points:")
+    print(image_points)
 
     camera_infos = load_pickle(path_calibrationMTX)
 
     camera_info = next((cam for cam in camera_infos if cam.camera_number == camera_number), None)
-
 
     camera_matrix = camera_info.mtx
     distortion_coefficients = np.zeros((1, 5), dtype=np.float32)
@@ -57,14 +66,11 @@ def pretty_print_matrix(matrix):
     for row in matrix:
         print(" ".join(f"{val:8.4f}" for val in row))
 
-
 # The size parameter is used to set the limits of the plot, so that the camera and points are visible
-# 10 should be a good value for the size in most cases, but you can change it if points overflow the plot (some cameras sometimes are placed far from the volleyball court, so the points may not be visible in the plot)
+# 10 should be a good value for the size in most cases, but you can change it if points overflow the plot
 def plot_camera(extrinsic_matrix, all_camera_coordinates, size):
     fig = plt.figure()
     ax = fig.add_subplot(111, projection="3d")
-
-    # The camera positions are in order of the camera numbers
 
     camera_position = extrinsic_matrix[:3, 3]
 
@@ -83,18 +89,19 @@ def plot_camera(extrinsic_matrix, all_camera_coordinates, size):
     )
 
     # Plot other camera positions
-    ax.scatter(
-        [coordinates[0] for coordinates in all_camera_coordinates.values()],
-        [coordinates[1] for coordinates in all_camera_coordinates.values()],
-        [coordinates[2] for coordinates in all_camera_coordinates.values()],
-        c="y",
-        marker="o",
-        label="Other Cameras",
-    )
+    if all_camera_coordinates:
+        ax.scatter(
+            [coordinates[0] for coordinates in all_camera_coordinates.values()],
+            [coordinates[1] for coordinates in all_camera_coordinates.values()],
+            [coordinates[2] for coordinates in all_camera_coordinates.values()],
+            c="y",
+            marker="o",
+            label="Other Cameras",
+        )
 
-    for camera_number, coordinates in all_camera_coordinates.items():
-        ax.text(coordinates[0], coordinates[1], coordinates[2], str(camera_number))
-        print(coordinates)
+        for camera_number, coordinates in all_camera_coordinates.items():
+            ax.text(coordinates[0], coordinates[1], coordinates[2], str(camera_number))
+            print(coordinates)
 
     # Plot volleyball court points
     volleyball_points = np.array(
@@ -125,7 +132,6 @@ def plot_camera(extrinsic_matrix, all_camera_coordinates, size):
     ax.legend()
 
     plt.show()
-
 
 if __name__ == "__main__":
     calculate_extrinsics()
