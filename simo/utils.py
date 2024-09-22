@@ -42,10 +42,10 @@ def read_json_file_and_structure_data(file_name):
             data = json.load(file)
     except FileNotFoundError:
         print(f"The file {file_name} was not found.")
-        return
+        return {}
     except json.JSONDecodeError:
         print(f"Error decoding the JSON file {file_name}.")
-        return
+        return {}
 
     # Iterate over each camera in the JSON
     for camera_id, camera_info in data.items():
@@ -54,8 +54,12 @@ def read_json_file_and_structure_data(file_name):
             "world_coordinates": [],
             "image_coordinates": []
         }
-        
-        camera_coords = []
+
+        # Add camera coordinates if available
+        if 'camera_coordinates' in camera_info:
+            coordinates_by_camera[camera_id]['camera_coordinates'] = camera_info['camera_coordinates']
+        else:
+            print(f"Camera coordinates not found for camera {camera_id}.")
 
         # Iterate over each point and save the coordinates in the respective lists
         points = camera_info.get('points', [])
@@ -68,5 +72,6 @@ def read_json_file_and_structure_data(file_name):
                 coordinates_by_camera[camera_id]["image_coordinates"].append(image_coord)
 
     return coordinates_by_camera
+
 
 
