@@ -1,3 +1,5 @@
+# Script to save 1 frame from each video and select the corners of the volleyball court
+
 import os
 import re
 import cv2
@@ -33,18 +35,18 @@ points = {
 }
 
 worldPoints = {
-    (-9, 4.5, 0.0): (),
-    (-9, -4.5, 0.0): (),
-    (-3, -4.5, 0.0): (),
-    (3, -4.5, 0.0): (),
-    (9, -4.5, 0.0): (),
-    (9, 4.5, 0.0): (),
-    (3, 4.5, 0.0): (),
-    (-3, 4.5, 0.0): (),
-    (-14, 7.5, 0.0): (),
-    (-14, -7.5, 0.0): (),
-    (14, -7.5, 0.0): (),
-    (14, 7.5, 0.0): ()
+    (-9, 4.5): (),
+    (-9, -4.5): (),
+    (-3, -4.5): (),
+    (3, -4.5): (),
+    (9, -4.5): (),
+    (9, 4.5): (),
+    (3, 4.5): (),
+    (-3, 4.5): (),
+    (-14, 7.5): (),
+    (-14, -7.5): (),
+    (14, -7.5): (),
+    (14, 7.5): ()
 }
 
 # Define camera coordinates for specific cameras
@@ -142,54 +144,57 @@ def unifyImages(img1, img2, rightCameraFlag):
 
 
 def add_legend(image, width_court, rightCameraFlag):
-    # Text properties
+    # Dimensioni del testo e colore
     font = cv2.FONT_HERSHEY_SIMPLEX
     font_scale = 0.7
-    color_text = (255, 255, 255)  # White
+    color_text = (255, 255, 255)  # Bianco
     thickness_text = 2
 
-    # Vertical spacing
+    # Distanza verticale tra le voci della leggenda
     first_y_offset = 20
     y_offset = 40
 
     if rightCameraFlag:
         _, image_width, _ = image.shape
-        x_offset = (image_width) - (width_court) - 400  # Right margin
+        x_offset = (image_width ) - (width_court) - 400   # Margine destro della leggenda
     else:
-        x_offset = width_court + 80  # Left margin
+        x_offset = width_court + 80   # Margine sinistro della leggenda
 
-    # Legend items
+    # Legenda per i cerchi e il triangolo
     legend_items = [
-        {"text": "Corner to select", "color": (0, 170, 255)},  # Yellow
-        {"text": "Corner already selected", "color": (0, 255, 0)},  # Green
-        {"text": "Corner skipped", "color": (255, 0, 0)},  # Blue
-        {"text": "Position of camera", "color": (139, 139, 0)}  # Triangle color
+        {"text": "Corner to select", "color": (0, 170, 255)},  # giallo
+        {"text": "Corner already selected", "color": (0, 255, 0)},  # verde
+        {"text": "Corner skipped", "color": (255, 0, 0)},  # blu
+        {"text": "Position of camera", "color": (139, 139, 0)}  # colore triangolo
     ]
 
-    # Draw legend
+    # Itera attraverso gli elementi della leggenda
     for i, item in enumerate(legend_items):
+        # Calcola la posizione per il testo e i simboli
         y_position = (i + 1) * y_offset + first_y_offset
 
-        # Draw symbol
+        # Disegna il simbolo (cerchio o triangolo)
         if "Triangolo" in item["text"]:
-            triangle_side = 13
+            # Vertici del triangolo
+            triangle_side = 13  # Definisci un triangolo più piccolo per la leggenda
             triangle_points = np.array([
-                [x_offset, y_position],
-                [x_offset - triangle_side, y_position + triangle_side],
-                [x_offset + triangle_side, y_position + triangle_side]
+                [x_offset, y_position],  # Vertice superiore
+                [x_offset - triangle_side, y_position + triangle_side],  # Basso a sinistra
+                [x_offset + triangle_side, y_position + triangle_side]  # Basso a destra
             ], np.int32)
             triangle_points = triangle_points.reshape((-1, 1, 2))
             cv2.fillPoly(image, [triangle_points], color=item["color"])
         else:
+            # Disegna il cerchio colorato
             cv2.circle(image, (x_offset, y_position), 13, item["color"], -1)
 
-        # Add text
+        # Aggiungi la descrizione accanto al simbolo
         cv2.putText(image, item["text"], (x_offset + 30, y_position + 5), font, font_scale, color_text, thickness_text)
 
     return image
 
 
-def edit_image(image, camera_number=1):
+def edit_image(image, camera_number= 1):
 
     # Thickness of the point
     point_thickness = 20
@@ -198,31 +203,41 @@ def edit_image(image, camera_number=1):
 
     for camera in camera_coordinates_visual:
         if camera == camera_number:
+            # camera_coordinates = camera_coordinates_dict[camera]
+            # print(camera_coordinates)
+            # camera_x = int((width / 2) + (camera_coordinates[0] * 20))
+            # camera_y = int((height / 2) - (camera_coordinates[1]) * 10)
             camera_x = camera_coordinates_visual[camera][0]
             camera_y = camera_coordinates_visual[camera][1]
 
-            # Draw triangle representing the camera position
-            triangle_side = 20
+            # cv2.circle(image, (int(camera_x), int(camera_y)), point_thickness, (255, 0, 0), -1)
+            # Definisci il lato del triangolo
+            triangle_side = 20  # Puoi regolare questo valore per dimensioni diverse
+
+            # Calcola i vertici del triangolo relativi a camera_x e camera_y
             trianglePoints = np.array([
-                [camera_x, camera_y - triangle_side],
-                [camera_x - triangle_side, camera_y + triangle_side],
-                [camera_x + triangle_side, camera_y + triangle_side]
+                [camera_x, camera_y - triangle_side],  # Vertice superiore
+                [camera_x - triangle_side, camera_y + triangle_side],  # Vertice in basso a sinistra
+                [camera_x + triangle_side, camera_y + triangle_side]  # Vertice in basso a destra
             ], np.int32)
 
+            # Ridimensiona i punti per il formato richiesto da OpenCV
             trianglePoints = trianglePoints.reshape((-1, 1, 2))
 
-            cv2.fillPoly(image, [trianglePoints], color=(139, 139, 0))  # Color: (139, 139, 0)
+            # Disegna il triangolo sull'immagine
+            cv2.fillPoly(image, [trianglePoints], color=(139, 139, 0)) #0,139,139
             break
 
     for point in points:
         point_x = point[0]
         point_y = point[1]
         if points[point] == 0:
-            point_color = (0, 170, 255)  # Yellow
+            point_color = (0, 170, 255) # yellow
         elif points[point] == 1:
-            point_color = (0, 255, 0)  # Green
+            point_color = (0, 255, 0)
         elif points[point] == 2:
-            point_color = (255, 0, 0)  # Blue
+            point_color = (255, 0, 0)
+
 
         cv2.circle(image, (point_x, point_y), point_thickness, point_color, -1)
 
@@ -245,6 +260,7 @@ def takePoints(imageUndistorted, courtImg, camera_number, rightCameraFlag):
     for point in points:
         if points[point] == 0:
             while True:
+                # img_with_points = edit_image(img_copy.copy())
                 courtImgEdited = edit_image(courtImg, camera_number)
                 image = unifyImages(img_copy, courtImgEdited, rightCameraFlag)
 
@@ -252,7 +268,7 @@ def takePoints(imageUndistorted, courtImg, camera_number, rightCameraFlag):
                 key = cv2.waitKey(1) & 0xFF
 
                 if clicked_point:
-                    # User clicked on the image
+                    # User clicked on the image so Update the point with the clicked coordinates
                     points[point] = 1
                     print(f"Point {point} selected at {clicked_point}")
 
@@ -260,7 +276,7 @@ def takePoints(imageUndistorted, courtImg, camera_number, rightCameraFlag):
                         if worldPoints[worldPoint] == ():
                             worldPoints[worldPoint] = clicked_point
                             break
-                    # Save and reset clicked_point
+                    # Save and Reset clicked_point
                     clicked_point = ()
 
                     break
@@ -348,6 +364,10 @@ def saveFrames():
 
             courtImg = cv2.imread(path_court)
 
+            # courtImg_with_points = edit_image(courtImg)
+
+            # undistorted_frame = unifyImages(undistorted_frame, courtImg_with_points, rightCameraFlag)
+
             cv2.imshow(f"Camera {camera_number}", undistorted_frame)
             key = cv2.waitKey(0)
             if key == ord('s'):
@@ -359,6 +379,7 @@ def saveFrames():
                 world_image_coordinates = takePoints(undistorted_frame_copy, courtImg, camera_number, rightCameraFlag)
 
                 print(world_image_coordinates)
+                # Save worldPoints and imagePoints to the global dictionary
                 # Save worldPoints and imagePoints to the global dictionary
                 commonList(camera_number, world_image_coordinates)
                 break
@@ -378,4 +399,3 @@ def saveFrames():
 
 if __name__ == '__main__':
     saveFrames()
-

@@ -12,8 +12,6 @@ class CameraInfo:
         self.roi = None
         self.extrinsics = None
 
-
-
 class InterCameraInfo:
     def __init__(self, cameras_number):
         self.cameras_number = cameras_number

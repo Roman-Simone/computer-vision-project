@@ -1,37 +1,50 @@
-import yaml
+import os
+import cv2
 import numpy as np
 from utils import *
 import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D  # Add this line
+
 
 current_path = os.path.dirname(os.path.abspath(__file__))
 parent_path = os.path.join(current_path, os.pardir)
 parent_path = os.path.abspath(parent_path)
-path_yaml = os.path.join(parent_path, 'data/points.yaml')
+path_json = os.path.join(parent_path, 'data/world_points_all_cameras.json')
 path_calibrationMTX = os.path.join(parent_path, 'data/calibrationMatrix/calibration.pkl')
 
-def calculate_extrinsics():
-    camera_number = 1
+def calculate_extrinsics(camera_number):
+    # Read the data
+    coordinates_by_camera = read_json_file_and_structure_data(path_json)
 
-    with open(path_yaml, "r") as file:
+    all_camera_coordinates = {}
 
-        data = yaml.safe_load(file)
+    if str(camera_number) not in coordinates_by_camera:
+        print(f"Camera {camera_number} not found in the dataset.")
+        return None, None, None
 
-        camera_points = data[camera_number]["undistorted_with_crop"]
+    for camera_id, coords in coordinates_by_camera.items():
+        if int(camera_id) == camera_number:
+            world_points = np.array(coords["world_coordinates"], dtype=np.float32)
+            image_points = np.array(coords["image_coordinates"], dtype=np.float32)
 
-        world_points = camera_points["world_points"]
-        image_points = camera_points["image_points"]
+        # Collect all camera coordinates (assuming they are provided)
+        if "camera_coordinates" in coords:
+            cam_coords = np.array(coords["camera_coordinates"], dtype=np.float32)
+            all_camera_coordinates[camera_id] = cam_coords
 
-        world_points = np.array(world_points, dtype=np.float32)
-        image_points = np.array(image_points, dtype=np.float32)
+    print(f"World points for Camera {camera_number}:")
+    print(world_points)
+    print(f"Image points for Camera {camera_number}:")
+    print(image_points)
 
-        all_camera_coordinates = {}
-        for key in data.keys():
-            all_camera_coordinates[key] = np.array(data[key]["coordinates"], dtype=np.float32)
-
+    # Load camera calibration data
     camera_infos = load_pickle(path_calibrationMTX)
 
     camera_info = next((cam for cam in camera_infos if cam.camera_number == camera_number), None)
 
+    if camera_info is None:
+        print(f"Camera info for camera {camera_number} not found.")
+        return None, None, None
 
     camera_matrix = camera_info.mtx
     distortion_coefficients = np.zeros((1, 5), dtype=np.float32)
@@ -47,30 +60,39 @@ def calculate_extrinsics():
     inverse_translation_vector = -np.dot(inverse_rotation_matrix, translation_vector)
 
     extrinsic_matrix = np.hstack((inverse_rotation_matrix, inverse_translation_vector))
+    
     extrinsic_matrix = np.vstack((extrinsic_matrix, [0, 0, 0, 1]))
 
-    pretty_print_matrix(extrinsic_matrix)
+    inverse_rotation_matrix_list = inverse_rotation_matrix.tolist()
+    inverse_translation_vector_list = inverse_translation_vector.tolist()
 
-    size = 35
-    plot_camera(extrinsic_matrix, all_camera_coordinates, size)
+    camera_data = {
+        str(camera_number): {
+            "inverse_rotation_matrix": inverse_rotation_matrix_list,
+            "inverse_translation_vector": inverse_translation_vector_list
+        }
+    }
+    
+    json_file_path = 'camera_data.json'
+    
+    with open(json_file_path, 'a') as json_file:    
+        json.dump(camera_data, json_file, indent=4)
+
+    return extrinsic_matrix, all_camera_coordinates, camera_number
 
 def pretty_print_matrix(matrix):
+    print("Extrinsic Matrix:")
     for row in matrix:
         print(" ".join(f"{val:8.4f}" for val in row))
 
-
 # The size parameter is used to set the limits of the plot, so that the camera and points are visible
-# 10 should be a good value for the size in most cases, but you can change it if points overflow the plot (some cameras sometimes are placed far from the volleyball court, so the points may not be visible in the plot)
-def plot_camera(extrinsic_matrix, all_camera_coordinates, size):
-    fig = plt.figure()
-    ax = fig.add_subplot(111, projection="3d")
-
-    # The camera positions are in order of the camera numbers
+def plot_camera(extrinsic_matrix, all_camera_coordinates, size, camera_number, ax):
+    ax.clear()  # Clear previous plot data
 
     camera_position = extrinsic_matrix[:3, 3]
 
     # Plot camera location obtained from extrinsic matrix
-    ax.scatter(camera_position[0], camera_position[1], camera_position[2], c="r", marker="o", label="Camera")
+    ax.scatter(camera_position[0], camera_position[1], camera_position[2], c="r", marker="o", label=f"Camera {camera_number}")
 
     # Plot camera direction obtained from extrinsic matrix
     direction_vector_size = 10
@@ -84,18 +106,18 @@ def plot_camera(extrinsic_matrix, all_camera_coordinates, size):
     )
 
     # Plot other camera positions
-    ax.scatter(
-        [coordinates[0] for coordinates in all_camera_coordinates.values()],
-        [coordinates[1] for coordinates in all_camera_coordinates.values()],
-        [coordinates[2] for coordinates in all_camera_coordinates.values()],
-        c="y",
-        marker="o",
-        label="Other Cameras",
-    )
+    if all_camera_coordinates:
+        ax.scatter(
+            [coordinates[0] for coordinates in all_camera_coordinates.values()],
+            [coordinates[1] for coordinates in all_camera_coordinates.values()],
+            [coordinates[2] for coordinates in all_camera_coordinates.values()],
+            c="y",
+            marker="o",
+            label="Other Cameras",
+        )
 
-    for camera_number, coordinates in all_camera_coordinates.items():
-        ax.text(coordinates[0], coordinates[1], coordinates[2], str(camera_number))
-        print(coordinates)
+        for cam_id, coordinates in all_camera_coordinates.items():
+            ax.text(coordinates[0], coordinates[1], coordinates[2], f"Cam {cam_id}")
 
     # Plot volleyball court points
     volleyball_points = np.array(
@@ -112,7 +134,7 @@ def plot_camera(extrinsic_matrix, all_camera_coordinates, size):
         dtype=np.float32,
     )
     ax.scatter(
-        volleyball_points[:, 0], volleyball_points[:, 1], volleyball_points[:, 2], c="b", marker="o", label="Points"
+        volleyball_points[:, 0], volleyball_points[:, 1], volleyball_points[:, 2], c="b", marker="o", label="Court Points"
     )
 
     ax.set_xlim([camera_position[0] - size, camera_position[0] + size])
@@ -122,11 +144,38 @@ def plot_camera(extrinsic_matrix, all_camera_coordinates, size):
     ax.set_xlabel("X")
     ax.set_ylabel("Y")
     ax.set_zlabel("Z")
-    ax.set_title("Camera Position and Points")
+    ax.set_title(f"Camera {camera_number} Position and Points")
     ax.legend()
 
-    plt.show()
-
+    plt.draw()  # Update the plot
 
 if __name__ == "__main__":
-    calculate_extrinsics()
+    # Prepare the plot figure and axis
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection="3d")
+    plt.ion()  # Enable interactive mode
+
+    camera_number = 2  # Initial camera
+    extrinsic_matrix, all_camera_coordinates, camera_number = calculate_extrinsics(camera_number)
+
+    if extrinsic_matrix is not None:
+        plot_camera(extrinsic_matrix, all_camera_coordinates, size=35, camera_number=camera_number, ax=ax)
+        plt.show()
+
+    while True:
+        try:
+            # Ask the user for the camera number
+            camera_number = input("Enter the camera number to use (or type 'exit' to quit): ")
+            if camera_number.lower() == 'exit':
+                print("Exiting the program.")
+                break
+
+            camera_number = int(camera_number)
+
+            extrinsic_matrix, all_camera_coordinates, camera_number = calculate_extrinsics(camera_number)
+
+            if extrinsic_matrix is not None:
+                plot_camera(extrinsic_matrix, all_camera_coordinates, size=35, camera_number=camera_number, ax=ax)
+
+        except ValueError:
+            print("Invalid input. Please enter a valid camera number.")
