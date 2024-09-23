@@ -99,7 +99,7 @@ def plot_camera(extrinsic_matrix, all_camera_coordinates, size, camera_number, a
         )
 
         for cam_id, coordinates in all_camera_coordinates.items():
-            ax.text(coordinates[0], coordinates[1], coordinates[2], f"Cam {cam_id}")
+            ax.text(coordinates[0], coordinates[1], coordinates[2], f"{cam_id}")
 
     # Plot volleyball court points
     volleyball_points = np.array(
