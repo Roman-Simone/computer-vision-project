@@ -4,16 +4,9 @@ import cv2
 import json
 import numpy as np
 from utils import *
+from config import *
 from cameraInfo import *
 
-current_path = os.path.dirname(os.path.abspath(__file__))
-parent_path = os.path.join(current_path, os.pardir)
-parent_path = os.path.abspath(parent_path)
-path_frames = os.path.join(parent_path, 'data/dataset/singleFrame')
-path_videos = os.path.join(parent_path, 'data/dataset/video')
-path_calibrationMTX = os.path.join(parent_path, 'data/calibrationMatrix/calibration.pkl')
-path_court = os.path.join(parent_path, 'data/images/courts.jpg')
-path_json = os.path.join(parent_path, 'data/world_points_all_cameras.json')
 
 valid_camera_numbers = [1, 2, 3, 4, 5, 6, 7, 8, 12, 13]
 rightCamera = [5, 12, 13]
@@ -316,7 +309,7 @@ def commonList(camera_number, world_image_coordinates):
 def saveFrames():
 
     videos = find_file_mp4(path_videos)
-    camera_infos = load_pickle(path_calibrationMTX)
+    camera_infos = load_pickle(path_calibration_matrix)
 
     for video in videos:
         print(video)

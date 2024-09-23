@@ -2,13 +2,9 @@ import os
 import cv2
 import numpy as np
 from utils import *
+from config import *
 import matplotlib.pyplot as plt
 
-current_path = os.path.dirname(os.path.abspath(__file__))
-parent_path = os.path.join(current_path, os.pardir)
-parent_path = os.path.abspath(parent_path)
-path_json = os.path.join(parent_path, 'data/world_points_all_cameras.json')
-path_calibrationMTX = os.path.join(parent_path, 'data/calibrationMatrix/calibration.pkl')
 
 def calculate_extrinsics(camera_number):
     # Read the data
@@ -34,9 +30,11 @@ def calculate_extrinsics(camera_number):
     print(world_points)
     print(f"Image points for Camera {camera_number}:")
     print(image_points)
+    print(f"Camera coordinates for Camera {camera_number}:")
+    print(all_camera_coordinates.get(str(camera_number)))
 
     # Load camera calibration data
-    camera_infos = load_pickle(path_calibrationMTX)
+    camera_infos = load_pickle(path_calibration_matrix)
 
     camera_info = next((cam for cam in camera_infos if cam.camera_number == camera_number), None)
 
@@ -115,9 +113,22 @@ def plot_camera(extrinsic_matrix, all_camera_coordinates, size, camera_number, a
         ],
         dtype=np.float32,
     )
+
+    basketball_points = np.array(
+        [
+            [-14, 7.5, 0.0],
+            [-14, -7.5, 0.0],
+            [14, -7.5, 0.0],
+            [14, 7.5, 0.0]
+        ],
+        dtype=np.float32
+    )
     ax.scatter(
         volleyball_points[:, 0], volleyball_points[:, 1], volleyball_points[:, 2], c="b", marker="o", label="Court Points"
     )
+    # ax.scatter(
+    #     basketball_points[:, 0], volleyball_points[:, 1], volleyball_points[:, 2], c="orange", marker="o", label="Court Points"
+    # )
 
     ax.set_xlim([camera_position[0] - size, camera_position[0] + size])
     ax.set_ylim([camera_position[1] - size, camera_position[1] + size])
@@ -135,29 +146,29 @@ if __name__ == "__main__":
     # Prepare the plot figure and axis
     fig = plt.figure()
     ax = fig.add_subplot(111, projection="3d")
-    plt.ion()  # Enable interactive mode
 
-    camera_number = 13  # Initial camera
+    camera_number = 2  # Initial camera
     extrinsic_matrix, all_camera_coordinates, camera_number = calculate_extrinsics(camera_number)
 
     if extrinsic_matrix is not None:
         plot_camera(extrinsic_matrix, all_camera_coordinates, size=35, camera_number=camera_number, ax=ax)
         plt.show()
+        
 
-    while True:
-        try:
-            # Ask the user for the camera number
-            camera_number = input("Enter the camera number to use (or type 'exit' to quit): ")
-            if camera_number.lower() == 'exit':
-                print("Exiting the program.")
-                break
+    # while True:
+    #     try:
+    #         # Ask the user for the camera number
+    #         camera_number = input("Enter the camera number to use (or type 'exit' to quit): ")
+    #         if camera_number.lower() == 'exit':
+    #             print("Exiting the program.")
+    #             break
 
-            camera_number = int(camera_number)
+    #         camera_number = int(camera_number)
 
-            extrinsic_matrix, all_camera_coordinates, camera_number = calculate_extrinsics(camera_number)
+    #         extrinsic_matrix, all_camera_coordinates, camera_number = calculate_extrinsics(camera_number)
 
-            if extrinsic_matrix is not None:
-                plot_camera(extrinsic_matrix, all_camera_coordinates, size=35, camera_number=camera_number, ax=ax)
+    #         if extrinsic_matrix is not None:
+    #             plot_camera(extrinsic_matrix, all_camera_coordinates, size=35, camera_number=camera_number, ax=ax)
 
-        except ValueError:
-            print("Invalid input. Please enter a valid camera number.")
+    #     except ValueError:
+    #         print("Invalid input. Please enter a valid camera number.")
