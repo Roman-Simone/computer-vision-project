@@ -12,7 +12,7 @@ print("Parent_path: ", parent_path)
 
 path_json = os.path.join(parent_path, 'data/world_points_all_cameras.json')
 path_calibrationMTX = os.path.join(parent_path, 'data/calibrationMatrix/calibration.pkl')
-json_file_path = 'camera_data.json'
+json_file_path = parent_path + '/bonnie/camera_data.json'
 
 def update_json(camera_number, inverse_rotation_matrix, inverse_translation_vector):
 
