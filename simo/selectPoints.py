@@ -71,6 +71,7 @@ camera_coordinates_visual = {
 # Global variables
 clicked_point = ()
 all_world_points = {}  # Dictionary to store world-image points for all cameras
+rateoImages = []
 
 
 # Mouse callback function
@@ -78,14 +79,16 @@ def on_mouse(event, x, y, flags, param):
     global clicked_point, img_copy
 
     if event == cv2.EVENT_LBUTTONDOWN:
+        print(rateoImages)
         clicked_point = (x, y)
         print(f"Clicked at: {clicked_point}")
-
         # Disegna un pallino rosso nel punto cliccato
         cv2.circle(img_copy, clicked_point, 5, (0, 0, 255), -1)
 
         # Mostra le coordinate accanto al punto cliccato
         cv2.putText(img_copy, f"{clicked_point}", (x + 10, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
+        clicked_point = (int(x * rateoImages[0]), int(y * rateoImages[1]))
+        print(f"Clicked(resized) at: {clicked_point}")
 
         # Aggiorna la finestra di visualizzazione
         cv2.imshow(param, img_copy)
@@ -316,6 +319,7 @@ def commonList(camera_number, world_image_coordinates):
 
 
 def selectPointsAllCameras():
+    global rateoImages
 
     videos = find_file_mp4(path_videos)
     camera_infos = load_pickle(path_calibration_matrix)
@@ -344,9 +348,7 @@ def selectPointsAllCameras():
             if not ret:
                 break
             
-            
-
-            undistorted_frame = undistorted(frame, camera_info)
+            undistorted_frame, rateoImages = undistorted(frame, camera_info)
 
             undistorted_frame_copy = undistorted_frame.copy()
 
@@ -381,6 +383,8 @@ def selectPointsAllCameras():
 
 
 def selectPointsCamera(camera_to_select):
+    global rateoImages
+
     videos = find_file_mp4(path_videos)
     camera_infos = load_pickle(path_calibration_matrix)
 
@@ -407,11 +411,8 @@ def selectPointsCamera(camera_to_select):
             ret, frame = video_capture.read()
             if not ret:
                 break
-            
-            print("shape")
-            print(frame.shape)
 
-            undistorted_frame = undistorted(frame, camera_info)
+            undistorted_frame, rateoImages = undistorted(frame, camera_info)
 
             undistorted_frame_copy = undistorted_frame.copy()
 
@@ -434,8 +435,6 @@ def selectPointsCamera(camera_to_select):
 
         cv2.destroyAllWindows()
         video_capture.release()
-
-
 
 
 
@@ -477,6 +476,6 @@ if __name__ == '__main__':
     # selectPointsAllCameras()
 
     # Select points for a specific camera
-    camera_to_select = 2
+    camera_to_select = 5
     selectPointsCamera(camera_to_select)
 
