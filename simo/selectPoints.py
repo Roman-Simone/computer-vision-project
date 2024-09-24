@@ -71,7 +71,7 @@ camera_coordinates_visual = {
 # Global variables
 clicked_point = ()
 all_world_points = {}  # Dictionary to store world-image points for all cameras
-rateoImages = []
+rateoImages = [1, 1]
 
 
 # Mouse callback function
@@ -348,9 +348,15 @@ def selectPointsAllCameras():
             if not ret:
                 break
             
-            undistorted_frame, rateoImages = undistorted(frame, camera_info)
+            # undistorted_frame, rateoImages = undistorted(frame, camera_info)
 
-            undistorted_frame_copy = undistorted_frame.copy()
+            # undistorted_frame_copy = undistorted_frame.copy()
+
+            undistorted_frame = frame.copy()
+
+            undistorted_frame_copy = frame.copy()
+
+
 
             courtImg = cv2.imread(path_court)
 
@@ -412,9 +418,13 @@ def selectPointsCamera(camera_to_select):
             if not ret:
                 break
 
-            undistorted_frame, rateoImages = undistorted(frame, camera_info)
+            # undistorted_frame, rateoImages = undistorted(frame, camera_info)
 
-            undistorted_frame_copy = undistorted_frame.copy()
+            # undistorted_frame_copy = undistorted_frame.copy()
+
+            undistorted_frame = frame.copy()
+
+            undistorted_frame_copy = frame.copy()
 
             courtImg = cv2.imread(path_court)
 
@@ -473,9 +483,9 @@ def update_json_file(camera_number, world_image_coordinates, file_name):
 
 if __name__ == '__main__':
     # Select points for all cameras
-    # selectPointsAllCameras()
+    selectPointsAllCameras()
 
     # Select points for a specific camera
-    camera_to_select = 5
-    selectPointsCamera(camera_to_select)
+    # camera_to_select = 2
+    # selectPointsCamera(camera_to_select)
 

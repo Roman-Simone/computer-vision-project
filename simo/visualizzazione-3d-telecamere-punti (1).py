@@ -176,8 +176,7 @@ def rotationMatrixToEulerAngles(R):
     return np.array([x, y, z])
 
 if __name__ == "__main__":
-    camera_number = 5  # Puoi cambiare questo numero per selezionare una camera diversa
+    camera_number = 13  # Puoi cambiare questo numero per selezionare una camera diversa
     extrinsic_matrix = calculate_extrinsics(camera_number)
     extrinsic_parameter = display_extrinsic_matrix(extrinsic_matrix)
     plot_3d_data(extrinsic_matrix)
-

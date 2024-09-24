@@ -147,7 +147,7 @@ if __name__ == "__main__":
     fig = plt.figure()
     ax = fig.add_subplot(111, projection="3d")
 
-    camera_number = 5  # Initial camera
+    camera_number = 12  # Initial camera
     extrinsic_matrix, all_camera_coordinates, camera_number = calculate_extrinsics(camera_number)
 
     if extrinsic_matrix is not None:
