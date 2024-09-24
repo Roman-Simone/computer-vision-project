@@ -3,14 +3,27 @@ import cv2
 import numpy as np
 from utils import *
 import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D  # Add this line
-
 
 current_path = os.path.dirname(os.path.abspath(__file__))
 parent_path = os.path.join(current_path, os.pardir)
 parent_path = os.path.abspath(parent_path)
+
+print("Parent_path: ", parent_path)
+
 path_json = os.path.join(parent_path, 'data/world_points_all_cameras.json')
 path_calibrationMTX = os.path.join(parent_path, 'data/calibrationMatrix/calibration.pkl')
+json_file_path = 'camera_data.json'
+
+def update_json(camera_number, inverse_rotation_matrix, inverse_translation_vector):
+
+    with open(json_file_path, 'r') as json_file:
+        camera_data = json.load(json_file)
+       
+    camera_data[str(camera_number)]["inverse_rotation_matrix"] = inverse_rotation_matrix.tolist()
+    camera_data[str(camera_number)]["inverse_translation_vector"] = inverse_translation_vector.tolist()
+
+    with open(json_file_path, 'w') as json_file:
+        json.dump(camera_data, json_file, indent=4)
 
 def calculate_extrinsics(camera_number):
     # Read the data
@@ -60,23 +73,9 @@ def calculate_extrinsics(camera_number):
     inverse_translation_vector = -np.dot(inverse_rotation_matrix, translation_vector)
 
     extrinsic_matrix = np.hstack((inverse_rotation_matrix, inverse_translation_vector))
-    
     extrinsic_matrix = np.vstack((extrinsic_matrix, [0, 0, 0, 1]))
-
-    inverse_rotation_matrix_list = inverse_rotation_matrix.tolist()
-    inverse_translation_vector_list = inverse_translation_vector.tolist()
-
-    camera_data = {
-        str(camera_number): {
-            "inverse_rotation_matrix": inverse_rotation_matrix_list,
-            "inverse_translation_vector": inverse_translation_vector_list
-        }
-    }
     
-    json_file_path = 'camera_data.json'
-    
-    with open(json_file_path, 'a') as json_file:    
-        json.dump(camera_data, json_file, indent=4)
+    update_json(camera_number, inverse_rotation_matrix, inverse_translation_vector)
 
     return extrinsic_matrix, all_camera_coordinates, camera_number
 
@@ -117,7 +116,7 @@ def plot_camera(extrinsic_matrix, all_camera_coordinates, size, camera_number, a
         )
 
         for cam_id, coordinates in all_camera_coordinates.items():
-            ax.text(coordinates[0], coordinates[1], coordinates[2], f"Cam {cam_id}")
+            ax.text(coordinates[0], coordinates[1], coordinates[2], f"{cam_id}")
 
     # Plot volleyball court points
     volleyball_points = np.array(
@@ -155,7 +154,7 @@ if __name__ == "__main__":
     ax = fig.add_subplot(111, projection="3d")
     plt.ion()  # Enable interactive mode
 
-    camera_number = 2  # Initial camera
+    camera_number = 13  # Initial camera
     extrinsic_matrix, all_camera_coordinates, camera_number = calculate_extrinsics(camera_number)
 
     if extrinsic_matrix is not None:
