@@ -3,35 +3,83 @@ import json
 import pickle
 import os
 import cv2
+from utils import *
 
 current_path = os.path.dirname(os.path.abspath(__file__))
 parent_path = os.path.join(current_path, os.pardir)
 parent_path = os.path.abspath(parent_path)
+pickle_file_path = parent_path + '/data/calibrationMatrix/calibration.pkl'
 
-def draw_epipolar_line(img, line, color=(255, 0, 0)):
+def draw_epipolar_line(img, line, color=(0, 255, 0)):
     """ Draw the epipolar line on an image. """
     h, w = img.shape[:2]
     x0, y0 = map(int, [0, -line[2] / line[1]])
     x1, y1 = map(int, [w, -(line[2] + line[0] * w) / line[1]])
     img = cv2.line(img, (x0, y0), (x1, y1), color, 1)
-    
+        
     return img
 
-def find_corresponding_point(F, pt1):
+def find_epipolar_line(F, pt1):
     """ Given a point in img1, find the corresponding epipolar line in img2. """
-    pt1_homogeneous = np.array([pt1[0], pt1[1], 1])  # homogeneous coordinates
-    epipolar_line = np.dot(F, pt1_homogeneous)  # epipolar line in img2
+    pt1_np = np.array(pt1)
+    pt1_reshaped = pt1_np.reshape(1, 1, 2)     
+    epilines = cv2.computeCorrespondEpilines(pt1_reshaped, 1, F)
+    epipolar_line = epilines[0][0]  # For the first point
     return epipolar_line
 
-def closest_point_on_line(epipolar_line, img2_shape):
-    """ Given an epipolar line, find the closest point on the line in img2. """
-    h, w = img2_shape
-    # grid of points in img2
-    points = np.array(np.meshgrid(np.arange(w), np.arange(h))).reshape(2, -1).T
-    distances = np.abs(epipolar_line[0] * points[:, 0] + epipolar_line[1] * points[:, 1] + epipolar_line[2])
-    closest_idx = np.argmin(distances)
-    closest_point = points[closest_idx]
-    return tuple(closest_point)
+def best_point_img2(epipolar_line, img2, pt1, window_size=5):
+    """ Find the best corresponding point on the epipolar line using a window-based approach.
+    Args:
+        epipolar_line: The epipolar line equation (a, b, c) in img2.
+        img2: The second image where we search for the corresponding point.
+        pt1: The selected point in img1.
+        window_size: The size of the square window (default is 5).
+    Returns:
+        best_pt2: The best corresponding point in img2.
+    """
+    h, w = img2.shape[:2]
+    half_window = window_size // 2
+
+    # Extract the window around the selected point in img1
+    pt1_x, pt1_y = pt1
+    window1 = img2[pt1_y - half_window: pt1_y + half_window + 1, 
+                   pt1_x - half_window: pt1_x + half_window + 1]
+
+    best_pt2 = None
+    min_ssd = float('inf')
+
+    # Scan along the epipolar line in img2
+    for x in range(w):
+        # Calculate the corresponding y-coordinate on the epipolar line
+        y = int(-(epipolar_line[0] * x + epipolar_line[2]) / epipolar_line[1])
+        
+        # Ensure the window is within image bounds
+        if y - half_window < 0 or y + half_window >= h or x - half_window < 0 or x + half_window >= w:
+            continue
+        
+        # Extract the window around the current point on the epipolar line in img2
+        window2 = img2[y - half_window: y + half_window + 1, 
+                       x - half_window: x + half_window + 1]
+
+        # Calculate the SSD between the two windows
+        ssd = np.sum((window1 - window2) ** 2)
+
+        # Update if the current SSD is the best so far
+        if ssd < min_ssd:
+            min_ssd = ssd
+            best_pt2 = (x, y)
+
+    return best_pt2
+
+# def best_point_img2(epipolar_line, img2_shape):
+#     """ Given an epipolar line, find the closest point on the line in img2. """
+#     h, w = img2_shape
+#     # grid of points in img2
+#     points = np.array(np.meshgrid(np.arange(w), np.arange(h))).reshape(2, -1).T
+#     distances = np.abs(epipolar_line[0] * points[:, 0] + epipolar_line[1] * points[:, 1] + epipolar_line[2])
+#     closest_idx = np.argmin(distances)
+#     closest_point = points[closest_idx]
+#     return tuple(closest_point)
 
 def skew_symmetric(v):
     return np.array([[0, -v[2], v[1]],
@@ -78,13 +126,18 @@ def compute_all(camera_number_1, camera_number_2):
     R2 = np.array(camera_data[str(camera_number_2)]["inverse_rotation_matrix"])
     T2 = np.array(camera_data[str(camera_number_2)]["inverse_translation_vector"]).flatten()  
 
+    # R1 = R1.T  # Inverse of R1 (transpose of R1)
+    # R2 = R2.T  # Inverse of R2 (transpose of R2)
+
+    # # Compute the inverse of the translation vectors
+    # T1 = -T1  # Inverse of T1 (negative of T1)
+    # T2 = -T2
+
     R_relative, T_relative = compute_relative_motion(R1, T1, R2, T2)
 
     E = compute_essential_matrix(R_relative, T_relative)
 
     print("Essential Matrix:\n", E)
-
-    pickle_file_path = parent_path + '/data/calibrationMatrix/calibration.pkl'
 
     camera_infos = load_calibration_data(pickle_file_path)
 
@@ -107,8 +160,17 @@ def compute_all(camera_number_1, camera_number_2):
             print("Camera ", str(camera_number_1), " not found in the calibration data.")
         if not camera_2_info:
             print("Camera ", str(camera_number_2), " not found in the calibration data.")
-            
     return E, F
+            
+def resize_with_aspect_ratio(image, max_width, max_height):
+    original_height, original_width = image.shape[:2]
+    scale_width = max_width / original_width
+    scale_height = max_height / original_height
+    scale = min(scale_width, scale_height)
+    new_width = int(original_width * scale)
+    new_height = int(original_height * scale)
+    resized_image = cv2.resize(image, (new_width, new_height))
+    return resized_image
             
 def select_point(event, x, y, flags, param):
     if event == cv2.EVENT_LBUTTONDOWN:  # Se si clicca con il pulsante sinistro
@@ -117,27 +179,24 @@ def select_point(event, x, y, flags, param):
 
 def take_points(img1, img2, camera_number, fundamental_mtx):
     clicked_point = {}
-
     print(f"Select a point in the image for camera {camera_number}")
     window_name = f"Select Point Camera {camera_number}"
-    cv2.namedWindow(window_name)
-    
-    # Definisci la larghezza e l'altezza desiderate per la finestra
-    window_width = 1280
-    window_height = 600
-    cv2.resizeWindow(window_name, window_width, window_height)
-    
-    # Ridimensiona le immagini per adattarle alla finestra
-    img1_resized = cv2.resize(img1, (window_width // 2, window_height))  # metà larghezza per ogni immagine
-    img2_resized = cv2.resize(img2, (window_width // 2, window_height))
+
+    window_width = 1600
+    window_height = 900
+
+    img1_resized = resize_with_aspect_ratio(img1, window_width // 2, window_height)
+    img2_resized = resize_with_aspect_ratio(img2, window_width // 2, window_height)
 
     img1_copy = img1_resized.copy()
     img2_copy = img2_resized.copy()
-    
+
+    cv2.namedWindow(window_name)
+    cv2.resizeWindow(window_name, window_width, window_height)
     cv2.setMouseCallback(window_name, select_point, clicked_point)
 
     while True:
-        combined_img = np.hstack((img1_copy, img2_copy))  # combina le immagini ridimensionate
+        combined_img = np.hstack((img1_copy, img2_copy))
         cv2.imshow(window_name, combined_img)
         key = cv2.waitKey(1) & 0xFF
 
@@ -145,34 +204,33 @@ def take_points(img1, img2, camera_number, fundamental_mtx):
             pt1 = clicked_point['clicked_point']
             print(f"---> Point selected at {pt1}")
 
-            # corrispondente linea epipolare e punto nella seconda immagine
-            epipolar_line = find_corresponding_point(fundamental_mtx, pt1)
-            closest_pt2 = closest_point_on_line(epipolar_line, img2_resized.shape)
+            # Process the selected point
+            epipolar_line = find_epipolar_line(fundamental_mtx, pt1)
+            best_pt2 = best_point_img2(epipolar_line, img2, pt1)
 
-            img1_copy = cv2.circle(img1_copy, pt1, 5, (255, 0, 0), -1)
-            img2_copy = cv2.circle(img2_copy, closest_pt2, 5, (0, 255, 0), -1)
+            # Use a random color for drawing
+            color = tuple(np.random.randint(0, 256, 3).tolist())
+            img1_copy = cv2.circle(img1_copy, pt1, 5, color, -1)
+            img2_copy = cv2.circle(img2_copy, best_pt2, 5, color, -1)
+            img2_copy = draw_epipolar_line(img2_copy, epipolar_line, color)
 
-            img2_copy = draw_epipolar_line(img2_copy, epipolar_line)
-
-            clicked_point.clear()
-            
-            combined_img = np.hstack((img1_copy, img2_copy))  
+            combined_img = np.hstack((img1_copy, img2_copy))
             cv2.imshow(window_name, combined_img)
-            
+
+            # Save the combined image
             cv2.imwrite(f'combined_image_camera_{camera_number}.png', combined_img)
             print(f"Combined image saved as combined_image_camera_{camera_number}.png")
-            
-            cv2.waitKey(0)
 
-            break
+            # Clear the clicked point to allow for the next selection
+            clicked_point.clear()  # Clear the clicked point
+
         elif key == ord('q'):
             print("Exiting without selecting a point.")
             cv2.destroyWindow(window_name)
             return None
 
-    cv2.destroyWindow(window_name)
-    
-    return pt1  
+    # cv2.destroyWindow(window_name)
+    # return pt1
 
 if __name__ == "__main__":
     while True:
@@ -198,21 +256,29 @@ if __name__ == "__main__":
             print("Trying to open ", video_path_1)
             cap1 = cv2.VideoCapture(video_path_1)
             
-            ret1, frame1 = cap1.read()
+            ret1, img1 = cap1.read()
             if not ret1:
                 print("Error reading video file")
-            img1 = cv2.cvtColor(frame1, cv2.COLOR_BGR2GRAY)
+            # img1 = cv2.cvtColor(frame1, cv2.COLOR_BGR2GRAY)
             cap1.release()
 
             video_path_2 = parent_path + '/23_09_23 amichevole trento volley/out' + str(camera_number_2) + '.mp4'
             print("Trying to open ", video_path_2)
             cap2 = cv2.VideoCapture(video_path_2)            
             
-            ret2, frame2 = cap2.read()
+            ret2, img2 = cap2.read()
             if not ret2:
                 print("Error reading video file")
-            img2 = cv2.cvtColor(frame2, cv2.COLOR_BGR2GRAY)
+            # img2 = cv2.cvtColor(frame2, cv2.COLOR_BGR2GRAY)
             cap2.release()
+            
+            camera_infos = load_calibration_data(pickle_file_path)
+            
+            camera1_info =  next((cam for cam in camera_infos if cam.camera_number == camera_number_1), None)
+            camera2_info =  next((cam for cam in camera_infos if cam.camera_number == camera_number_1), None)
+            
+            img1 = undistorted(img1, camera1_info)
+            img2 = undistorted(img2, camera2_info)
 
             selected_point = take_points(img1, img2, camera_number_1, fundamental_mtx)
 
