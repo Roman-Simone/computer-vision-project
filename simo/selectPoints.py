@@ -26,18 +26,18 @@ points = {
 }
 
 worldPoints = {
-    (-9, 4.5, 0.0): (),
-    (-9, -4.5, 0.0): (),
-    (-3, -4.5, 0.0): (),
-    (3, -4.5, 0.0): (),
-    (9, -4.5, 0.0): (),
-    (9, 4.5, 0.0): (),
-    (3, 4.5, 0.0): (),
-    (-3, 4.5, 0.0): (),
-    (-14, 7.5, 0.0): (),
-    (-14, -7.5, 0.0): (),
-    (14, -7.5, 0.0): (),
-    (14, 7.5, 0.0): ()
+    (-9.0, 4.5, 0.0): (),
+    (-9.0, -4.5, 0.0): (),
+    (-3.0, -4.5, 0.0): (),
+    (3.0, -4.5, 0.0): (),
+    (9.0, -4.5, 0.0): (),
+    (9.0, 4.5, 0.0): (),
+    (3.0, 4.5, 0.0): (),
+    (-3.0, 4.5, 0.0): (),
+    (-14.0, 7.5, 0.0): (),
+    (-14.0, -7.5, 0.0): (),
+    (14.0, -7.5, 0.0): (),
+    (14.0, 7.5, 0.0): ()
 }
 
 # Define camera coordinates for specific cameras
@@ -75,10 +75,20 @@ all_world_points = {}  # Dictionary to store world-image points for all cameras
 
 # Mouse callback function
 def on_mouse(event, x, y, flags, param):
-    global clicked_point
+    global clicked_point, img_copy
+
     if event == cv2.EVENT_LBUTTONDOWN:
         clicked_point = (x, y)
         print(f"Clicked at: {clicked_point}")
+
+        # Disegna un pallino rosso nel punto cliccato
+        cv2.circle(img_copy, clicked_point, 5, (0, 0, 255), -1)
+
+        # Mostra le coordinate accanto al punto cliccato
+        cv2.putText(img_copy, f"{clicked_point}", (x + 10, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
+
+        # Aggiorna la finestra di visualizzazione
+        cv2.imshow(param, img_copy)
 
 
 def unifyImages(img1, img2, rightCameraFlag):
@@ -224,14 +234,13 @@ def edit_image(image, camera_number=1):
 
     return image
 
-
 def takePoints(imageUndistorted, courtImg, camera_number, rightCameraFlag):
-    global clicked_point, points
+    global clicked_point, points, img_copy
 
     print("Select the corners of the court")
     window_name = f"Select Points camera {camera_number}"
     cv2.namedWindow(window_name)
-    cv2.setMouseCallback(window_name, on_mouse)
+    cv2.setMouseCallback(window_name, on_mouse, param=window_name)
 
     img_copy = imageUndistorted.copy()
 
@@ -270,18 +279,18 @@ def takePoints(imageUndistorted, courtImg, camera_number, rightCameraFlag):
                     print("Exiting...")
                     cv2.destroyWindow(window_name)
                     return
-    
+
     # Reset the points
     for point in points:
         points[point] = 0
 
     retCoords = {}
-    
+
     for worldPoint in worldPoints:
         if worldPoints[worldPoint] != (0, 0):
             retCoords[worldPoint] = worldPoints[worldPoint]
         worldPoints[worldPoint] = ()
-    
+
     cv2.destroyWindow(window_name)
 
     return retCoords
@@ -334,6 +343,8 @@ def selectPointsAllCameras():
             ret, frame = video_capture.read()
             if not ret:
                 break
+            
+            
 
             undistorted_frame = undistorted(frame, camera_info)
 
@@ -396,6 +407,9 @@ def selectPointsCamera(camera_to_select):
             ret, frame = video_capture.read()
             if not ret:
                 break
+            
+            print("shape")
+            print(frame.shape)
 
             undistorted_frame = undistorted(frame, camera_info)
 
@@ -410,6 +424,8 @@ def selectPointsCamera(camera_to_select):
                 frame_filename = os.path.join(path_frames, f"cam_{camera_number}.png")
                 cv2.imwrite(frame_filename, undistorted_frame)
                 cv2.destroyAllWindows()
+                print("shape und")
+                print(undistorted_frame_copy.shape)
 
                 world_image_coordinates = takePoints(undistorted_frame_copy, courtImg, camera_number, rightCameraFlag)
 
@@ -461,9 +477,6 @@ if __name__ == '__main__':
     # selectPointsAllCameras()
 
     # Select points for a specific camera
-    camera_to_select = 7
+    camera_to_select = 2
     selectPointsCamera(camera_to_select)
-
-
-    
 

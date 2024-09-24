@@ -32,7 +32,7 @@ def findPoints(path_video, cameraInfo, debug=True):
     video_capture = cv2.VideoCapture(path_video)
 
     # Print the number of frames in the video
-    numberOf_frame = int(video_capture.get(cv2.CAP_PROP_FRAME_COUNT))
+    numberOf_frame = int(video_capture.get(cv2.CAP_PROP_FRAME_COUNT)) 
     print("Number of frames in the video: ", numberOf_frame)
 
     if debug:
@@ -61,7 +61,6 @@ def findPoints(path_video, cameraInfo, debug=True):
             if frame_count % SKIP_FRAME  != 0:
                 continue
             
-
             gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
             # Find the chess board corners
@@ -221,7 +220,7 @@ if __name__ == '__main__':
     # calibrateAll()
 
     # CALIBRATE SPECIFIC CAM
-    camera_number = 1
+    camera_number = 2
     calibrateCamera(camera_number)
 
     # ONLY FOR TESTING

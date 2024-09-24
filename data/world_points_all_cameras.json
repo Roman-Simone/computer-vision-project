@@ -482,134 +482,13 @@
         "points": [
             {
                 "world_coordinate": [
-                    -9,
+                    -9.0,
                     4.5,
                     0.0
                 ],
                 "image_coordinate": [
-                    1697,
-                    702
-                ]
-            },
-            {
-                "world_coordinate": [
-                    -9,
-                    -4.5,
-                    0.0
-                ],
-                "image_coordinate": [
-                    1524,
-                    549
-                ]
-            },
-            {
-                "world_coordinate": [
-                    -3,
-                    -4.5,
-                    0.0
-                ],
-                "image_coordinate": [
-                    1306,
-                    543
-                ]
-            },
-            {
-                "world_coordinate": [
-                    3,
-                    -4.5,
-                    0.0
-                ],
-                "image_coordinate": [
-                    1084,
-                    542
-                ]
-            },
-            {
-                "world_coordinate": [
-                    9,
-                    -4.5,
-                    0.0
-                ],
-                "image_coordinate": [
-                    856,
-                    540
-                ]
-            },
-            {
-                "world_coordinate": [
-                    9,
-                    4.5,
-                    0.0
-                ],
-                "image_coordinate": [
-                    666,
-                    689
-                ]
-            },
-            {
-                "world_coordinate": [
-                    3,
-                    4.5,
-                    0.0
-                ],
-                "image_coordinate": [
-                    1014,
-                    694
-                ]
-            },
-            {
-                "world_coordinate": [
-                    -3,
-                    4.5,
-                    0.0
-                ],
-                "image_coordinate": [
-                    1366,
-                    695
-                ]
-            },
-            {
-                "world_coordinate": [
-                    -14,
-                    7.5,
-                    0.0
-                ],
-                "image_coordinate": [
-                    2135,
-                    797
-                ]
-            },
-            {
-                "world_coordinate": [
-                    -14,
-                    -7.5,
-                    0.0
-                ],
-                "image_coordinate": [
-                    1645,
-                    521
-                ]
-            },
-            {
-                "world_coordinate": [
-                    14,
-                    -7.5,
-                    0.0
-                ],
-                "image_coordinate": [
-                    732,
-                    502
-                ]
-            },
-            {
-                "world_coordinate": [
-                    14,
-                    7.5,
-                    0.0
-                ],
-                "image_coordinate": [
-                    158,
-                    783
+                    1696,
+                    703
                 ]
             }
         ]
