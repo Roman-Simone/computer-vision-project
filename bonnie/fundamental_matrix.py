@@ -2,6 +2,7 @@ import numpy as np
 import json 
 import pickle
 import os
+import matplotlib.pyplot as plt
 import cv2
 from utils import *
 
@@ -121,10 +122,18 @@ def compute_all(camera_number_1, camera_number_2):
     with open(json_file_path, 'r') as json_file:    
         camera_data = json.load(json_file)  # JSON string into a dictionary
 
+
     R1 = np.array(camera_data[str(camera_number_1)]["inverse_rotation_matrix"])
     T1 = np.array(camera_data[str(camera_number_1)]["inverse_translation_vector"]).flatten()  
     R2 = np.array(camera_data[str(camera_number_2)]["inverse_rotation_matrix"])
     T2 = np.array(camera_data[str(camera_number_2)]["inverse_translation_vector"]).flatten()  
+
+    if len(R1) == 0 or len(T1) == 0:
+        print("Error: Camera ", camera_number_1, " data not found.")
+        return None
+    elif len(R2) == 0 or len(T2) == 0:
+        print("Error: Camera ", camera_number_2, " data not found.")
+        return None
 
     # R1 = R1.T  # Inverse of R1 (transpose of R1)
     # R2 = R2.T  # Inverse of R2 (transpose of R2)
@@ -233,6 +242,9 @@ def take_points(img1, img2, camera_number, fundamental_mtx):
     # return pt1
 
 if __name__ == "__main__":
+    
+    plt.close('all')
+    
     while True:
         try:
             camera_number_1 = input("Enter the first camera number to use (or type 'exit' to quit): ")
@@ -252,7 +264,7 @@ if __name__ == "__main__":
 
             essential_mtx, fundamental_mtx = compute_all(camera_number_1, camera_number_2)
 
-            video_path_1 = parent_path + '/23_09_23 amichevole trento volley/out' + str(camera_number_1) + '.mp4'
+            video_path_1 = parent_path + '/data/dataset/video/out' + str(camera_number_1) + '.mp4'
             print("Trying to open ", video_path_1)
             cap1 = cv2.VideoCapture(video_path_1)
             
@@ -262,7 +274,7 @@ if __name__ == "__main__":
             # img1 = cv2.cvtColor(frame1, cv2.COLOR_BGR2GRAY)
             cap1.release()
 
-            video_path_2 = parent_path + '/23_09_23 amichevole trento volley/out' + str(camera_number_2) + '.mp4'
+            video_path_2 = parent_path + '/data/dataset/video/out' + str(camera_number_2) + '.mp4'
             print("Trying to open ", video_path_2)
             cap2 = cv2.VideoCapture(video_path_2)            
             
