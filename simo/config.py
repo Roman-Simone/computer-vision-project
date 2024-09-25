@@ -6,7 +6,9 @@ parent_path = os.path.abspath(parent_path)
 
 path_videos_calibration = os.path.join(parent_path, 'data/dataset/calibration')
 path_videos = os.path.join(parent_path, 'data/dataset/video')
-path_calibration_matrix = os.path.join(parent_path, 'data/calibrationMatrix/calibration.pkl')
-path_json = os.path.join(parent_path, 'data/world_points_all_cameras.json')
+PATH_CALIBRATION_MATRIX = os.path.join(parent_path, 'data/calibrationMatrix/calibration.pkl')
+PATH_JSON = os.path.join(parent_path, 'data/world_points_all_cameras.json')
 path_frames = os.path.join(parent_path, 'data/dataset/singleFrame')
 path_court = os.path.join(parent_path, 'data/images/courts.jpg')
+
+VALID_CAMERA_NUMBERS = [1, 2, 3, 4, 5, 6, 7, 8, 12, 13]

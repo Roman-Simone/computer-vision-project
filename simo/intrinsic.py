@@ -6,7 +6,6 @@ from config import *
 from tqdm import tqdm
 from cameraInfo import *
 
-valid_camera_numbers = [1, 2, 3, 4, 5, 6, 7, 8, 12, 13]
 all_chessboard_sizes = {1: (5, 7), 2: (5, 7), 3: (5, 7), 4: (5, 7), 5: (6, 9), 6: (6, 9), 7: (5, 7), 8: (6, 9), 12: (5, 7), 13: (5, 7)}
 
 SKIP_FRAME = 2
@@ -150,7 +149,7 @@ def calibrateAll():
 
 
 def calibrateCamera(camera_number):
-    camerasInfo = load_pickle(path_calibration_matrix)
+    camerasInfo = load_pickle(PATH_CALIBRATION_MATRIX)
 
     # Inizializza cameraInfo per la camera specifica
     for chessNumber in all_chessboard_sizes.keys():
@@ -179,7 +178,7 @@ def calibrateCamera(camera_number):
 def test_calibration():
 
     videos = find_file_mp4(path_videos)
-    camera_infos = load_pickle(path_calibration_matrix)
+    camera_infos = load_pickle(PATH_CALIBRATION_MATRIX)
 
     for camera_info in camera_infos:
         print(f"Camera {camera_info.camera_number} rvecs: {camera_info.rvecs}")
@@ -188,7 +187,7 @@ def test_calibration():
 
         camera_number = re.findall(r'\d+', video.replace(".mp4", ""))
         camera_number = int(camera_number[0])
-        if camera_number not in valid_camera_numbers:
+        if camera_number not in VALID_CAMERA_NUMBERS:
             continue
 
         # open the video

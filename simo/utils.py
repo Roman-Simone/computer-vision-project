@@ -18,6 +18,7 @@ def undistorted(frame1, camera_info):
 
     rate = [initialWidth/finalWidth, initialHeight/finalHeight]
     print("Rate: ", rate)
+    rate = [1, 1]
 
     return undistorted_frame, rate
 
@@ -83,6 +84,12 @@ def read_json_file_and_structure_data(file_name):
     return coordinates_by_camera
 
 
+def take_info_camera(camera_number, camera_infos):
 
+    for pos, camera_info in enumerate(camera_infos):
+        if camera_info.camera_number == camera_number:
+            return camera_info, pos
+
+    return camera_info
 
 

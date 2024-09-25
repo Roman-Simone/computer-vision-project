@@ -10,7 +10,7 @@ class CameraInfo:
         self.rvecs = None
         self.tvecs = None
         self.roi = None
-        self.extrinsics = None
+        self.extrinsic_matrix = None
 
 
 
