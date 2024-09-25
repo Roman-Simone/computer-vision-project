@@ -35,7 +35,7 @@ def calculate_extrinsics(camera_number):
         print(f"Camera info for camera {camera_number} not found.")
         return None
 
-    camera_matrix = camera_info.newcameramtx
+    camera_matrix = camera_info.mtx   # PROBLEM IDK WHY IS BETTER WITH MTX RESPECT TO NEWCAMERAMTX
     distortion_coefficients = np.zeros((1, 5), dtype=np.float32)
 
     success, rotation_vector, translation_vector = cv2.solvePnP(
@@ -191,7 +191,7 @@ def plot_all_cameras():
     for camera_info in camera_infos:
         extrinsic_matrices.append(camera_info.extrinsic_matrix)
         camera_numbers.append(camera_info.camera_number)
-        display_extrinsic_matrix(camera_info.extrinsic_matrix)
+        display_extrinsic_matrix(camera_info.extrinsic_matrix, camera_info.camera_number)
 
     plot_3d_data(extrinsic_matrices, camera_numbers)
 
@@ -247,9 +247,9 @@ if __name__ == "__main__":
 
 
     #plot all camera extrinsic matrix
-    # plot_all_cameras()
+    plot_all_cameras()
     
     # plot specific camera extrinsic matrix
-    camera_number = 12
-    plot_camera(camera_number)
+    # camera_number = 12
+    # plot_camera(camera_number)
     

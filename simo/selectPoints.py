@@ -5,7 +5,6 @@ import json
 import numpy as np
 from utils import *
 from config import *
-from cameraInfo import *
 
 
 valid_camera_numbers = [1, 2, 3, 4, 5, 6, 7, 8, 12, 13]
@@ -338,7 +337,7 @@ def selectPointsAllCameras():
             rightCameraFlag = False
 
         # Open the video
-        camera_info = next((cam for cam in camera_infos if cam.camera_number == camera_number), None)
+        camera_info, _ = take_info_camera(camera_number, camera_infos)
         path_video = os.path.join(path_videos, video)
         video_capture = cv2.VideoCapture(path_video)
 
@@ -351,12 +350,6 @@ def selectPointsAllCameras():
             undistorted_frame, rateoImages = undistorted(frame, camera_info)
 
             undistorted_frame_copy = undistorted_frame.copy()
-
-            # undistorted_frame = frame.copy()
-
-            # undistorted_frame_copy = frame.copy()
-
-
 
             courtImg = cv2.imread(path_court)
 
@@ -408,7 +401,7 @@ def selectPointsCamera(camera_to_select):
             rightCameraFlag = False
 
         # Open the video
-        camera_info = next((cam for cam in camera_infos if cam.camera_number == camera_number), None)
+        camera_info, _ = take_info_camera(camera_number, camera_infos)
         path_video = os.path.join(path_videos, video)
         video_capture = cv2.VideoCapture(path_video)
 
@@ -421,10 +414,6 @@ def selectPointsCamera(camera_to_select):
             undistorted_frame, rateoImages = undistorted(frame, camera_info)
 
             undistorted_frame_copy = undistorted_frame.copy()
-
-            # undistorted_frame = frame.copy()
-
-            # undistorted_frame_copy = frame.copy()
 
             courtImg = cv2.imread(path_court)
 
