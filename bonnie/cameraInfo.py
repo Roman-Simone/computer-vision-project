@@ -10,7 +10,9 @@ class CameraInfo:
         self.rvecs = None
         self.tvecs = None
         self.roi = None
-        self.extrinsics = None
+        self.extrinsic_matrix = None
+        self.inverse_rotation_matrix = None
+        self.inverse_translation_vector = None
 
 class InterCameraInfo:
     def __init__(self, cameras_number):

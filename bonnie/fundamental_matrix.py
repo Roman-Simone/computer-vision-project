@@ -4,20 +4,32 @@ import pickle
 import os
 import matplotlib.pyplot as plt
 import cv2
+from config import *
 from utils import *
 
 current_path = os.path.dirname(os.path.abspath(__file__))
 parent_path = os.path.join(current_path, os.pardir)
 parent_path = os.path.abspath(parent_path)
-pickle_file_path = parent_path + '/data/calibrationMatrix/calibration.pkl'
 
 def draw_epipolar_line(img, line, color=(0, 255, 0)):
     """ Draw the epipolar line on an image. """
+    
     h, w = img.shape[:2]
-    x0, y0 = map(int, [0, -line[2] / line[1]])
-    x1, y1 = map(int, [w, -(line[2] + line[0] * w) / line[1]])
-    img = cv2.line(img, (x0, y0), (x1, y1), color, 1)
+    # Calculate the points (x0, y0) and (x1, y1) of the line
+    if line[1] != 0:  # To avoid division by zero
+        x0, y0 = map(int, [0, -line[2] / line[1]])
+        x1, y1 = map(int, [w, -(line[2] + line[0] * w) / line[1]])
         
+        # Clip the points to be within the image boundaries
+        y0 = max(0, min(y0, h - 1))
+        y1 = max(0, min(y1, h - 1))
+    else:
+        x0, y0 = map(int, [0, -line[2] / line[0]])
+        x1, y1 = map(int, [w, -line[2] / line[0]])
+
+    print(f"\n\nDrawing line from ({x0}, {y0}) to ({x1}, {y1})\n\n")
+    # Draw the line
+    img = cv2.line(img, (x0, y0), (x1, y1), color, 1)
     return img
 
 def find_epipolar_line(F, pt1):
@@ -27,7 +39,7 @@ def find_epipolar_line(F, pt1):
     epilines = cv2.computeCorrespondEpilines(pt1_reshaped, 1, F)
     epipolar_line = epilines[0][0]  # For the first point
     return epipolar_line
-
+    
 def best_point_img2(epipolar_line, img2, pt1, window_size=5):
     """ Find the best corresponding point on the epipolar line using a window-based approach.
     Args:
@@ -117,16 +129,15 @@ def compute_fundamental_matrix(E, K1, K2):
 
 def compute_all(camera_number_1, camera_number_2):
     
-    json_file_path = 'camera_data.json'
+    camera_data = load_calibration_data(PATH_CALIBRATION_MATRIX)
+    
+    camera_1_info = next((cam for cam in camera_data if cam.camera_number == camera_number_1), None)
+    camera_2_info = next((cam for cam in camera_data if cam.camera_number == camera_number_2), None)
 
-    with open(json_file_path, 'r') as json_file:    
-        camera_data = json.load(json_file)  # JSON string into a dictionary
-
-
-    R1 = np.array(camera_data[str(camera_number_1)]["inverse_rotation_matrix"])
-    T1 = np.array(camera_data[str(camera_number_1)]["inverse_translation_vector"]).flatten()  
-    R2 = np.array(camera_data[str(camera_number_2)]["inverse_rotation_matrix"])
-    T2 = np.array(camera_data[str(camera_number_2)]["inverse_translation_vector"]).flatten()  
+    R1 = np.array(camera_1_info.inverse_rotation_matrix)
+    T1 = np.array(camera_1_info.inverse_translation_vector).flatten()  
+    R2 = np.array(camera_2_info.inverse_rotation_matrix)
+    T2 = np.array(camera_2_info.inverse_translation_vector).flatten()  
 
     if len(R1) == 0 or len(T1) == 0:
         print("Error: Camera ", camera_number_1, " data not found.")
@@ -135,23 +146,18 @@ def compute_all(camera_number_1, camera_number_2):
         print("Error: Camera ", camera_number_2, " data not found.")
         return None
 
-    # R1 = R1.T  # Inverse of R1 (transpose of R1)
-    # R2 = R2.T  # Inverse of R2 (transpose of R2)
+    R1 = R1.T  # Inverse of R1 (transpose of R1)
+    R2 = R2.T  # Inverse of R2 (transpose of R2)
 
-    # # Compute the inverse of the translation vectors
-    # T1 = -T1  # Inverse of T1 (negative of T1)
-    # T2 = -T2
+    # Compute the inverse of the translation vectors
+    T1 = -T1  # Inverse of T1 (negative of T1)
+    T2 = -T2
 
     R_relative, T_relative = compute_relative_motion(R1, T1, R2, T2)
 
     E = compute_essential_matrix(R_relative, T_relative)
 
     print("Essential Matrix:\n", E)
-
-    camera_infos = load_calibration_data(pickle_file_path)
-
-    camera_1_info = next((cam for cam in camera_infos if cam.camera_number == camera_number_1), None)
-    camera_2_info = next((cam for cam in camera_infos if cam.camera_number == camera_number_2), None)
 
     if camera_1_info and camera_2_info:
         K1 = camera_1_info.newcameramtx  
@@ -185,7 +191,7 @@ def select_point(event, x, y, flags, param):
     if event == cv2.EVENT_LBUTTONDOWN:  # Se si clicca con il pulsante sinistro
         param['clicked_point'] = (x, y)
         print(f"Mouse clicked at: {x}, {y}")
-
+        
 def take_points(img1, img2, camera_number, fundamental_mtx):
     clicked_point = {}
     print(f"Select a point in the image for camera {camera_number}")
@@ -194,14 +200,21 @@ def take_points(img1, img2, camera_number, fundamental_mtx):
     window_width = 1600
     window_height = 900
 
+    # Get original dimensions
+    orig_h1, orig_w1 = img1.shape[:2]  
+    orig_h2, orig_w2 = img2.shape[:2]
+
     img1_resized = resize_with_aspect_ratio(img1, window_width // 2, window_height)
     img2_resized = resize_with_aspect_ratio(img2, window_width // 2, window_height)
+
+    # Get resized dimensions for mapping
+    resized_h1, resized_w1 = img1_resized.shape[:2]
+    resized_h2, resized_w2 = img2_resized.shape[:2]
 
     img1_copy = img1_resized.copy()
     img2_copy = img2_resized.copy()
 
     cv2.namedWindow(window_name)
-    cv2.resizeWindow(window_name, window_width, window_height)
     cv2.setMouseCallback(window_name, select_point, clicked_point)
 
     while True:
@@ -210,17 +223,35 @@ def take_points(img1, img2, camera_number, fundamental_mtx):
         key = cv2.waitKey(1) & 0xFF
 
         if 'clicked_point' in clicked_point:
-            pt1 = clicked_point['clicked_point']
-            print(f"---> Point selected at {pt1}")
+            pt1_resized = clicked_point['clicked_point']
+            print(f"---> Point selected at {pt1_resized}")
+
+            # Map the point back to original size
+            scale_x1 = orig_w1 / resized_w1
+            scale_y1 = orig_h1 / resized_h1
+
+            # Adjust point to original image scale
+            pt1_original = (int(pt1_resized[0] * scale_x1), int(pt1_resized[1] * scale_y1))
+            print(f"Point in original img1: {pt1_original}")
 
             # Process the selected point
-            epipolar_line = find_epipolar_line(fundamental_mtx, pt1)
-            best_pt2 = best_point_img2(epipolar_line, img2, pt1)
+            epipolar_line = find_epipolar_line(fundamental_mtx, pt1_original)
+
+            # The second image also needs to be mapped to the original coordinates
+            best_pt2_resized = best_point_img2(epipolar_line, img2, pt1_original)
+            if best_pt2_resized is None:
+                print("No corresponding point found.")
+                continue
+
+            # Map the best_pt2 to the resized image for visualization
+            scale_x2 = orig_w2 / resized_w2
+            scale_y2 = orig_h2 / resized_h2
+            best_pt2_resized = (int(best_pt2_resized[0] / scale_x2), int(best_pt2_resized[1] / scale_y2))
 
             # Use a random color for drawing
             color = tuple(np.random.randint(0, 256, 3).tolist())
-            img1_copy = cv2.circle(img1_copy, pt1, 5, color, -1)
-            img2_copy = cv2.circle(img2_copy, best_pt2, 5, color, -1)
+            img1_copy = cv2.circle(img1_copy, pt1_resized, 5, color, -1)
+            img2_copy = cv2.circle(img2_copy, best_pt2_resized, 5, color, -1)
             img2_copy = draw_epipolar_line(img2_copy, epipolar_line, color)
 
             combined_img = np.hstack((img1_copy, img2_copy))
@@ -231,15 +262,13 @@ def take_points(img1, img2, camera_number, fundamental_mtx):
             print(f"Combined image saved as combined_image_camera_{camera_number}.png")
 
             # Clear the clicked point to allow for the next selection
-            clicked_point.clear()  # Clear the clicked point
+            clicked_point.clear()
 
         elif key == ord('q'):
             print("Exiting without selecting a point.")
             cv2.destroyWindow(window_name)
             return None
 
-    # cv2.destroyWindow(window_name)
-    # return pt1
 
 if __name__ == "__main__":
     
@@ -264,35 +293,45 @@ if __name__ == "__main__":
 
             essential_mtx, fundamental_mtx = compute_all(camera_number_1, camera_number_2)
 
-            video_path_1 = parent_path + '/data/dataset/video/out' + str(camera_number_1) + '.mp4'
+            video_path_1 = path_videos + '/out' + str(camera_number_1) + '.mp4'
             print("Trying to open ", video_path_1)
             cap1 = cv2.VideoCapture(video_path_1)
-            
-            ret1, img1 = cap1.read()
-            if not ret1:
-                print("Error reading video file")
-            # img1 = cv2.cvtColor(frame1, cv2.COLOR_BGR2GRAY)
-            cap1.release()
 
-            video_path_2 = parent_path + '/data/dataset/video/out' + str(camera_number_2) + '.mp4'
+            ret1, img1 = cap1.read()  # Returns the status and the frame (image)
+            if not ret1 or img1 is None:
+                print("Error reading video file for camera", camera_number_1)
+                cap1.release()
+                continue  # Go back to re-prompt the user
+
+            cap1.release()  # Don't forget to release the video capture object
+
+
+            video_path_2 = path_videos + '/out' + str(camera_number_2) + '.mp4'
             print("Trying to open ", video_path_2)
-            cap2 = cv2.VideoCapture(video_path_2)            
-            
-            ret2, img2 = cap2.read()
-            if not ret2:
-                print("Error reading video file")
-            # img2 = cv2.cvtColor(frame2, cv2.COLOR_BGR2GRAY)
+            cap2 = cv2.VideoCapture(video_path_2)
+
+            ret2, img2 = cap2.read()  # Same process for the second video
+            if not ret2 or img2 is None:
+                print("Error reading video file for camera", camera_number_2)
+                cap2.release()
+                continue
+
             cap2.release()
+
             
-            camera_infos = load_calibration_data(pickle_file_path)
+            camera_infos = load_calibration_data(PATH_CALIBRATION_MATRIX)
             
             camera1_info =  next((cam for cam in camera_infos if cam.camera_number == camera_number_1), None)
             camera2_info =  next((cam for cam in camera_infos if cam.camera_number == camera_number_1), None)
             
-            img1 = undistorted(img1, camera1_info)
-            img2 = undistorted(img2, camera2_info)
+            if img1 is not None and img2 is not None:
+                img1, _ = undistorted(img1, camera1_info)
+                img2, _ = undistorted(img2, camera2_info)
 
-            selected_point = take_points(img1, img2, camera_number_1, fundamental_mtx)
+                selected_point = take_points(img1, img2, camera_number_1, fundamental_mtx)
+            else:
+                print("One of the images could not be loaded.")
+
 
             if selected_point is not None:
                 print(f"Selected point in img1: {selected_point}")

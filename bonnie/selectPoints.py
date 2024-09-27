@@ -4,16 +4,8 @@ import cv2
 import json
 import numpy as np
 from utils import *
-from cameraInfo import *
+from config import *
 
-current_path = os.path.dirname(os.path.abspath(__file__))
-parent_path = os.path.join(current_path, os.pardir)
-parent_path = os.path.abspath(parent_path)
-path_frames = os.path.join(parent_path, 'data/dataset/singleFrame')
-path_videos = os.path.join(parent_path, 'data/dataset/video')
-path_calibrationMTX = os.path.join(parent_path, 'data/calibrationMatrix/calibration.pkl')
-path_court = os.path.join(parent_path, 'data/images/courts.jpg')
-path_json = os.path.join(parent_path, 'data/world_points_all_cameras.json')
 
 valid_camera_numbers = [1, 2, 3, 4, 5, 6, 7, 8, 12, 13]
 rightCamera = [5, 12, 13]
@@ -33,18 +25,18 @@ points = {
 }
 
 worldPoints = {
-    (-9, 4.5, 0.0): (),
-    (-9, -4.5, 0.0): (),
-    (-3, -4.5, 0.0): (),
-    (3, -4.5, 0.0): (),
-    (9, -4.5, 0.0): (),
-    (9, 4.5, 0.0): (),
-    (3, 4.5, 0.0): (),
-    (-3, 4.5, 0.0): (),
-    (-14, 7.5, 0.0): (),
-    (-14, -7.5, 0.0): (),
-    (14, -7.5, 0.0): (),
-    (14, 7.5, 0.0): ()
+    (-9.0, 4.5, 0.0): (),
+    (-9.0, -4.5, 0.0): (),
+    (-3.0, -4.5, 0.0): (),
+    (3.0, -4.5, 0.0): (),
+    (9.0, -4.5, 0.0): (),
+    (9.0, 4.5, 0.0): (),
+    (3.0, 4.5, 0.0): (),
+    (-3.0, 4.5, 0.0): (),
+    (-14.0, 7.5, 0.0): (),
+    (-14.0, -7.5, 0.0): (),
+    (14.0, -7.5, 0.0): (),
+    (14.0, 7.5, 0.0): ()
 }
 
 # Define camera coordinates for specific cameras
@@ -78,14 +70,27 @@ camera_coordinates_visual = {
 # Global variables
 clicked_point = ()
 all_world_points = {}  # Dictionary to store world-image points for all cameras
+rateoImages = [1, 1]
 
 
 # Mouse callback function
 def on_mouse(event, x, y, flags, param):
-    global clicked_point
+    global clicked_point, img_copy
+
     if event == cv2.EVENT_LBUTTONDOWN:
+        print(rateoImages)
         clicked_point = (x, y)
         print(f"Clicked at: {clicked_point}")
+        # Disegna un pallino rosso nel punto cliccato
+        cv2.circle(img_copy, clicked_point, 5, (0, 0, 255), -1)
+
+        # Mostra le coordinate accanto al punto cliccato
+        cv2.putText(img_copy, f"{clicked_point}", (x + 10, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
+        clicked_point = (int(x * rateoImages[0]), int(y * rateoImages[1]))
+        print(f"Clicked(resized) at: {clicked_point}")
+
+        # Aggiorna la finestra di visualizzazione
+        cv2.imshow(param, img_copy)
 
 
 def unifyImages(img1, img2, rightCameraFlag):
@@ -231,14 +236,13 @@ def edit_image(image, camera_number=1):
 
     return image
 
-
 def takePoints(imageUndistorted, courtImg, camera_number, rightCameraFlag):
-    global clicked_point, points
+    global clicked_point, points, img_copy
 
     print("Select the corners of the court")
     window_name = f"Select Points camera {camera_number}"
     cv2.namedWindow(window_name)
-    cv2.setMouseCallback(window_name, on_mouse)
+    cv2.setMouseCallback(window_name, on_mouse, param=window_name)
 
     img_copy = imageUndistorted.copy()
 
@@ -277,18 +281,18 @@ def takePoints(imageUndistorted, courtImg, camera_number, rightCameraFlag):
                     print("Exiting...")
                     cv2.destroyWindow(window_name)
                     return
-    
+
     # Reset the points
     for point in points:
         points[point] = 0
 
     retCoords = {}
-    
+
     for worldPoint in worldPoints:
         if worldPoints[worldPoint] != (0, 0):
             retCoords[worldPoint] = worldPoints[worldPoint]
         worldPoints[worldPoint] = ()
-    
+
     cv2.destroyWindow(window_name)
 
     return retCoords
@@ -313,10 +317,11 @@ def commonList(camera_number, world_image_coordinates):
         print(f"No valid points selected for camera {camera_number}. Data not saved.")
 
 
-def saveFrames():
+def selectPointsAllCameras():
+    global rateoImages
 
     videos = find_file_mp4(path_videos)
-    camera_infos = load_pickle(path_calibrationMTX)
+    camera_infos = load_pickle(PATH_CALIBRATION_MATRIX)
 
     for video in videos:
         print(video)
@@ -332,7 +337,7 @@ def saveFrames():
             rightCameraFlag = False
 
         # Open the video
-        camera_info = next((cam for cam in camera_infos if cam.camera_number == camera_number), None)
+        camera_info, _ = take_info_camera(camera_number, camera_infos)
         path_video = os.path.join(path_videos, video)
         video_capture = cv2.VideoCapture(path_video)
 
@@ -341,8 +346,8 @@ def saveFrames():
             ret, frame = video_capture.read()
             if not ret:
                 break
-
-            undistorted_frame = undistorted(frame, camera_info)
+            
+            undistorted_frame, rateoImages = undistorted(frame, camera_info)
 
             undistorted_frame_copy = undistorted_frame.copy()
 
@@ -369,13 +374,107 @@ def saveFrames():
     cv2.destroyAllWindows()
     # After processing all videos, save the combined JSON file
     if all_world_points:
-        with open(path_json, 'w') as json_file:
+        with open(PATH_JSON, 'w') as json_file:
             json.dump(all_world_points, json_file, indent=4)
-        print(f"All world points saved to {path_json}")
+        print(f"All world points saved to {PATH_JSON}")
     else:
         print("No valid points selected for any camera. No data saved.")
-            
+
+
+def selectPointsCamera(camera_to_select):
+    global rateoImages
+
+    videos = find_file_mp4(path_videos)
+    camera_infos = load_pickle(PATH_CALIBRATION_MATRIX)
+
+    for video in videos:
+        print(video)
+
+        camera_number = re.findall(r'\d+', video.replace(".mp4", ""))
+        camera_number = int(camera_number[0])
+        if camera_number not in valid_camera_numbers or camera_number != camera_to_select:
+            continue
+        
+        if camera_number in rightCamera:
+            rightCameraFlag = True
+        else:
+            rightCameraFlag = False
+
+        # Open the video
+        camera_info, _ = take_info_camera(camera_number, camera_infos)
+        path_video = os.path.join(path_videos, video)
+        video_capture = cv2.VideoCapture(path_video)
+
+        # Show the video
+        while True:
+            ret, frame = video_capture.read()
+            if not ret:
+                break
+
+            undistorted_frame, rateoImages = undistorted(frame, camera_info)
+
+            undistorted_frame_copy = undistorted_frame.copy()
+
+            courtImg = cv2.imread(path_court)
+
+            cv2.imshow(f"Camera {camera_number}", undistorted_frame)
+            key = cv2.waitKey(0)
+            if key == ord('s'):
+
+                frame_filename = os.path.join(path_frames, f"cam_{camera_number}.png")
+                cv2.imwrite(frame_filename, undistorted_frame)
+                cv2.destroyAllWindows()
+                print("shape und")
+                print(undistorted_frame_copy.shape)
+
+                world_image_coordinates = takePoints(undistorted_frame_copy, courtImg, camera_number, rightCameraFlag)
+
+                update_json_file(camera_number, world_image_coordinates, PATH_JSON)
+                break
+
+        cv2.destroyAllWindows()
+        video_capture.release()
+
+
+
+def update_json_file(camera_number, world_image_coordinates, file_name):
+    # Legge il file JSON esistente
+    try:
+        with open(file_name, 'r') as json_file:
+            data = json.load(json_file)
+    except FileNotFoundError:
+        data = {}
+
+    # Prepara i nuovi dati per la camera selezionata
+    camera_data = {
+        "camera_coordinates": camera_coordinates_dict.get(camera_number, []),
+        "points": []
+    }
+
+    # Unisci le coordinate mondiali e dell'immagine
+    for world_coord, image_coord in world_image_coordinates.items():
+        camera_data["points"].append({
+            "world_coordinate": list(world_coord),
+            "image_coordinate": list(image_coord)
+        })
+
+    # Aggiorna solo i dati della camera specificata nel file JSON
+    data[str(camera_number)] = camera_data
+
+    # Scrive i dati aggiornati nel file JSON mantenendo intatti gli altri dati
+    with open(file_name, 'w') as json_file:
+        json.dump(data, json_file, indent=4)
+
+    print(f"I dati per la camera {camera_number} sono stati aggiornati correttamente in {file_name}")
+
+
+
 
 if __name__ == '__main__':
-    saveFrames()
+    # Select points for all cameras
+    # selectPointsAllCameras()
+
+    # Select points for a specific camera
+    camera_to_select = 12
+    selectPointsCamera(camera_to_select)
 
