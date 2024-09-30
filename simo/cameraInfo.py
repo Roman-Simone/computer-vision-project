@@ -13,10 +13,8 @@ class CameraInfo:
         self.extrinsic_matrix = None
 
 
-
 class InterCameraInfo:
-    def __init__(self, cameras_number):
-        self.cameras_number = cameras_number
-        self.fundamental_matrix = None
-        self.corners_cam1 = []  #order: top_left, top_right, bottom_left, bottom_right
-        self.corners_cam2 = []  #order: top_left, top_right, bottom_left, bottom_right
+    def __init__(self, camera_number_1, camera_number_2):
+        self.camera_number_1 = camera_number_1
+        self.camera_number_2 = camera_number_2
+        self.homography = None

@@ -8,7 +8,7 @@ from cameraInfo import *
 
 all_chessboard_sizes = {1: (5, 7), 2: (5, 7), 3: (5, 7), 4: (5, 7), 5: (6, 9), 6: (6, 9), 7: (5, 7), 8: (6, 9), 12: (5, 7), 13: (5, 7)}
 
-SKIP_FRAME = 2
+SKIP_FRAME = 10
 
 
 def findPoints(path_video, cameraInfo, debug=True):
@@ -216,11 +216,11 @@ def test_calibration():
 if __name__ == '__main__':
 
     # CALIBRATE ALL THE CAMS
-    # calibrateAll()
+    calibrateAll()
 
     # CALIBRATE SPECIFIC CAM
-    camera_number = 2
-    calibrateCamera(camera_number)
+    # camera_number = 2
+    # calibrateCamera(camera_number)
 
     # ONLY FOR TESTING
     test_calibration()

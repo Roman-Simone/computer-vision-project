@@ -392,7 +392,7 @@ def selectPointsCamera(camera_to_select):
 
         camera_number = re.findall(r'\d+', video.replace(".mp4", ""))
         camera_number = int(camera_number[0])
-        if camera_number not in valid_camera_numbers or camera_number != camera_to_select:
+        if camera_number not in VALID_CAMERA_NUMBERS or camera_number != camera_to_select:
             continue
         
         if camera_number in rightCamera:
