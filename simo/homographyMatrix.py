@@ -6,14 +6,12 @@ from cameraInfo import InterCameraInfo
 
 def calculate_homography_matrix(camera_info1, camera_info2):
 
-    # data from camera 1
     intrinsic1 = camera_info1.newcameramtx
     rotation1 = camera_info1.extrinsic_matrix[:3, :3]
     translation1 = camera_info1.extrinsic_matrix[:3, 3]
 
     h1 = intrinsic1 @ np.hstack((rotation1, translation1.reshape(3,1)))
 
-    # data from camera 2
     intrinsic2 = camera_info2.newcameramtx
     rotation2 = camera_info2.extrinsic_matrix[:3, :3]
     translation2 = camera_info2.extrinsic_matrix[:3, 3]
