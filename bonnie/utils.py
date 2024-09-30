@@ -6,11 +6,20 @@ import pickle
 
 def undistorted(frame1, camera_info):   
 
+    initialHeight, initialWidth, _ = frame1.shape
+
     undistorted_frame = cv2.undistort(frame1, camera_info.mtx, camera_info.dist, None, camera_info.newcameramtx)
     x1, y1, w1, h1 = camera_info.roi
     undistorted_frame = undistorted_frame[y1:y1+h1, x1:x1+w1]
 
-    return undistorted_frame
+    finalHeight, finalWidth, _ = undistorted_frame.shape
+    print("Initial size: ", initialWidth, initialHeight)
+    print("Final size: ", finalWidth, finalHeight)
+
+    rate = [initialWidth/finalWidth, initialHeight/finalHeight]
+    print("Rate: ", rate)
+
+    return undistorted_frame, rate
 
 
 def save_pickle(camerasInfo, filename):
@@ -73,5 +82,13 @@ def read_json_file_and_structure_data(file_name):
 
     return coordinates_by_camera
 
+
+def take_info_camera(camera_number, camera_infos):
+
+    for pos, camera_info in enumerate(camera_infos):
+        if camera_info.camera_number == camera_number:
+            return camera_info, pos
+
+    return None
 
 
