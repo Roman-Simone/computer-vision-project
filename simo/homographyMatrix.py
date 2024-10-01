@@ -1,4 +1,3 @@
-import json
 import numpy as np
 from utils import *
 from config import *
@@ -48,6 +47,7 @@ def calculateHomographyMatrix():
                         common_points2.append(image_points2[j])
 
             if len(common_points1) < 4 or len(common_points2) < 4:
+                print("No sufficient points to calculate homography matrix")
                 continue
 
             common_points1 = np.array(common_points1, dtype=np.float32)
@@ -100,10 +100,6 @@ def test_all_homography_matrix():
 
         cv2.imshow(window_name, img1)
         key = cv2.waitKey(0) & 0xFF
-
-
-
-
             
 if __name__ == "__main__":
     
