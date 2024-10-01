@@ -15,7 +15,7 @@ def button_action(camera_num, remaining_cameras=None):
     # Prima selezione della camera
     if first_camera_selected is None:
         first_camera_selected = camera_num
-        messagebox.showinfo("Camera selezionata", f"Hai selezionato Camera {camera_num}")
+        # messagebox.showinfo("Camera selezionata", f"Hai selezionato Camera {camera_num}")
 
         video_path_1 = path_videos + '/out' + str(camera_num) + '.mp4'
         cap1 = cv2.VideoCapture(video_path_1)
@@ -29,11 +29,16 @@ def button_action(camera_num, remaining_cameras=None):
 
         # Salva l'immagine selezionata
         selected_images["img1"] = img1
+
+        # Chiude la finestra principale
+        root.withdraw()
+        
+        # Procede alla selezione del punto
         take_points(img1, camera_num, remaining_cameras)
 
     # Seconda selezione della camera
     else:
-        messagebox.showinfo("Second Camera selezionata", f"Hai selezionato Camera {camera_num}")
+        # messagebox.showinfo("Second Camera selezionata", f"Hai selezionato Camera {camera_num}")
 
         video_path_2 = path_videos + '/out' + str(camera_num) + '.mp4'
         cap2 = cv2.VideoCapture(video_path_2)
@@ -47,6 +52,8 @@ def button_action(camera_num, remaining_cameras=None):
 
         # Salva la seconda immagine selezionata
         selected_images["img2"] = img2
+
+        root.destroy()  # Chiude la finestra principale
 
         # Mostra le due immagini affiancate
         show_side_by_side()
@@ -94,8 +101,11 @@ def open_second_camera_selection(remaining_cameras):
     second_window = tk.Toplevel()
     second_window.title("Selection of Second Camera")
     second_window.geometry("650x300")
-    label_message = tk.Label(root, text="Select the second camera to project the initial point onto.", font=("Arial", 12, "bold"))
+    
+    # Aggiungi il messaggio sopra i bottoni
+    label_message = tk.Label(second_window, text="Select the second camera to project the initial point onto.", font=("Arial", 12, "bold"))
     label_message.pack(pady=20)
+
     # Creazione dei bottoni per le camere rimanenti
     button_frame = tk.Frame(second_window)
     button_frame.pack()
@@ -119,10 +129,7 @@ def show_side_by_side():
 
 
 # Creazione della finestra principale
-
-
 root = tk.Tk()
-
 root.title("Selezione Camera")
 root.geometry("650x300")
 
