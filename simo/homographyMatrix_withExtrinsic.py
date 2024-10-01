@@ -124,13 +124,6 @@ def test_all_homography_matrix():
 
         cv2.destroyAllWindows()
 
-
-        
-        
-
-
-
-
 if __name__ == "__main__":
     calculateHomographyMatrix()
 
