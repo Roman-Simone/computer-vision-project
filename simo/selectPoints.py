@@ -523,9 +523,9 @@ def update_json_file(camera_number, world_image_coordinates, file_name):
 
 if __name__ == '__main__':
     # Select points for all cameras
-    selectPointsAllCameras()
+    # selectPointsAllCameras()
 
     # Select points for a specific camera
-    # camera_to_select = 2
-    # selectPointsCamera(camera_to_select)
+    camera_to_select = 6
+    selectPointsCamera(camera_to_select)
 
