@@ -12,14 +12,14 @@ def undistorted(frame1, camera_info):
     x1, y1, w1, h1 = camera_info.roi
     undistorted_frame = undistorted_frame[y1:y1+h1, x1:x1+w1]
 
-    finalHeight, finalWidth, _ = undistorted_frame.shape
-    print("Initial size: ", initialWidth, initialHeight)
-    print("Final size: ", finalWidth, finalHeight)
+    # finalHeight, finalWidth, _ = undistorted_frame.shape
+    # print("Initial size: ", initialWidth, initialHeight)
+    # print("Final size: ", finalWidth, finalHeight)
 
-    rate = [initialWidth/finalWidth, initialHeight/finalHeight]
-    print("Rate: ", rate)
+    # rate = [initialWidth/finalWidth, initialHeight/finalHeight]
+    # print("Rate: ", rate)
 
-    return undistorted_frame, rate
+    return undistorted_frame#, rate
 
 
 def save_pickle(camerasInfo, filename):

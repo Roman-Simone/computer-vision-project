@@ -18,3 +18,5 @@ class InterCameraInfo:
         self.camera_number_1 = camera_number_1
         self.camera_number_2 = camera_number_2
         self.homography = None
+        self.h1 = None
+        self.h2 = None
