@@ -35,8 +35,11 @@ def calculate_extrinsics(camera_number):
         print(f"Camera info for camera {camera_number} not found.")
         return None
 
-    camera_matrix = camera_info.mtx   # PROBLEM IDK WHY IS BETTER WITH MTX RESPECT TO NEWCAMERAMTX
-    distortion_coefficients = np.zeros((1, 5), dtype=np.float32)
+    
+    # camera_matrix = camera_info.newcameramtx   # PROBLEM IDK WHY IS BETTER WITH MTX RESPECT TO NEWCAMERAMTX
+    # distortion_coefficients = np.zeros((1, 5), dtype=np.float32)
+    camera_matrix = np.array(camera_info.mtx, dtype=np.float32)
+    distortion_coefficients = np.array(camera_info.dist, dtype=np.float32)
 
     success, rotation_vector, translation_vector = cv2.solvePnP(
         world_points, image_points, camera_matrix, distortion_coefficients

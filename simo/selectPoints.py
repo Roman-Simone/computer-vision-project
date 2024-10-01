@@ -19,9 +19,31 @@ points = {
     (480,145): 0,
     (340,145): 0, 
     (75,75): 0,
+    (75,110): 0,
+    (75,210): 0,
+    (200,210): 0,
+    (210,220): 0,
+    (210,290): 0,
+    (200,300): 0,
+    (75,300): 0,
+    (75,390): 0,
     (75, 425): 0,
+    (410, 425): 0,
     (745, 425): 0,
-    (745, 75): 0
+    (745,390): 0, 
+    (745,300): 0, 
+    (620,300): 0, 
+    (610,290): 0, 
+    (610,220): 0, 
+    (620,210): 0, 
+    (745,210): 0, 
+    (745,110): 0,
+    (745, 75): 0,
+    (410, 75): 0,
+    (410, 140): 0,
+    (410, 210): 0,
+    (410, 290): 0,
+    (410, 360): 0
 }
 
 worldPoints = {
@@ -34,9 +56,31 @@ worldPoints = {
     (3.0, 4.5, 0.0): (),
     (-3.0, 4.5, 0.0): (),
     (-14.0, 7.5, 0.0): (),
+    (-14.0, 6.55, 0.0): (),
+    (-14.0, 2.45, 0.0): (),
+    (-8.2, 2.45, 0.0): (),
+    (-8.2, 1.8, 0.0): (),
+    (-8.2, -1.8, 0.0): (),
+    (-8.2, -2.45, 0.0): (),
+    (-14.0, -2.45, 0.0): (),
+    (-14.0, -6.55, 0.0): (),
     (-14.0, -7.5, 0.0): (),
+    (0.0, -7.5, 0.0): (),
     (14.0, -7.5, 0.0): (),
-    (14.0, 7.5, 0.0): ()
+    (14.0, -6.55, 0.0): (),
+    (14.0, -2.45, 0.0): (),
+    (8.2, -2.45, 0.0): (),
+    (8.2, -1.8, 0.0): (),
+    (8.2, 1.8, 0.0): (),
+    (8.2, 2.45, 0.0): (),
+    (14.0, 2.45, 0.0): (),
+    (14.0, 6.55, 0.0): (),
+    (14.0, 7.5, 0.0): (),
+    (0.0, 7.5, 0.0): (),
+    (0.0, 4.5, 0.0): (),
+    (0.0, 1.8, 0.0): (),
+    (0.0, -1.8, 0.0): (),
+    (0.0, -4.5, 0.0): ()
 }
 
 # Define camera coordinates for specific cameras
@@ -347,9 +391,13 @@ def selectPointsAllCameras():
             if not ret:
                 break
             
-            undistorted_frame= undistorted(frame, camera_info)
+            # undistorted_frame= undistorted(frame, camera_info)
 
+            # undistorted_frame_copy = undistorted_frame.copy()
+
+            undistorted_frame = frame.copy()
             undistorted_frame_copy = undistorted_frame.copy()
+
 
             courtImg = cv2.imread(path_court)
 
@@ -411,8 +459,11 @@ def selectPointsCamera(camera_to_select):
             if not ret:
                 break
 
-            undistorted_frame = undistorted(frame, camera_info)
+            # undistorted_frame = undistorted(frame, camera_info)
 
+            # undistorted_frame_copy = undistorted_frame.copy()
+
+            undistorted_frame = frame.copy()
             undistorted_frame_copy = undistorted_frame.copy()
 
             courtImg = cv2.imread(path_court)
@@ -472,9 +523,9 @@ def update_json_file(camera_number, world_image_coordinates, file_name):
 
 if __name__ == '__main__':
     # Select points for all cameras
-    # selectPointsAllCameras()
+    selectPointsAllCameras()
 
     # Select points for a specific camera
-    camera_to_select = 1
-    selectPointsCamera(camera_to_select)
+    # camera_to_select = 2
+    # selectPointsCamera(camera_to_select)
 
