@@ -114,7 +114,6 @@ camera_coordinates_visual = {
 # Global variables
 clicked_point = ()
 all_world_points = {}  # Dictionary to store world-image points for all cameras
-# rateoImages = [1, 1]
 
 
 # Mouse callback function
