@@ -20,3 +20,6 @@ class InterCameraInfo:
         self.homography = None
         self.h1 = None
         self.h2 = None
+    
+    def __str__(self):
+        return f"Camera 1: {self.camera_number_1}, Camera 2: {self.camera_number_2}"

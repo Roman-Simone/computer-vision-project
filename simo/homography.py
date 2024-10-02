@@ -1,3 +1,4 @@
+import cv2
 import numpy as np
 from utils import *
 from config import *
@@ -73,9 +74,89 @@ def calculateHomographyAllCameras():
 
             InterCameraInfolist.append(inter_camera_info)
     
-    save_pickle(InterCameraInfo, "inter.pkl")
+    save_pickle(InterCameraInfolist, "inter.pkl")
 
+
+
+def testHomography():
+    interInfo = load_pickle("inter.pkl")
+    cameras_info = load_pickle(PATH_CALIBRATION_MATRIX)
+    
+    def mouse_callback(event, x, y, flags, param):
+        if event == cv2.EVENT_LBUTTONDOWN:
+            point = np.array([[x + camera_info_1.roi[0], y + camera_info_1.roi[1]]], dtype=np.float32)
+            
+            # Undistort the clicked point
+            # camera_info_src, _ = take_info_camera(camera_src, camera_infos)
+            # point_undistorted = cv2.undistortPoints(point, camera_info_src.mtx, camera_info_src.dist, P=camera_info_src.newcameramtx)
+            
+            # Apply homography transformation
+            point_transformed = cv2.perspectiveTransform(point.reshape(-1, 1, 2), homography).reshape(-1, 2)
+            
+            # Draw the point on both images
+            cv2.circle(img_src, (int(x), int(y)), 15, (0, 255, 0), -1)
+            cv2.circle(img_dst, (int(point_transformed[0][0] - camera_info_2.roi[0]), int(point_transformed[0][1] - camera_info_2.roi[1])), 15, (0, 255, 0), -1)
+            
+
+            # camera_info1, _ = take_info_camera(camera_src, cameras_info)
+            # camera_info2, _= take_info_camera(camera_dst, cameras_info)
+            # img_src = undistorted(img_src, camera_info1)
+            # img_dst = undistorted(img_dst, camera_info2)
+
+
+            # Update the displays
+            cv2.imshow(f"Camera {camera_src}", img_src)
+            cv2.imshow(f"Camera {camera_dst}", img_dst)
+
+    for inter in interInfo:
+        camera_src = inter.camera_number_1
+        camera_dst = inter.camera_number_2
+        homography = inter.homography
+        
+        if homography is None:
+            print(f"No homography available for cameras {camera_src} and {camera_dst}")
+            continue
+        
+        # Load images for both cameras
+        img_src = cv2.imread(f"/Users/simoneroman/Desktop/CV/Computer_Vision_project/data/dataset/singleFrame/cam_{camera_src}.png")
+        img_dst = cv2.imread(f"/Users/simoneroman/Desktop/CV/Computer_Vision_project/data/dataset/singleFrame/cam_{camera_dst}.png")
+        
+        camera_info_1, _ = take_info_camera(camera_src, cameras_info)
+        camera_info_2, _ = take_info_camera(camera_dst, cameras_info)
+        img_src = undistorted(img_src, camera_info_1)
+        img_dst = undistorted(img_dst, camera_info_2)
+        # img_src = cv2.undistort(img_src, camera_info_1.mtx, camera_info_1.dist, newCameraMatrix=camera_info_1.newcameramtx)
+        # img_dst = cv2.undistort(img_dst, camera_info_2.mtx, camera_info_2.dist, newCameraMatrix=camera_info_2.newcameramtx)
+        # img_src_undistorted = cv2.undistort(img_src, camera_info_src.mtx, camera_info_src.dist, newCameraMatrix=camera_info_src.newcameramtx)
+        # img_dst_undistorted = cv2.undistort(img_dst, camera_info_dst.mtx, camera_info_dst.dist, newCameraMatrix=camera_info_dst.newcameramtx)
+        
+        
+        if img_src is None or img_dst is None:
+            print(f"Could not load images for cameras {camera_src} and {camera_dst}")
+            continue
+        
+        # Create windows and set mouse callback
+        cv2.namedWindow(f"Camera {camera_src}")
+        cv2.setMouseCallback(f"Camera {camera_src}", mouse_callback)
+        
+        cv2.imshow(f"Camera {camera_src}", img_src)
+        cv2.imshow(f"Camera {camera_dst}", img_dst)
+        
+        print(f"Click on the image from Camera {camera_src} to see the corresponding point on Camera {camera_dst}")
+        print("Press 'q' to move to the next pair of cameras or exit")
+        
+        while True:
+            key = cv2.waitKey(1) & 0xFF
+            if key == ord('q'):
+                break
+        
+        cv2.destroyAllWindows()
+
+        
 
 if __name__ == '__main__':
     # Calculate Homography
     calculateHomographyAllCameras()
+
+    # Test Homography
+    testHomography()
