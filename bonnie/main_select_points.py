@@ -65,7 +65,7 @@ def take_points(img1, camera_number, remaining_cameras=None):
     img1_copy = img1.copy()
 
     cv2.namedWindow(window_name, cv2.WINDOW_NORMAL)
-    cv2.resizeWindow(window_name, 1920, 1080)  
+    # cv2.resizeWindow(window_name, 1920, 1080)  
         
     cv2.setMouseCallback(window_name, select_point, clicked_point)
 
@@ -161,7 +161,7 @@ def show_side_by_side(camera_num):
         
         window_name = f"Camera {first_camera_selected} [left] and {camera_num} [right]"
         cv2.namedWindow(window_name, cv2.WINDOW_NORMAL)
-        cv2.resizeWindow(window_name, 1920, 1080)  
+        # cv2.resizeWindow(window_name, 1920, 1080) 
         
         # cv2.setWindowProperty(window_name, cv2.WND_PROP_TOPMOST, 1)
         
