@@ -80,14 +80,14 @@ def take_points(img1, camera_number, remaining_cameras=None):
         if 'clicked_point' in clicked_point:
             pt1 = clicked_point['clicked_point']
             print(f"---> Point selected at {pt1}")
-            
-            # Potrebbe esserci un'operazione con la matrice di omografia qui
-            # do stuff with homography matrix
-            
+                        
             clicked_point.clear()
             cv2.destroyWindow(window_name)
             
-            # Dopo aver selezionato il punto, apri la schermata per selezionare la seconda camera
+            ############################################################
+            ###### find correspondences with homography matrix #########
+            ############################################################
+            
             open_second_camera_selection(remaining_cameras)
             return None
 
@@ -97,50 +97,43 @@ def take_points(img1, camera_number, remaining_cameras=None):
             return None
 
 def open_second_camera_selection(remaining_cameras):
-    # Crea una nuova finestra per la selezione della seconda camera
+
     second_window = tk.Toplevel()
     second_window.title("Selection of Second Camera")
     second_window.geometry("650x300")
     
-    # Aggiungi il messaggio sopra i bottoni
     label_message = tk.Label(second_window, text="Select the second camera to project the initial point onto.", font=("Arial", 12, "bold"))
     label_message.pack(pady=20)
 
-    # Creazione dei bottoni per le camere rimanenti
     button_frame = tk.Frame(second_window)
     button_frame.pack()
 
     for i, camera_num in enumerate(remaining_cameras):
         btn = tk.Button(button_frame, text=f"Camera {camera_num}", width=10, height=2,
                         command=lambda num=camera_num: button_action(num, remaining_cameras=None))
-        row = i // 5  # Calcolo della riga
-        col = i % 5   # Calcolo della colonna
-        btn.grid(row=row, column=col, padx=10, pady=10)  # Spazio tra i pulsanti
+        row = i // 5  
+        col = i % 5   
+        btn.grid(row=row, column=col, padx=10, pady=10)  
 
 def show_side_by_side():
     img1 = selected_images.get("img1")
     img2 = selected_images.get("img2")
 
     if img1 is not None and img2 is not None:
-        combined_img = np.hstack((img1, img2))  # Combina le due immagini affiancate
+        combined_img = np.hstack((img1, img2))  
         cv2.imshow("Images Side by Side", combined_img)
         cv2.waitKey(0)
         cv2.destroyAllWindows()
 
-
-# Creazione della finestra principale
 root = tk.Tk()
 root.title("Selezione Camera")
 root.geometry("650x300")
 
-# Aggiunta del messaggio
 label_message = tk.Label(root, text="Select the camera to take the initial point from.", font=("Arial", 12, "bold"))
 label_message.pack(pady=20)
 
-# Lista con i numeri delle camere
 camera_list = [1, 2, 3, 4, 5, 6, 7, 8, 12, 13]
 
-# Creazione e posizionamento dei pulsanti in una griglia
 button_frame = tk.Frame(root)
 button_frame.pack()
 
@@ -152,5 +145,4 @@ for i, camera_num in enumerate(camera_list):
     col = i % 5
     btn.grid(row=row, column=col, padx=10, pady=10)
 
-# Avvio del ciclo principale della finestra
 root.mainloop()
