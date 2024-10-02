@@ -8,7 +8,7 @@ from cameraInfo import *
 
 all_chessboard_sizes = {1: (5, 7), 2: (5, 7), 3: (5, 7), 4: (5, 7), 5: (6, 9), 6: (6, 9), 7: (5, 7), 8: (6, 9), 12: (5, 7), 13: (5, 7)}
 
-SKIP_FRAME = 10
+SKIP_FRAME = 2000
 
 
 def findPoints(path_video, cameraInfo, debug=True):
@@ -32,6 +32,7 @@ def findPoints(path_video, cameraInfo, debug=True):
 
     # Print the number of frames in the video
     numberOf_frame = int(video_capture.get(cv2.CAP_PROP_FRAME_COUNT)) 
+    print(f"\nStarting calibrations for camera {cameraInfo.camera_number}")
     print("Number of frames in the video: ", numberOf_frame)
 
     if debug:
@@ -67,8 +68,6 @@ def findPoints(path_video, cameraInfo, debug=True):
 
             # If found, add object points, image points (after refining them)
             if ret == True:
-                ret_gray = gray
-                
                 retObjpoints.append(objp)
 
                 corners2 = cv2.cornerSubPix(gray,corners, (11,11), (-1,-1), criteria)
@@ -83,7 +82,7 @@ def findPoints(path_video, cameraInfo, debug=True):
             # Update the progress bar
             pbar.update(SKIP_FRAME)
     
-    return retObjpoints, retImgpoints, ret_gray
+    return retObjpoints, retImgpoints, gray
 
 
 def compute_calibration_all(camerasInfo):
@@ -94,7 +93,9 @@ def compute_calibration_all(camerasInfo):
         numero_camera = re.findall(r'\d+', video.replace(".mp4", ""))
         numero_camera = int(numero_camera[0])
         # pos_camera = [camera.camera_number for camera in camerasInfo].index(numero_camera)
-        pos_camera = numero_camera - 1
+        # pos_camera = numero_camera - 1
+        _, pos_camera = take_info_camera(numero_camera, camerasInfo)
+        print(pos_camera)
 
         # print("Starting calibration for camera ", numero_camera, pos_camera)
         
@@ -219,7 +220,7 @@ if __name__ == '__main__':
     calibrateAll()
 
     # CALIBRATE SPECIFIC CAM
-    # camera_number = 2
+    # camera_number = 3
     # calibrateCamera(camera_number)
 
     # ONLY FOR TESTING
