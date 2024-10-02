@@ -89,13 +89,25 @@ def testHomography():
             # Apply homography transformation
             point_transformed = cv2.perspectiveTransform(point.reshape(-1, 1, 2), homography).reshape(-1, 2)
             
-            # Draw the point on both images
-            cv2.circle(img_src, (int(x), int(y)), 15, (0, 255, 0), -1)
-            cv2.circle(img_dst, (int(point_transformed[0][0] - camera_info_2.roi[0]), int(point_transformed[0][1] - camera_info_2.roi[1])), 15, (0, 255, 0), -1)
+            # Draw the point on the first image
+            cv2.circle(img_src_resized, (int(x), int(y)), 15, (0, 255, 0), -1)
+            
+            # Calculate the scaling factor for the second image (resize adjustment)
+            scale_x = img_dst_resized.shape[1] / img_dst.shape[1]
+            scale_y = img_dst_resized.shape[0] / img_dst.shape[0]
+            
+            # Apply the scaling factor to the transformed point
+            x_transformed = int((point_transformed[0][0] - camera_info_2.roi[0]) * scale_x)
+            y_transformed = int((point_transformed[0][1] - camera_info_2.roi[1]) * scale_y)
+            
+            # Draw the point on the second image
+            cv2.circle(img_dst_resized, (x_transformed, y_transformed), 15, (0, 255, 0), -1)
 
-            # Update the displays
-            cv2.imshow(f"Camera {camera_src}", img_src)
-            cv2.imshow(f"Camera {camera_dst}", img_dst)
+            # Concatenate the images again after drawing points
+            concatenated_image = cv2.hconcat([img_src_resized, img_dst_resized])
+
+            # Update the display
+            cv2.imshow(f"Camera {camera_src} and {camera_dst}", concatenated_image)
 
     for inter in interInfo:
         camera_src = inter.camera_number_1
@@ -118,13 +130,32 @@ def testHomography():
         if img_src is None or img_dst is None:
             print(f"Could not load images for cameras {camera_src} and {camera_dst}")
             continue
+
+        # Ensure both images have the same number of rows (height)
+        height_src, width_src = img_src.shape[:2]
+        height_dst, width_dst = img_dst.shape[:2]
         
-        # Create windows and set mouse callback
-        cv2.namedWindow(f"Camera {camera_src}")
-        cv2.setMouseCallback(f"Camera {camera_src}", mouse_callback)
+        # Resize the images to the same height
+        if height_src != height_dst:
+            if height_src > height_dst:
+                img_dst_resized = cv2.resize(img_dst, (width_dst * height_src // height_dst, height_src))
+                img_src_resized = img_src
+            else:
+                img_src_resized = cv2.resize(img_src, (width_src * height_dst // height_src, height_dst))
+                img_dst_resized = img_dst
+        else:
+            img_src_resized = img_src
+            img_dst_resized = img_dst
         
-        cv2.imshow(f"Camera {camera_src}", img_src)
-        cv2.imshow(f"Camera {camera_dst}", img_dst)
+        # Concatenate the two images side by side
+        concatenated_image = cv2.hconcat([img_src_resized, img_dst_resized])
+        
+        # Create a window and set mouse callback
+        cv2.namedWindow(f"Camera {camera_src} and {camera_dst}")
+        cv2.setMouseCallback(f"Camera {camera_src} and {camera_dst}", mouse_callback)
+        
+        # Show the concatenated images
+        cv2.imshow(f"Camera {camera_src} and {camera_dst}", concatenated_image)
         
         print(f"Click on the image from Camera {camera_src} to see the corresponding point on Camera {camera_dst}")
         print("Press 'q' to move to the next pair of cameras or exit")
@@ -135,6 +166,7 @@ def testHomography():
                 break
         
         cv2.destroyAllWindows()
+
 
 
 if __name__ == '__main__':
