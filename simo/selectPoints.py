@@ -412,10 +412,9 @@ def selectPointsAllCameras(undistortedFlag = False):
 def selectPointsCamera(camera_to_select):
     #global rateoImages
 
-    videos = find_file_mp4(PATH_VIDEOS)
-    camera_infos = load_pickle(PATH_CALIBRATION_MATRIX)
+    frames = find_files(PATH_FRAME_DISTORTED)
 
-    for video in videos:
+    for frame in frames:
         print(video)
 
         camera_number = re.findall(r'\d+', video.replace(".mp4", ""))
