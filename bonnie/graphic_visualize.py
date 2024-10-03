@@ -6,6 +6,7 @@ from utils import *
 available_cameras = [1, 2, 3, 4, 5, 6, 7, 8, 12, 13]
 interInfo = load_pickle(PATH_HOMOGRAPHY_MATRIX)
 cameras_info = load_pickle(PATH_CALIBRATION_MATRIX)
+resize = True
 
 def ret_homography(camera_src, camera_dst):
     inter_camera_info = next((inter for inter in interInfo if inter.camera_number_1 == camera_src and inter.camera_number_2 == camera_dst), None)
@@ -13,6 +14,8 @@ def ret_homography(camera_src, camera_dst):
 
 def show_videos(camera_src, camera_dst):
     while True:
+        
+        window_name = "Camera " + str(camera_src) + " and " + str(camera_dst) + " - Click on the image to see the corresponding point"
         
         def mouse_callback(event, x, y, flags, param):
             if event == cv2.EVENT_LBUTTONDOWN:
@@ -35,11 +38,14 @@ def show_videos(camera_src, camera_dst):
                 # Draw the point on the second image
                 cv2.circle(img_dst_resized, (x_transformed, y_transformed), 15, (0, 255, 0), -1)
 
+                combined_img_right = np.vstack((title_source, img_src_resized))
+                combined_img_left = np.vstack((title_destination, img_dst_resized))
+
                 # Concatenate the images again after drawing points
-                concatenated_image = cv2.hconcat([img_src_resized, img_dst_resized])
+                combined = np.hstack((combined_img_right, combined_img_left))
 
                 # Update the display
-                cv2.imshow(f"Camera {camera_src} and {camera_dst}", concatenated_image)
+                cv2.imshow(window_name, combined)
         
         homography = ret_homography(camera_src, camera_dst)
         
@@ -60,16 +66,18 @@ def show_videos(camera_src, camera_dst):
             print(f"Could not load images for cameras {camera_src} and {camera_dst}")
             continue
         
-        # target_width = 900
+        if resize:
+            target_width = 900
 
-        # h_src, w_src, _ = img_src.shape
-        # h_dst, w_dst, _ = img_dst.shape
-        # new_height_src = int(target_width * h_src / w_src)
-        # new_height_dst = int(target_width * h_dst / w_dst)
+            h_src, w_src, _ = img_src.shape
+            h_dst, w_dst, _ = img_dst.shape
+            new_height_src = int(target_width * h_src / w_src)
+            new_height_dst = int(target_width * h_dst / w_dst)
 
-        # img_src = cv2.resize(img_src, (target_width, new_height_src))
-        # img_dst = cv2.resize(img_dst, (target_width, new_height_dst))
+            img_src = cv2.resize(img_src, (target_width, new_height_src))
+            img_dst = cv2.resize(img_dst, (target_width, new_height_dst))
 
+       
         height_src, width_src = img_src.shape[:2]
         height_dst, width_dst = img_dst.shape[:2]
         
@@ -112,11 +120,10 @@ def show_videos(camera_src, camera_dst):
         # Combina le due immagini affiancandole
         combined = np.hstack((combined_img_right, combined_img_left))
 
+        cv2.namedWindow(window_name)
+        cv2.setMouseCallback(window_name, mouse_callback)
 
-        cv2.namedWindow(f"Camera {camera_src} and {camera_dst}")
-        cv2.setMouseCallback(f"Camera {camera_src} and {camera_dst}", mouse_callback)
-
-        cv2.imshow(f"Video Feed camera {camera_src} and {camera_dst}", combined)
+        cv2.imshow(window_name, combined)
         
         print(f"Click on the image from Camera {camera_src} to see the corresponding point on Camera {camera_dst}")
         print("Press 'c' to change cameras or 'q' to exit")
