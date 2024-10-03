@@ -86,7 +86,8 @@ def findPoints(path_video, cameraInfo, debug=True):
 
 def compute_calibration_all(camerasInfo):
 
-    videosCalibration = find_file_mp4(PATH_VIDEOS_CALIBRATION)
+    videosCalibration = find_files(PATH_VIDEOS_CALIBRATION)
+    videosCalibration.sort()
     
     for video in videosCalibration:
         numero_camera = re.findall(r'\d+', video.replace(".mp4", ""))
@@ -119,7 +120,8 @@ def compute_calibration_all(camerasInfo):
 
 def compute_calibration_single(cameraInfo):
 
-    videosCalibration = find_file_mp4(PATH_VIDEOS_CALIBRATION)
+    videosCalibration = find_files(PATH_VIDEOS_CALIBRATION)
+    videosCalibration.sort()
     
     for video in videosCalibration:
         numero_camera = re.findall(r'\d+', video.replace(".mp4", ""))
@@ -187,7 +189,8 @@ def calibrateCameraIntrinsic(camera_number):
 
 def test_calibration():
 
-    videos = find_file_mp4(PATH_VIDEOS)
+    videos = find_files(PATH_VIDEOS)
+    videos.sort()
     camera_infos = load_pickle(PATH_CALIBRATION_MATRIX)
 
     for camera_info in camera_infos:

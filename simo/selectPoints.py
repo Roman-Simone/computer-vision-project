@@ -490,11 +490,11 @@ def update_json_file(camera_number, world_image_coordinates, file_name):
 
 if __name__ == '__main__':
     # Select points for all cameras
-    # undistortedFlag = True
+    # undistortedFlag = False
     # selectPointsAllCameras(undistortedFlag)
 
     # Select points for a specific camera
     camera_to_select = 4
-    undistortedFlag = True
+    undistortedFlag = False
     selectPointsCamera(camera_to_select, undistortedFlag)
 
