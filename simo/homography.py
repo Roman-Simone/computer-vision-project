@@ -54,7 +54,7 @@ def homographyUndistortedCameras(points_1, points_2, camera_number_1, camera_num
 
 def calculateHomographyAllCameras():
 
-    InterCameraInfolist = []
+    HomographyInfolist = []
 
     for camera_number_1 in VALID_CAMERA_NUMBERS:
         
@@ -68,18 +68,17 @@ def calculateHomographyAllCameras():
 
             homographyMatrix = homographyUndistortedCameras(points_1, points_2, camera_number_1, camera_number_2)
 
-            inter_camera_info = InterCameraInfo(camera_number_1, camera_number_2)
+            homographyInfo = HomographyInfo(camera_number_1, camera_number_2)
 
-            inter_camera_info.homography = homographyMatrix
+            homographyInfo.homography = homographyMatrix
 
-            InterCameraInfolist.append(inter_camera_info)
+            HomographyInfolist.append(homographyInfo)
     
-    save_pickle(InterCameraInfolist, PATH_HOMOGRAPHY_MATRIX)
-
+    save_pickle(HomographyInfolist, PATH_HOMOGRAPHY_MATRIX)
 
 
 def testHomography():
-    interInfo = load_pickle(PATH_HOMOGRAPHY_MATRIX)
+    homographyInfos = load_pickle(PATH_HOMOGRAPHY_MATRIX)
     cameras_info = load_pickle(PATH_CALIBRATION_MATRIX)
     
     def mouse_callback(event, x, y, flags, param):
@@ -109,10 +108,10 @@ def testHomography():
             # Update the display
             cv2.imshow(f"Camera {camera_src} and {camera_dst}", concatenated_image)
 
-    for inter in interInfo:
-        camera_src = inter.camera_number_1
-        camera_dst = inter.camera_number_2
-        homography = inter.homography
+    for homographyInfo in homographyInfos:
+        camera_src = homographyInfo.camera_number_1
+        camera_dst = homographyInfo.camera_number_2
+        homography = homographyInfo.homography
         
         if homography is None:
             print(f"No homography available for cameras {camera_src} and {camera_dst}")
@@ -166,7 +165,6 @@ def testHomography():
                 break
         
         cv2.destroyAllWindows()
-
 
 
 if __name__ == '__main__':
