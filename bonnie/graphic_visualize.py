@@ -6,7 +6,7 @@ from utils import *
 available_cameras = [1, 2, 3, 4, 5, 6, 7, 8, 12, 13]
 interInfo = load_pickle(PATH_HOMOGRAPHY_MATRIX)
 cameras_info = load_pickle(PATH_CALIBRATION_MATRIX)
-resize = True
+resize = False
 
 def ret_homography(camera_src, camera_dst):
     inter_camera_info = next((inter for inter in interInfo if inter.camera_number_1 == camera_src and inter.camera_number_2 == camera_dst), None)
@@ -16,36 +16,40 @@ def show_videos(camera_src, camera_dst):
     while True:
         
         window_name = "Camera " + str(camera_src) + " and " + str(camera_dst) + " - Click on the image to see the corresponding point"
+
+        title_height = 100
+        text_height = 80  
         
         def mouse_callback(event, x, y, flags, param):
+
             if event == cv2.EVENT_LBUTTONDOWN:
-                point = np.array([[x + camera_info_1.roi[0], y + camera_info_1.roi[1]]], dtype=np.float32)
 
-                # Apply homography transformation
-                point_transformed = cv2.perspectiveTransform(point.reshape(-1, 1, 2), homography).reshape(-1, 2)
-                
-                # Draw the point on the first image
-                cv2.circle(img_src_resized, (int(x), int(y)), 15, (0, 255, 0), -1)
-                
-                # Calculate the scaling factor for the second image (resize adjustment)
-                scale_x = img_dst_resized.shape[1] / img_dst.shape[1]
-                scale_y = img_dst_resized.shape[0] / img_dst.shape[0]
-                
-                # Apply the scaling factor to the transformed point
-                x_transformed = int((point_transformed[0][0] - camera_info_2.roi[0]) * scale_x)
-                y_transformed = int((point_transformed[0][1] - camera_info_2.roi[1]) * scale_y)
-                
-                # Draw the point on the second image
-                cv2.circle(img_dst_resized, (x_transformed, y_transformed), 15, (0, 255, 0), -1)
+                y_adjusted = y - title_height
 
-                combined_img_right = np.vstack((title_source, img_src_resized))
-                combined_img_left = np.vstack((title_destination, img_dst_resized))
+                if y_adjusted >= 0:
 
-                # Concatenate the images again after drawing points
-                combined = np.hstack((combined_img_right, combined_img_left))
+                    point = np.array([[x + camera_info_1.roi[0], y_adjusted + camera_info_1.roi[1]]], dtype=np.float32)
 
-                # Update the display
-                cv2.imshow(window_name, combined)
+                    point_transformed = cv2.perspectiveTransform(point.reshape(-1, 1, 2), homography).reshape(-1, 2)
+
+                    cv2.circle(img_src_resized, (int(x), int(y_adjusted)), 15, (0, 255, 0), -1)
+
+                    scale_x = img_dst_resized.shape[1] / img_dst.shape[1]
+                    scale_y = img_dst_resized.shape[0] / img_dst.shape[0]
+
+                    x_transformed = int((point_transformed[0][0] - camera_info_2.roi[0]) * scale_x)
+                    y_transformed = int((point_transformed[0][1] - camera_info_2.roi[1]) * scale_y)
+
+                    cv2.circle(img_dst_resized, (x_transformed, y_transformed), 15, (0, 255, 0), -1)
+
+                    combined_img_right = np.vstack((title_source, img_src_resized))
+                    combined_img_left = np.vstack((title_destination, img_dst_resized))
+    
+                    combined = np.hstack((combined_img_right, combined_img_left))
+
+                    # combined = np.hstack((img_src_resized, img_dst_resized))
+
+                    cv2.imshow(window_name, combined)
         
         homography = ret_homography(camera_src, camera_dst)
         
@@ -61,6 +65,10 @@ def show_videos(camera_src, camera_dst):
         
         img_src = undistorted(img_src, camera_info_1)
         img_dst = undistorted(img_dst, camera_info_2)
+        
+        # cv2.imshow("img_src", img_src)
+        # cv2.imshow("img_dst", img_dst)
+        # cv2.waitKey(0)
         
         if img_src is None or img_dst is None:
             print(f"Could not load images for cameras {camera_src} and {camera_dst}")
@@ -81,7 +89,6 @@ def show_videos(camera_src, camera_dst):
         height_src, width_src = img_src.shape[:2]
         height_dst, width_dst = img_dst.shape[:2]
         
-        # Resize the images to the same height
         if height_src != height_dst:
             if height_src > height_dst:
                 img_dst_resized = cv2.resize(img_dst, (width_dst * height_src // height_dst, height_src))
@@ -93,32 +100,26 @@ def show_videos(camera_src, camera_dst):
             img_src_resized = img_src
             img_dst_resized = img_dst
 
-           # Aggiusta la larghezza dei titoli in base alla larghezza dell'immagine ridimensionata
-        title_source = np.zeros((50, img_src_resized.shape[1], 3), dtype=np.uint8)
-        title_destination = np.zeros((50, img_dst_resized.shape[1], 3), dtype=np.uint8)
+        title_source = np.zeros((title_height, img_src_resized.shape[1], 3), dtype=np.uint8)
+        title_destination = np.zeros((title_height, img_dst_resized.shape[1], 3), dtype=np.uint8)
 
-        # Testo del titolo
         text_source = f"SOURCE: camera {camera_src}"
         text_destination = f"DESTINATION: camera {camera_dst}"
 
-        # Ottieni la dimensione del testo per centrarlo
         text_size_source = cv2.getTextSize(text_source, cv2.FONT_HERSHEY_SIMPLEX, 1, 2)[0]
         text_size_destination = cv2.getTextSize(text_destination, cv2.FONT_HERSHEY_SIMPLEX, 1, 2)[0]
 
-        # Calcola la posizione del testo in modo che sia centrato
         text_x_source = (img_src_resized.shape[1] - text_size_source[0]) // 2
         text_x_destination = (img_dst_resized.shape[1] - text_size_destination[0]) // 2
 
-        # Disegna il testo centrato
-        cv2.putText(title_source, text_source, (text_x_source, 35), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
-        cv2.putText(title_destination, text_destination, (text_x_destination, 35), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
+        cv2.putText(title_source, text_source, (text_x_source, text_height), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
+        cv2.putText(title_destination, text_destination, (text_x_destination, text_height), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
 
-        # Combina titoli e immagini
         combined_img_right = np.vstack((title_source, img_src_resized))
         combined_img_left = np.vstack((title_destination, img_dst_resized))
 
-        # Combina le due immagini affiancandole
         combined = np.hstack((combined_img_right, combined_img_left))
+        # combined = np.hstack((img_src_resized, img_dst_resized))
 
         cv2.namedWindow(window_name)
         cv2.setMouseCallback(window_name, mouse_callback)
