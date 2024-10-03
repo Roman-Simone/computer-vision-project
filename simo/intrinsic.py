@@ -7,8 +7,7 @@ from tqdm import tqdm
 from cameraInfo import *
 
 all_chessboard_sizes = {1: (5, 7), 2: (5, 7), 3: (5, 7), 4: (5, 7), 5: (6, 9), 6: (6, 9), 7: (5, 7), 8: (6, 9), 12: (5, 7), 13: (5, 7)}
-
-SKIP_FRAME = 2000
+SKIP_FRAME = 10
 
 
 def findPoints(path_video, cameraInfo, debug=True):
@@ -92,24 +91,28 @@ def compute_calibration_all(camerasInfo):
     for video in videosCalibration:
         numero_camera = re.findall(r'\d+', video.replace(".mp4", ""))
         numero_camera = int(numero_camera[0])
-        # pos_camera = [camera.camera_number for camera in camerasInfo].index(numero_camera)
-        # pos_camera = numero_camera - 1
-        _, pos_camera = take_info_camera(numero_camera, camerasInfo)
-        print(pos_camera)
 
-        # print("Starting calibration for camera ", numero_camera, pos_camera)
+        _, pos_camera = take_info_camera(numero_camera, camerasInfo)
         
         path_video = os.path.join(path_videos_calibration, video)
 
         camerasInfo[pos_camera].objpoints, camerasInfo[pos_camera].imgpoints, gray = findPoints(path_video, camerasInfo[pos_camera], debug=False)
 
-        ret, camerasInfo[pos_camera].mtx, camerasInfo[pos_camera].dist, camerasInfo[pos_camera].rvecs, camerasInfo[pos_camera].tvecs = cv2.calibrateCamera(camerasInfo[pos_camera].objpoints, camerasInfo[pos_camera].imgpoints, gray.shape[::-1], None, None)
+        if len(camerasInfo[pos_camera].objpoints) == 0:
+            print(f"Camera {numero_camera} not calibrated - No points found")
+            continue
 
-        h,  w = gray.shape[:2]
+        ret, camerasInfo[pos_camera].mtx, camerasInfo[pos_camera].dist, _, _ = cv2.calibrateCamera(camerasInfo[pos_camera].objpoints, camerasInfo[pos_camera].imgpoints, gray.shape[::-1], None, None)
 
-        camerasInfo[pos_camera].newcameramtx, camerasInfo[pos_camera].roi = cv2.getOptimalNewCameraMatrix(camerasInfo[pos_camera].mtx, camerasInfo[pos_camera].dist, (w,h), 1, (w,h))
+        if ret:
+            h,  w = gray.shape[:2]
+
+            camerasInfo[pos_camera].newcameramtx, camerasInfo[pos_camera].roi = cv2.getOptimalNewCameraMatrix(camerasInfo[pos_camera].mtx, camerasInfo[pos_camera].dist, (w,h), 1, (w,h))
+
+        else:
+            print(f"Camera {numero_camera} not calibrated - No enough points found")
     
-    save_pickle(camerasInfo, "calibration.pkl")
+    save_pickle(camerasInfo, PATH_CALIBRATION_MATRIX)
     
     return camerasInfo
 
@@ -129,16 +132,23 @@ def compute_calibration_single(cameraInfo):
 
         cameraInfo.objpoints, cameraInfo.imgpoints, gray = findPoints(path_video, cameraInfo, debug=False)
 
+        if len(cameraInfo.objpoints) == 0:
+            print(f"Camera {numero_camera} not calibrated - No points found")
+            continue
+
         ret, cameraInfo.mtx, cameraInfo.dist, cameraInfo.rvecs, cameraInfo.tvecs = cv2.calibrateCamera(cameraInfo.objpoints, cameraInfo.imgpoints, gray.shape[::-1], None, None)
 
-        h,  w = gray.shape[:2]
+        if ret:
+            h,  w = gray.shape[:2]
 
-        cameraInfo.newcameramtx, cameraInfo.roi = cv2.getOptimalNewCameraMatrix(cameraInfo.mtx, cameraInfo.dist, (w,h), 1, (w,h))
-    
+            cameraInfo.newcameramtx, cameraInfo.roi = cv2.getOptimalNewCameraMatrix(cameraInfo.mtx, cameraInfo.dist, (w,h), 1, (w,h))
+        else:
+            print(f"Camera {numero_camera} not calibrated - No enough points found")
+
     return cameraInfo
 
 
-def calibrateAll():
+def calibrateAllIntrinsic():
     camerasInfo = []
     
     for camera_number in all_chessboard_sizes.keys():
@@ -149,7 +159,7 @@ def calibrateAll():
     camerasInfo = compute_calibration_all(camerasInfo)
 
 
-def calibrateCamera(camera_number):
+def calibrateCameraIntrinsic(camera_number):
     camerasInfo = load_pickle(PATH_CALIBRATION_MATRIX)
 
     # Inizializza cameraInfo per la camera specifica
@@ -172,8 +182,7 @@ def calibrateCamera(camera_number):
         camerasInfo.append(cameraInfo)
     
     # Salva la lista aggiornata
-    save_pickle(camerasInfo, "calibration.pkl")
-
+    save_pickle(camerasInfo, PATH_CALIBRATION_MATRIX)
 
 
 def test_calibration():
@@ -217,11 +226,11 @@ def test_calibration():
 if __name__ == '__main__':
 
     # CALIBRATE ALL THE CAMS
-    calibrateAll()
+    calibrateAllIntrinsic()
 
     # CALIBRATE SPECIFIC CAM
     # camera_number = 3
-    # calibrateCamera(camera_number)
+    # calibrateCameraIntrinsic(camera_number)
 
     # ONLY FOR TESTING
     test_calibration()

@@ -57,7 +57,7 @@ def calculate_extrinsics(camera_number):
     return extrinsic_matrix
 
 
-def find_all_extrinsics():
+def findAllExtrinsics():
 
     camera_infos = load_pickle(PATH_CALIBRATION_MATRIX)
 
@@ -185,7 +185,7 @@ def plot_camera(camera_number):
     display_extrinsic_matrix(extrinsic_matrix)
     plot_3d_data(extrinsic_matrix, camera_number)
 
-def plot_all_cameras():
+def plotAllCameras():
     camera_infos = load_pickle(PATH_CALIBRATION_MATRIX)
 
     extrinsic_matrices = []
@@ -242,7 +242,7 @@ def rotationMatrixToEulerAngles(R):
 if __name__ == "__main__":
 
     #find extrinsic parameter for all cameras
-    find_all_extrinsics()
+    findAllExtrinsics()
 
     #find the extrinsic matrix for specific camera
     # camera_number = 2 
@@ -250,7 +250,7 @@ if __name__ == "__main__":
 
 
     #plot all camera extrinsic matrix
-    plot_all_cameras()
+    plotAllCameras()
     
     # plot specific camera extrinsic matrix
     # camera_number = 12
