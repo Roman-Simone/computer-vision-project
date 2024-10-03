@@ -24,7 +24,7 @@ def load_pickle(filename):
     return camerasInfo
 
 
-def find_file_mp4(directory):
+def find_files(directory):
     file_mp4 = []
     for file in os.listdir(directory):
         if file.endswith(".mp4") or file.endswith(".png"):
