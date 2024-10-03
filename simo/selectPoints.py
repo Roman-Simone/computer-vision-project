@@ -415,9 +415,9 @@ def selectPointsCamera(camera_to_select):
     frames = find_files(PATH_FRAME_DISTORTED)
 
     for frame in frames:
-        print(video)
+        print(frame)
 
-        camera_number = re.findall(r'\d+', video.replace(".mp4", ""))
+        camera_number = re.findall(r'\d+', frame.replace(".png", ""))
         camera_number = int(camera_number[0])
         if camera_number not in VALID_CAMERA_NUMBERS or camera_number != camera_to_select:
             continue
@@ -427,43 +427,24 @@ def selectPointsCamera(camera_to_select):
         else:
             rightCameraFlag = False
 
-        # Open the video
-        camera_info, _ = take_info_camera(camera_number, camera_infos)
-        path_video = os.path.join(PATH_VIDEOS, video)
-        video_capture = cv2.VideoCapture(path_video)
+        frameImg = cv2.imread(os.path.join(PATH_FRAME_DISTORTED, frame))
+        courtImg = cv2.imread(PATH_COURT)
+        
+        if undistortedFlag:
+            camerasInfo = load_pickle(PATH_CALIBRATION_MATRIX)
+            cameraInfo, _ = take_info_camera(camera_number, camerasInfo)
 
-        # Show the video
-        while True:
-            ret, frame = video_capture.read()
-            if not ret:
-                break
+            frameImg = undistorted(frameImg, cameraInfo)
+            world_image_coordinates = takePoints(frameImg, courtImg, camera_number, rightCameraFlag, undistortedFlag, cameraInfo)
 
-            # undistorted_frame = undistorted(frame, camera_info)
+        else:
+            world_image_coordinates = takePoints(frameImg, courtImg, camera_number, rightCameraFlag)
+        
 
-            # undistorted_frame_copy = undistorted_frame.copy()
-
-            undistorted_frame = frame.copy()
-            undistorted_frame_copy = undistorted_frame.copy()
-
-            courtImg = cv2.imread(PATH_COURT)
-
-            cv2.imshow(f"Camera {camera_number}", undistorted_frame)
-            key = cv2.waitKey(0)
-            if key == ord('s'):
-
-                frame_filename = os.path.join(PATH_FRAME, f"cam_{camera_number}.png")
-                cv2.imwrite(frame_filename, undistorted_frame)
-                cv2.destroyAllWindows()
-                print("shape und")
-                print(undistorted_frame_copy.shape)
-
-                world_image_coordinates = takePoints(undistorted_frame_copy, courtImg, camera_number, rightCameraFlag)
-
-                update_json_file(camera_number, world_image_coordinates, PATH_JSON)
-                break
+        update_json_file(camera_number, world_image_coordinates, PATH_JSON)
+    
 
         cv2.destroyAllWindows()
-        video_capture.release()
 
 
 
