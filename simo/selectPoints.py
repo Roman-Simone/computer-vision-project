@@ -363,7 +363,7 @@ def commonList(camera_number, world_image_coordinates):
 def selectPointsAllCameras():
     #global rateoImages
 
-    videos = find_file_mp4(path_videos)
+    videos = find_file_mp4(PATH_VIDEOS)
     camera_infos = load_pickle(PATH_CALIBRATION_MATRIX)
 
     for video in videos:
@@ -381,7 +381,7 @@ def selectPointsAllCameras():
 
         # Open the video
         camera_info, _ = take_info_camera(camera_number, camera_infos)
-        path_video = os.path.join(path_videos, video)
+        path_video = os.path.join(PATH_VIDEOS, video)
         video_capture = cv2.VideoCapture(path_video)
 
         # Show the video
@@ -390,15 +390,15 @@ def selectPointsAllCameras():
             if not ret:
                 break
             
-            # undistorted_frame= undistorted(frame, camera_info)
+            undistorted_frame= undistorted(frame, camera_info)
 
-            # undistorted_frame_copy = undistorted_frame.copy()
-
-            undistorted_frame = frame.copy()
             undistorted_frame_copy = undistorted_frame.copy()
 
+            # undistorted_frame = frame.copy()
+            # undistorted_frame_copy = undistorted_frame.copy()
 
-            courtImg = cv2.imread(path_court)
+
+            courtImg = cv2.imread(PATH_COURT)
 
             cv2.imshow(f"Camera {camera_number}", undistorted_frame)
             key = cv2.waitKey(0)
@@ -431,7 +431,7 @@ def selectPointsAllCameras():
 def selectPointsCamera(camera_to_select):
     #global rateoImages
 
-    videos = find_file_mp4(path_videos)
+    videos = find_file_mp4(PATH_VIDEOS)
     camera_infos = load_pickle(PATH_CALIBRATION_MATRIX)
 
     for video in videos:
@@ -449,7 +449,7 @@ def selectPointsCamera(camera_to_select):
 
         # Open the video
         camera_info, _ = take_info_camera(camera_number, camera_infos)
-        path_video = os.path.join(path_videos, video)
+        path_video = os.path.join(PATH_VIDEOS, video)
         video_capture = cv2.VideoCapture(path_video)
 
         # Show the video
@@ -465,7 +465,7 @@ def selectPointsCamera(camera_to_select):
             undistorted_frame = frame.copy()
             undistorted_frame_copy = undistorted_frame.copy()
 
-            courtImg = cv2.imread(path_court)
+            courtImg = cv2.imread(PATH_COURT)
 
             cv2.imshow(f"Camera {camera_number}", undistorted_frame)
             key = cv2.waitKey(0)
@@ -522,9 +522,9 @@ def update_json_file(camera_number, world_image_coordinates, file_name):
 
 if __name__ == '__main__':
     # Select points for all cameras
-    # selectPointsAllCameras()
+    selectPointsAllCameras()
 
     # Select points for a specific camera
-    camera_to_select = 6
-    selectPointsCamera(camera_to_select)
+    # camera_to_select = 6
+    # selectPointsCamera(camera_to_select)
 
