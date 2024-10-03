@@ -400,16 +400,11 @@ def selectPointsAllCameras(undistortedFlag = False):
         cv2.destroyAllWindows()
 
     cv2.destroyAllWindows()
-
-    pathToSave = PATH_JSON_DISTORTED
-    if undistortedFlag:
-        pathToSave = PATH_JSON_UNDISTORTED
-    
     # After processing all videos, save the combined JSON file
     if all_world_points:
-        with open(pathToSave, 'w') as json_file:
+        with open(PATH_JSON, 'w') as json_file:
             json.dump(all_world_points, json_file, indent=4)
-        print(f"All world points saved to {pathToSave}")
+        print(f"All world points saved to {PATH_JSON}")
     else:
         print("No valid points selected for any camera. No data saved.")
 
@@ -445,11 +440,8 @@ def selectPointsCamera(camera_to_select, undistortedFlag = False):
         else:
             world_image_coordinates = takePoints(frameImg, courtImg, camera_number, rightCameraFlag)
         
-        pathToSave = PATH_JSON_DISTORTED
-        if undistortedFlag:
-            pathToSave = PATH_JSON_UNDISTORTED
 
-        update_json_file(camera_number, world_image_coordinates, pathToSave)
+        update_json_file(camera_number, world_image_coordinates, PATH_JSON)
     
         cv2.destroyAllWindows()
 

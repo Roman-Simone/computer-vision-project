@@ -57,8 +57,8 @@ def show_videos(camera_src, camera_dst):
             print(f"No homography available for cameras {camera_src} and {camera_dst}")
             continue
         
-        img_src = cv2.imread(f"{PATH_FRAME}/cam_{camera_src}.png")
-        img_dst = cv2.imread(f"{PATH_FRAME}/cam_{camera_dst}.png")  
+        img_src = cv2.imread(f"{PATH_FRAME_DISTORTED}/cam_{camera_src}.png")
+        img_dst = cv2.imread(f"{PATH_FRAME_DISTORTED}/cam_{camera_dst}.png")  
         
         camera_info_1, _ = take_info_camera(camera_src, cameras_info)
         camera_info_2, _ = take_info_camera(camera_dst, cameras_info)
