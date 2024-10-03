@@ -19,9 +19,31 @@ points = {
     (480,145): 0,
     (340,145): 0, 
     (75,75): 0,
+    (75,110): 0,
+    (75,210): 0,
+    (200,210): 0,
+    (210,220): 0,
+    (210,290): 0,
+    (200,300): 0,
+    (75,300): 0,
+    (75,390): 0,
     (75, 425): 0,
+    (410, 425): 0,
     (745, 425): 0,
-    (745, 75): 0
+    (745,390): 0, 
+    (745,300): 0, 
+    (620,300): 0, 
+    (610,290): 0, 
+    (610,220): 0, 
+    (620,210): 0, 
+    (745,210): 0, 
+    (745,110): 0,
+    (745, 75): 0,
+    (410, 75): 0,
+    (410, 140): 0,
+    (410, 210): 0,
+    (410, 290): 0,
+    (410, 360): 0
 }
 
 worldPoints = {
@@ -34,9 +56,31 @@ worldPoints = {
     (3.0, 4.5, 0.0): (),
     (-3.0, 4.5, 0.0): (),
     (-14.0, 7.5, 0.0): (),
+    (-14.0, 6.55, 0.0): (),
+    (-14.0, 2.45, 0.0): (),
+    (-8.2, 2.45, 0.0): (),
+    (-8.2, 1.8, 0.0): (),
+    (-8.2, -1.8, 0.0): (),
+    (-8.2, -2.45, 0.0): (),
+    (-14.0, -2.45, 0.0): (),
+    (-14.0, -6.55, 0.0): (),
     (-14.0, -7.5, 0.0): (),
+    (0.0, -7.5, 0.0): (),
     (14.0, -7.5, 0.0): (),
-    (14.0, 7.5, 0.0): ()
+    (14.0, -6.55, 0.0): (),
+    (14.0, -2.45, 0.0): (),
+    (8.2, -2.45, 0.0): (),
+    (8.2, -1.8, 0.0): (),
+    (8.2, 1.8, 0.0): (),
+    (8.2, 2.45, 0.0): (),
+    (14.0, 2.45, 0.0): (),
+    (14.0, 6.55, 0.0): (),
+    (14.0, 7.5, 0.0): (),
+    (0.0, 7.5, 0.0): (),
+    (0.0, 4.5, 0.0): (),
+    (0.0, 1.8, 0.0): (),
+    (0.0, -1.8, 0.0): (),
+    (0.0, -4.5, 0.0): ()
 }
 
 # Define camera coordinates for specific cameras
@@ -70,7 +114,6 @@ camera_coordinates_visual = {
 # Global variables
 clicked_point = ()
 all_world_points = {}  # Dictionary to store world-image points for all cameras
-rateoImages = [1, 1]
 
 
 # Mouse callback function
@@ -78,7 +121,7 @@ def on_mouse(event, x, y, flags, param):
     global clicked_point, img_copy
 
     if event == cv2.EVENT_LBUTTONDOWN:
-        print(rateoImages)
+        #print(rateoImages)
         clicked_point = (x, y)
         print(f"Clicked at: {clicked_point}")
         # Disegna un pallino rosso nel punto cliccato
@@ -86,8 +129,8 @@ def on_mouse(event, x, y, flags, param):
 
         # Mostra le coordinate accanto al punto cliccato
         cv2.putText(img_copy, f"{clicked_point}", (x + 10, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
-        clicked_point = (int(x * rateoImages[0]), int(y * rateoImages[1]))
-        print(f"Clicked(resized) at: {clicked_point}")
+        #clicked_point = (int(x * rateoImages[0]), int(y * rateoImages[1]))
+        #print(f"Clicked(resized) at: {clicked_point}")
 
         # Aggiorna la finestra di visualizzazione
         cv2.imshow(param, img_copy)
@@ -318,7 +361,7 @@ def commonList(camera_number, world_image_coordinates):
 
 
 def selectPointsAllCameras():
-    global rateoImages
+    #global rateoImages
 
     videos = find_file_mp4(path_videos)
     camera_infos = load_pickle(PATH_CALIBRATION_MATRIX)
@@ -347,9 +390,13 @@ def selectPointsAllCameras():
             if not ret:
                 break
             
-            undistorted_frame, rateoImages = undistorted(frame, camera_info)
+            # undistorted_frame= undistorted(frame, camera_info)
 
+            # undistorted_frame_copy = undistorted_frame.copy()
+
+            undistorted_frame = frame.copy()
             undistorted_frame_copy = undistorted_frame.copy()
+
 
             courtImg = cv2.imread(path_court)
 
@@ -357,7 +404,7 @@ def selectPointsAllCameras():
             key = cv2.waitKey(0)
             if key == ord('s'):
 
-                frame_filename = os.path.join(path_frames, f"cam_{camera_number}.png")
+                frame_filename = os.path.join(PATH_FRAME, f"cam_{camera_number}.png")
                 cv2.imwrite(frame_filename, undistorted_frame)
                 cv2.destroyAllWindows()
 
@@ -382,7 +429,7 @@ def selectPointsAllCameras():
 
 
 def selectPointsCamera(camera_to_select):
-    global rateoImages
+    #global rateoImages
 
     videos = find_file_mp4(path_videos)
     camera_infos = load_pickle(PATH_CALIBRATION_MATRIX)
@@ -392,7 +439,7 @@ def selectPointsCamera(camera_to_select):
 
         camera_number = re.findall(r'\d+', video.replace(".mp4", ""))
         camera_number = int(camera_number[0])
-        if camera_number not in valid_camera_numbers or camera_number != camera_to_select:
+        if camera_number not in VALID_CAMERA_NUMBERS or camera_number != camera_to_select:
             continue
         
         if camera_number in rightCamera:
@@ -411,8 +458,11 @@ def selectPointsCamera(camera_to_select):
             if not ret:
                 break
 
-            undistorted_frame, rateoImages = undistorted(frame, camera_info)
+            # undistorted_frame = undistorted(frame, camera_info)
 
+            # undistorted_frame_copy = undistorted_frame.copy()
+
+            undistorted_frame = frame.copy()
             undistorted_frame_copy = undistorted_frame.copy()
 
             courtImg = cv2.imread(path_court)
@@ -421,7 +471,7 @@ def selectPointsCamera(camera_to_select):
             key = cv2.waitKey(0)
             if key == ord('s'):
 
-                frame_filename = os.path.join(path_frames, f"cam_{camera_number}.png")
+                frame_filename = os.path.join(PATH_FRAME, f"cam_{camera_number}.png")
                 cv2.imwrite(frame_filename, undistorted_frame)
                 cv2.destroyAllWindows()
                 print("shape und")
@@ -475,6 +525,6 @@ if __name__ == '__main__':
     # selectPointsAllCameras()
 
     # Select points for a specific camera
-    camera_to_select = 12
+    camera_to_select = 6
     selectPointsCamera(camera_to_select)
 
