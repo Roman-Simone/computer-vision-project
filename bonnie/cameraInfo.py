@@ -14,7 +14,7 @@ class CameraInfo:
         return f"Camera number: {self.camera_number}"
 
 
-class HomographyInfo:
+class InterCameraInfo:
     def __init__(self, camera_number_1, camera_number_2):
         self.camera_number_1 = camera_number_1
         self.camera_number_2 = camera_number_2
