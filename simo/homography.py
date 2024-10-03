@@ -5,7 +5,7 @@ from config import *
 from cameraInfo import *
 
 
-coordinates_by_camera = read_json_file_and_structure_data(PATH_JSON)
+coordinates_by_camera = read_json_file_and_structure_data(PATH_JSON_DISTORTED)
 camera_infos = load_pickle(PATH_CALIBRATION_MATRIX)
 
 
@@ -118,8 +118,8 @@ def testHomography():
             continue
         
         # Load images for both cameras
-        img_src = cv2.imread(f"{PATH_FRAME}/cam_{camera_src}.png")
-        img_dst = cv2.imread(f"{PATH_FRAME}/cam_{camera_dst}.png")
+        img_src = cv2.imread(f"{PATH_FRAME_DISTORTED}/cam_{camera_src}.png")
+        img_dst = cv2.imread(f"{PATH_FRAME_DISTORTED}/cam_{camera_dst}.png")
         
         camera_info_1, _ = take_info_camera(camera_src, cameras_info)
         camera_info_2, _ = take_info_camera(camera_dst, cameras_info)

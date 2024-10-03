@@ -92,7 +92,7 @@ def plot_3d_data(extrinsic_matrices, camera_numbers=None):
     ax = fig.add_subplot(111, projection='3d')
 
     # Load data from JSON file
-    with open(PATH_JSON, 'r') as file:
+    with open(PATH_JSON_UNDISTORTED, 'r') as file:
         data = json.load(file)
 
     # Colors for cameras and points

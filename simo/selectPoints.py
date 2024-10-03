@@ -304,7 +304,7 @@ def takePoints(imageUndistorted, courtImg, camera_number, rightCameraFlag, undis
                     print(f"Point {point} selected at {clicked_point}")
 
                     if undistortedFlag:
-                        clicked_point = (point[0] + cameraInfo.roi[0], point[1] + cameraInfo.roi[1])
+                        clicked_point = (clicked_point[0] + cameraInfo.roi[0], clicked_point[1] + cameraInfo.roi[1])
 
                     for worldPoint in worldPoints:
                         if worldPoints[worldPoint] == ():
@@ -366,7 +366,7 @@ def commonList(camera_number, world_image_coordinates):
 def selectPointsAllCameras(undistortedFlag = False):
     #global rateoImages
     frames = find_files(PATH_FRAME_DISTORTED)
-    # camera_infos = load_pickle(PATH_CALIBRATION_MATRIX)
+    frames.sort()
 
     for frame in frames:
         print(frame)
@@ -494,7 +494,7 @@ if __name__ == '__main__':
     # selectPointsAllCameras(undistortedFlag)
 
     # Select points for a specific camera
-    camera_to_select = 6
+    camera_to_select = 4
     undistortedFlag = True
     selectPointsCamera(camera_to_select, undistortedFlag)
 
