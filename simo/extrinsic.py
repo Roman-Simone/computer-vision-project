@@ -6,9 +6,12 @@ from config import *
 import matplotlib.pyplot as plt
 
 
-def calculate_extrinsics(camera_number):
+def calculate_extrinsics(camera_number, undistortedFlag = False):
     # Read the data
-    coordinates_by_camera = read_json_file_and_structure_data(PATH_JSON)
+    pathToRead = PATH_JSON_DISTORTED
+    if undistortedFlag:
+        pathToRead = PATH_JSON_UNDISTORTED
+    coordinates_by_camera = read_json_file_and_structure_data(pathToRead)
 
     all_camera_coordinates = {}
 
@@ -35,10 +38,11 @@ def calculate_extrinsics(camera_number):
         print(f"Camera info for camera {camera_number} not found.")
         return None
 
-    
-    # camera_matrix = camera_info.newcameramtx   # PROBLEM IDK WHY IS BETTER WITH MTX RESPECT TO NEWCAMERAMTX
-    # distortion_coefficients = np.zeros((1, 5), dtype=np.float32)
-    camera_matrix = np.array(camera_info.mtx, dtype=np.float32)
+    if undistortedFlag:
+        camera_matrix = np.array(camera_info.newcameramtx, dtype=np.float32)
+    else:
+        camera_matrix = np.array(camera_info.mtx, dtype=np.float32)
+
     distortion_coefficients = np.array(camera_info.dist, dtype=np.float32)
 
     success, rotation_vector, translation_vector = cv2.solvePnP(
@@ -57,13 +61,13 @@ def calculate_extrinsics(camera_number):
     return extrinsic_matrix
 
 
-def findAllExtrinsics():
+def findAllExtrinsics(undistortedFlag = False):
 
     camera_infos = load_pickle(PATH_CALIBRATION_MATRIX)
 
     for camera_number in VALID_CAMERA_NUMBERS:
         _, pos = take_info_camera(camera_number, camera_infos)
-        extrinsic_matrix = calculate_extrinsics(camera_number)
+        extrinsic_matrix = calculate_extrinsics(camera_number, undistortedFlag)
         display_extrinsic_matrix(extrinsic_matrix, camera_number)
         camera_infos[pos].extrinsic_matrix = extrinsic_matrix
     
@@ -88,7 +92,7 @@ def plot_3d_data(extrinsic_matrices, camera_numbers=None):
     ax = fig.add_subplot(111, projection='3d')
 
     # Load data from JSON file
-    with open(PATH_JSON, 'r') as file:
+    with open(PATH_JSON_UNDISTORTED, 'r') as file:
         data = json.load(file)
 
     # Colors for cameras and points
@@ -242,7 +246,8 @@ def rotationMatrixToEulerAngles(R):
 if __name__ == "__main__":
 
     #find extrinsic parameter for all cameras
-    findAllExtrinsics()
+    undistortedFlag = False
+    findAllExtrinsics(undistortedFlag)
 
     #find the extrinsic matrix for specific camera
     # camera_number = 2 

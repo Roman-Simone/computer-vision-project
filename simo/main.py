@@ -2,49 +2,57 @@ import sys
 from intrinsic import *
 from extrinsic import *
 from homography import *
+from selectPoints import *
 
 
 def menu():
     while True:
         print("\n--- Menu ---\n")
-        print("Calibration Intrinsic:")
-        print("1. Calibrate all cameras")
-        print("2. Calibrate a single camera")
-        print("3. Test calibration")
-        print("\nCalibration Extrinsic:")
-        print("5. Calculate extrinsic matrices")
-        print("6. Test extrinsic matrices")
+        print("Intrinsic Calibration:")
+        print("0. Calibrate all cameras")
+        print("1. Calibrate a single camera")
+        print("2. Test calibration")
+        print("\nExtrinsic Calibration:")
+        print("3. Calculate extrinsic matrices")
+        print("4. Test extrinsic matrices")
         print("\nHomography:")
-        print("7. Calculate homography")
-        print("8. Test homography")
-        print("\n9. Exit:")
+        print("5. Calculate homography")
+        print("6. Test homography")
+        print("\nSelect Points:")
+        print("7. Select points")
+        print("\n8. Exit:")
 
         
-        scelta = input("\nScegli un'opzione: ")
+        choice = input("\nChoose an option: ")
 
-        if scelta == '1':
+        if choice == '0':
             calibrateAllIntrinsic()
-        elif scelta == '2':
+        elif choice == '1':
             try:
-                camera_number = int(input("Inserisci il numero della telecamera da calibrare: "))
+                camera_number = int(input("Enter the camera number to calibrate: "))
                 calibrateCameraIntrinsic(camera_number)
             except ValueError:
-                print("Devi inserire un numero valido.")
-        elif scelta == '3':
+                print("You must enter a valid number.")
+        elif choice == '2':
             test_calibration()
-        elif scelta == '4':
-            print("Uscita dal programma.")
-            sys.exit()
-        elif scelta == '5':
+        elif choice == '3':
             findAllExtrinsics()
-        elif scelta == '6':
+        elif choice == '4':
             plotAllCameras()
-        elif scelta == '7':
+        elif choice == '5':
             calculateHomographyAllCameras()
-        elif scelta == '8':
+        elif choice == '6':
             testHomography()
+
+        elif choice == '7':
+            try:
+                camera_number = int(input("Enter the camera number to calibrate: "))
+                calibrateCameraIntrinsic(camera_number)
+            except ValueError:
+                print("You must enter a valid number.")
+            selectPointsCamera(camera_to_select, undistortedFlag = False)
         else:
-            print("Scelta non valida. Riprova.")
+            print("Invalid choice. Please try again.")
 
 if __name__ == '__main__':
     menu()
