@@ -86,7 +86,7 @@ def findPoints(path_video, cameraInfo, debug=True):
 
 def compute_calibration_all(camerasInfo):
 
-    videosCalibration = find_file_mp4(path_videos_calibration)
+    videosCalibration = find_file_mp4(PATH_VIDEOS_CALIBRATION)
     
     for video in videosCalibration:
         numero_camera = re.findall(r'\d+', video.replace(".mp4", ""))
@@ -94,7 +94,7 @@ def compute_calibration_all(camerasInfo):
 
         _, pos_camera = take_info_camera(numero_camera, camerasInfo)
         
-        path_video = os.path.join(path_videos_calibration, video)
+        path_video = os.path.join(PATH_VIDEOS_CALIBRATION, video)
 
         camerasInfo[pos_camera].objpoints, camerasInfo[pos_camera].imgpoints, gray = findPoints(path_video, camerasInfo[pos_camera], debug=False)
 
@@ -119,7 +119,7 @@ def compute_calibration_all(camerasInfo):
 
 def compute_calibration_single(cameraInfo):
 
-    videosCalibration = find_file_mp4(path_videos_calibration)
+    videosCalibration = find_file_mp4(PATH_VIDEOS_CALIBRATION)
     
     for video in videosCalibration:
         numero_camera = re.findall(r'\d+', video.replace(".mp4", ""))
@@ -128,7 +128,7 @@ def compute_calibration_single(cameraInfo):
             continue
 
 
-        path_video = os.path.join(path_videos_calibration, video)
+        path_video = os.path.join(PATH_VIDEOS_CALIBRATION, video)
 
         cameraInfo.objpoints, cameraInfo.imgpoints, gray = findPoints(path_video, cameraInfo, debug=False)
 
@@ -187,7 +187,7 @@ def calibrateCameraIntrinsic(camera_number):
 
 def test_calibration():
 
-    videos = find_file_mp4(path_videos)
+    videos = find_file_mp4(PATH_VIDEOS)
     camera_infos = load_pickle(PATH_CALIBRATION_MATRIX)
 
     for camera_info in camera_infos:
@@ -202,7 +202,7 @@ def test_calibration():
 
         # open the video
         camera_info = next((cam for cam in camera_infos if cam.camera_number == camera_number), None)
-        path_video = os.path.join(path_videos, video)
+        path_video = os.path.join(PATH_VIDEOS, video)
         video_capture = cv2.VideoCapture(path_video)
 
         # Show the video
@@ -234,4 +234,3 @@ if __name__ == '__main__':
 
     # ONLY FOR TESTING
     test_calibration()
-

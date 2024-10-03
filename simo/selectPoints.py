@@ -398,7 +398,7 @@ def selectPointsAllCameras():
             undistorted_frame_copy = undistorted_frame.copy()
 
 
-            courtImg = cv2.imread(path_court)
+            courtImg = cv2.imread(PATH_COURT)
 
             cv2.imshow(f"Camera {camera_number}", undistorted_frame)
             key = cv2.waitKey(0)
