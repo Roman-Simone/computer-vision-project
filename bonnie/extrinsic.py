@@ -35,8 +35,11 @@ def calculate_extrinsics(camera_number):
         print(f"Camera info for camera {camera_number} not found.")
         return None
 
-    camera_matrix = camera_info.mtx   # PROBLEM IDK WHY IS BETTER WITH MTX RESPECT TO NEWCAMERAMTX
-    distortion_coefficients = np.zeros((1, 5), dtype=np.float32)
+    
+    # camera_matrix = camera_info.newcameramtx   # PROBLEM IDK WHY IS BETTER WITH MTX RESPECT TO NEWCAMERAMTX
+    # distortion_coefficients = np.zeros((1, 5), dtype=np.float32)
+    camera_matrix = np.array(camera_info.mtx, dtype=np.float32)
+    distortion_coefficients = np.array(camera_info.dist, dtype=np.float32)
 
     success, rotation_vector, translation_vector = cv2.solvePnP(
         world_points, image_points, camera_matrix, distortion_coefficients
@@ -51,7 +54,7 @@ def calculate_extrinsics(camera_number):
     extrinsic_matrix = np.hstack((inverse_rotation_matrix, inverse_translation_vector))
     extrinsic_matrix = np.vstack((extrinsic_matrix, [0, 0, 0, 1]))
 
-    return inverse_rotation_matrix, inverse_translation_vector, extrinsic_matrix
+    return extrinsic_matrix
 
 
 def find_all_extrinsics():
@@ -59,14 +62,10 @@ def find_all_extrinsics():
     camera_infos = load_pickle(PATH_CALIBRATION_MATRIX)
 
     for camera_number in VALID_CAMERA_NUMBERS:
-        
         _, pos = take_info_camera(camera_number, camera_infos)
-        inverse_rotation_matrix, inverse_translation_vector, extrinsic_matrix = calculate_extrinsics(camera_number)
+        extrinsic_matrix = calculate_extrinsics(camera_number)
         display_extrinsic_matrix(extrinsic_matrix, camera_number)
-        
         camera_infos[pos].extrinsic_matrix = extrinsic_matrix
-        camera_infos[pos].inverse_rotation_matrix = inverse_rotation_matrix
-        camera_infos[pos].inverse_translation_vector = inverse_translation_vector
     
     save_pickle(camera_infos, PATH_CALIBRATION_MATRIX)
 
@@ -78,13 +77,9 @@ def find_cam_extrinsic(camera_number):
 
     camera_infos = load_pickle(PATH_CALIBRATION_MATRIX)
     _, pos = take_info_camera(camera_number, camera_infos)
-    inverse_rotation_matrix, inverse_translation_vector, extrinsic_matrix = calculate_extrinsics(camera_number)
+    extrinsic_matrix = calculate_extrinsics(camera_number)
     display_extrinsic_matrix(extrinsic_matrix)
-    
     camera_infos[pos].extrinsic_matrix = extrinsic_matrix
-    camera_infos[pos].inverse_rotation_matrix = inverse_rotation_matrix
-    camera_infos[pos].inverse_translation_vector = inverse_translation_vector
-    
     save_pickle(camera_infos, PATH_CALIBRATION_MATRIX)
 
 def plot_3d_data(extrinsic_matrices, camera_numbers=None):
