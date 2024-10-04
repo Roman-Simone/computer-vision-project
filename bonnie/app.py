@@ -7,7 +7,6 @@ import os
 
 app = Flask(__name__)
 
-first_time = True
 available_cameras = [1, 2, 3, 4, 5, 6, 7, 8, 12, 13]
 interInfo = load_pickle(PATH_HOMOGRAPHY_MATRIX)
 cameras_info = load_pickle(PATH_CALIBRATION_MATRIX)
@@ -62,7 +61,6 @@ def get_images():
 
 @app.route('/project_point', methods=['POST'])
 def project_point():
-    global first_time  # Declare the variable as global
     data = request.json
     x = int(data['x'])
     y = int(data['y'])
@@ -86,19 +84,8 @@ def project_point():
 
     print("Cameras:", camera_src, camera_dst)
 
-    if first_time:
-        img_src = cv2.imread(f"{PATH_FRAME_DISTORTED}/cam_{camera_src}.png")
-        img_dst = cv2.imread(f"{PATH_FRAME_DISTORTED}/cam_{camera_dst}.png")
-        
-        first_time = False
-        
-        img_src = undistorted(img_src, camera_info_1)
-        img_dst = undistorted(img_dst, camera_info_2)
-    else:
-        img_src = cv2.imread('static/src_img_updated.png')
-        img_dst = cv2.imread('static/dst_img_updated.png')
-        
-    
+    img_src = cv2.imread('static/src_img.png')
+    img_dst = cv2.imread('static/dst_img.png')
     
     print("Img_src shape:", img_src.shape)
     print("Img_dst shape:", img_dst.shape)

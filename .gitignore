@@ -6,3 +6,4 @@ samples_calibration
 __pycache__
 simo/__pycache__/cameraInfo.cpython-310.pyc
 cv_venv
+bonnie/static
