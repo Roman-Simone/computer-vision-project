@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Camera Projection</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        /* General body styling with a background color */
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin: 0;
+            padding: 0;
+            background-color: #a8a2a2; /* Light gray */
+        }
+    
+        /* Title Section styling */
+        .title-section {
+            font-family: 'Arial', sans-serif;
+            text-align: center;
+            color: #34495e; /* Dark slate gray */
+            margin-top: 40px;
+        }
+    
+        .title-section h1 {
+            font-size: 48px;
+            font-weight: bold;
+            color: #2c3e50; /* Dark blue-gray */
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+            margin-bottom: 10px;
+        }
+    
+        .title-section h2 {
+            font-size: 24px;
+            font-weight: 300;
+            color: #464f50; /* Muted teal */
+            margin-top: 0;
+            font-style: italic;
+        }
+    
+        /* Styling for camera selection container */
+        .camera-selection {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 40px;
+            width: 80%;
+        }
+    
+        .camera-group {
+            text-align: center;
+            padding: 20px;
+            border-radius: 10px;
+            width: 40%;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+            background-color: #ecf0f1; /* Light background for camera groups */
+        }
+    
+        .camera-group h3 {
+            margin-bottom: 20px;
+            color: #2c3e50; /* Dark blue-gray */
+        }
+    
+        /* Button styling */
+        .camera-group button {
+            margin: 5px;
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #3498db; /* Bright blue */
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+    
+        .camera-group button.selected {
+            background-color: #27ae60; /* Green for selected */
+        }
+    
+        /* Button hover state */
+        .camera-group button:hover {
+            background-color: #2980b9; /* Darker blue on hover */
+        }
+    
+        /* Camera border styling */
+        .camera-src, .camera-dst {
+            border: 3px solid #2980b9; /* Border color for both camera groups */
+        }
+    
+        /* Load Images button styling */
+        #load_images {
+            margin: 20px;
+            padding: 15px 30px;
+            font-size: 18px;
+            background-color: #3498db; /* Bright blue */
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+    
+        /* Hover effect for Load Images button */
+        #load_images:hover {
+            background-color: #2980b9; /* Darker blue */
+        }
+    
+        /* Disabled button state */
+        .disabled {
+            background-color: #bdc3c7 !important; /* Light gray */
+            cursor: not-allowed;
+        }
+    
+        /* Image container styling */
+        .image-container {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 20px;
+            width: 80%;
+        }
+    
+        /* Image styling */
+        .image-container img {
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            max-width: 60%;
+            cursor: pointer;
+            height: auto; /* Maintains image proportions */
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+    
+        /* Hover effect for images */
+        .image-container img:hover {
+            transform: scale(1.05);
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+        }
+    
+        /* Optional Image Dimensions styling (if enabled) */
+        #image-dimensions {
+            margin-top: 20px;
+            font-size: 16px;
+            color: #2c3e50;
+        }
+    </style>    
+</head>
+
+<body>
+
+    <div class="title-section">
+        <h1>3D CAMERA CALIBRATION (geometry and 3D reconstruction)</h1>
+        <hr>
+        <h2>A project developed by Stefano Bonetto and Simone Roman</h2>
+    </div>
+
+    <hr>
+    <hr>
+
+    <div class="camera-selection">
+        <div class="camera-group camera-src">
+            <h3>Select Source Camera:</h3>
+            <div id="source_buttons">
+                {% for camera in available_cameras %}
+                <button class="camera_src_btn" data-camera="{{ camera }}">Camera {{ camera }}</button>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="camera-group camera-dst">
+            <h3>Select Destination Camera:</h3>
+            <div id="destination_buttons">
+                {% for camera in available_cameras %}
+                <button class="camera_dst_btn" data-camera="{{ camera }}">Camera {{ camera }}</button>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <button id="load_images">Load Images</button>
+
+    <div class="image-container">
+        <img id="src_image" src="">
+        <img id="dst_image" src="">
+    </div>
+
+    <!-- <div id="image-dimensions"></div> -->
+
+    <script>
+        var camera_src = null;
+        var camera_dst = null;
+        var src_image_original = { width: 0, height: 0 };
+        var dst_image_original = { width: 0, height: 0 };
+
+        $(document).ready(function () {
+            // Handle source camera button click
+            $('.camera_src_btn').on('click', function () {
+                camera_src = $(this).data('camera');
+                $('.camera_src_btn').removeClass('selected');
+                $(this).addClass('selected');
+
+                // Enable all destination buttons and disable the selected source camera button in destination buttons
+                $('.camera_dst_btn').removeClass('disabled').prop('disabled', false);
+                $('.camera_dst_btn[data-camera="' + camera_src + '"]').addClass('disabled').prop('disabled', true);
+            });
+
+            // Handle destination camera button click
+            $('.camera_dst_btn').on('click', function () {
+                camera_dst = $(this).data('camera');
+                $('.camera_dst_btn').removeClass('selected');
+                $(this).addClass('selected');
+
+                // Enable all source buttons and disable the selected destination camera button in source buttons
+                $('.camera_src_btn').removeClass('disabled').prop('disabled', false);
+                $('.camera_src_btn[data-camera="' + camera_dst + '"]').addClass('disabled').prop('disabled', true);
+            });
+
+            // Load images when both cameras are selected
+            $('#load_images').on('click', function () {
+                if (!camera_src || !camera_dst) {
+                    alert("Please select both source and destination cameras.");
+                    return;
+                }
+
+                // Set selected cameras and load images
+                $.ajax({
+                    type: 'POST',
+                    url: '/set_cameras',
+                    contentType: 'application/json',
+                    data: JSON.stringify({
+                        camera_src: camera_src,
+                        camera_dst: camera_dst
+                    }),
+                    success: function () {
+                        // Fetch and display images
+                        $.ajax({
+                            url: '/get_images',
+                            success: function (data) {
+                                if (!data.error) {
+                                    $('#src_image').attr('src', data.src_img + '?' + new Date().getTime());
+                                    $('#dst_image').attr('src', data.dst_img + '?' + new Date().getTime());
+
+                                    // Reset image dimensions
+                                    // $('#image-dimensions').empty();
+
+                                    // Get dimensions after images are loaded
+                                    $('#src_image').on('load', function () {
+                                        src_image_original.width = this.naturalWidth;
+                                        src_image_original.height = this.naturalHeight;
+                                        // $('#image-dimensions').append('<p>Source Image Dimensions: ' + src_image_original.width + ' x ' + src_image_original.height + '</p>');
+                                    });
+
+                                    $('#dst_image').on('load', function () {
+                                        dst_image_original.width = this.naturalWidth;
+                                        dst_image_original.height = this.naturalHeight;
+                                        // $('#image-dimensions').append('<p>Destination Image Dimensions: ' + dst_image_original.width + ' x ' + dst_image_original.height + '</p>');
+                                    });
+                                } else {
+                                    alert(data.error);
+                                }
+                            }
+                        });
+                    }
+                });
+            });
+
+            // Handle click event on source image to project point
+            $('#src_image').on('click', function (e) {
+                if (!camera_src || !camera_dst) {
+                    alert("Please select both source and destination cameras.");
+                    return;
+                }
+
+                var offset = $(this).offset();
+                var x_scaled = Math.round(e.pageX - offset.left);
+                var y_scaled = Math.round(e.pageY - offset.top);
+
+                // Calculate the scaling factors for width and height
+                var width_scale = src_image_original.width / $(this).width();
+                var height_scale = src_image_original.height / $(this).height();
+
+                // Adjust the coordinates using the scaling factors
+                var x_original = Math.round(x_scaled * width_scale);
+                var y_original = Math.round(y_scaled * height_scale);
+
+                // Project point
+                $.ajax({
+                    type: 'POST',
+                    url: '/project_point',
+                    contentType: 'application/json',
+                    data: JSON.stringify({
+                        x: x_original,
+                        y: y_original
+                    }),
+                    success: function (data) {
+                        if (!data.error) {
+                            // Update images with projected points
+                            $('#src_image').attr('src', data.src_img + '?' + new Date().getTime());
+                            $('#dst_image').attr('src', data.dst_img + '?' + new Date().getTime());
+                        } else {
+                            alert(data.error);
+                        }
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+
+</html>

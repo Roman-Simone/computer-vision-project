@@ -10,6 +10,7 @@ PATH_CALIBRATION_MATRIX = os.path.join(parent_path, 'data/calibrationMatrix/cali
 PATH_HOMOGRAPHY_MATRIX = os.path.join(parent_path, 'data/homographyMatrix/homography.pkl')
 PATH_JSON = os.path.join(parent_path, 'data/json/world_points_all_cameras.json')
 PATH_FRAME_DISTORTED = os.path.join(parent_path, 'data/images/distorted')
+PATH_OUTPUT = os.path.join(parent_path, 'data/images/output')
 PATH_FRAME_UNDISTORTED = os.path.join(parent_path, 'data/images/undistorted')
 PATH_COURT = os.path.join(parent_path, 'data/images/courts.jpg')
 
