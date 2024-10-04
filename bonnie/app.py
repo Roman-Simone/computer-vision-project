@@ -82,21 +82,14 @@ def project_point():
     
     point_transformed = cv2.perspectiveTransform(point.reshape(-1, 1, 2), homography).reshape(-1, 2)
 
-    print("Cameras:", camera_src, camera_dst)
-
     img_src = cv2.imread('static/src_img.png')
     img_dst = cv2.imread('static/dst_img.png')
     
-    print("Img_src shape:", img_src.shape)
-    print("Img_dst shape:", img_dst.shape)
-
     cv2.circle(img_src, (x, y), 15, (0, 255, 0), -1)  # Draw circle on source image
     
     x_transformed = int(point_transformed[0][0] - camera_info_2.roi[0])
     y_transformed = int(point_transformed[0][1] - camera_info_2.roi[1])
-    
-    print("Transformed point:", (x_transformed, y_transformed))
-    
+        
     cv2.circle(img_dst, (x_transformed, y_transformed), 7, (0, 255, 0), -1)  # Draw circle on destination image
 
     cv2.imwrite('static/src_img_updated.png', img_src)
