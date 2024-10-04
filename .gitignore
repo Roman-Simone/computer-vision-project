@@ -7,4 +7,7 @@ __pycache__
 simo/__pycache__/cameraInfo.cpython-310.pyc
 cv_venv
 dataset
-bonnie/static
+bonnie/static/dst_img.png
+bonnie/static/dst_img_updated.png
+bonnie/static/src_img.png
+bonnie/static/src_img_updated.png
