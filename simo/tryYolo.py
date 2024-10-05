@@ -14,9 +14,17 @@ def applyModel(frame, model):
         confidence = box.conf[0]
         class_id = box.cls[0]
 
-        # print(f'Class ID: {class_id}, Confidence: {confidence:.2f}, Coordinates: ({x1:.0f}, {y1:.0f}), ({x2:.0f}, {y2:.0f})')
-
+        # Draw the bounding box
         cv2.rectangle(frame, (int(x1), int(y1)), (int(x2), int(y2)), (0, 255, 0), 2)
+
+        # Prepare the confidence label
+        label = f'{confidence:.2f}'
+
+        # Determine position for the label (slightly above the top-left corner of the bbox)
+        label_position = (int(x1), int(y1) - 10)
+
+        # Add the confidence score text
+        cv2.putText(frame, label, label_position, cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
 
     return frame
 
@@ -29,6 +37,9 @@ def testModel():
     for video in videosCalibration:
         numero_camera = re.findall(r'\d+', video.replace(".mp4", ""))
         numero_camera = int(numero_camera[0])
+        
+        if numero_camera not in VALID_CAMERA_NUMBERS:
+            continue
 
         cameraInfo, _ = take_info_camera(numero_camera, cameraInfos)
 
@@ -48,8 +59,12 @@ def testModel():
 
             cv2.imshow('Frame', frameWithBbox)
 
-            if cv2.waitKey(1) & 0xFF == ord('q'):
+            key = cv2.waitKey(10) & 0xFF
+            if key == ord('s'):
                 break
+        videoCapture.release()
+        cv2.destroyAllWindows()
+
 
 
 
