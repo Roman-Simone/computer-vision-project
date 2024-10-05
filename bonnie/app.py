@@ -42,6 +42,8 @@ def get_images():
     camera_src = selected_cameras['camera_src']
     camera_dst = selected_cameras['camera_dst']
 
+    print("[INFO] Selected cameras: ", camera_src, camera_dst)
+
     img_src = cv2.imread(f"{PATH_FRAME_DISTORTED}/cam_{camera_src}.png")
     img_dst = cv2.imread(f"{PATH_FRAME_DISTORTED}/cam_{camera_dst}.png")
     
@@ -54,10 +56,10 @@ def get_images():
     if img_src is None or img_dst is None:
         return jsonify(error="Could not load images")
 
-    cv2.imwrite('static/src_img.png', img_src)
-    cv2.imwrite('static/dst_img.png', img_dst)
+    cv2.imwrite(f"{PATH_STATIC}/src_img.png", img_src)
+    cv2.imwrite(f"{PATH_STATIC}/dst_img.png", img_dst)
 
-    return jsonify(src_img='static/src_img.png', dst_img='static/dst_img.png')
+    return jsonify(src_img=f"{PATH_STATIC}/src_img.png", dst_img=f"{PATH_STATIC}/dst_img.png")
 
 @app.route('/project_point', methods=['POST'])
 def project_point():
@@ -82,8 +84,8 @@ def project_point():
     
     point_transformed = cv2.perspectiveTransform(point.reshape(-1, 1, 2), homography).reshape(-1, 2)
 
-    img_src = cv2.imread('static/src_img.png')
-    img_dst = cv2.imread('static/dst_img.png')
+    img_src = cv2.imread(f"{PATH_STATIC}/src_img.png")
+    img_dst = cv2.imread(f"{PATH_STATIC}/dst_img.png")
     
     cv2.circle(img_src, (x, y), 15, (0, 255, 0), -1)  # Draw circle on source image
     
@@ -94,12 +96,12 @@ def project_point():
         
     cv2.circle(img_dst, (x_transformed, y_transformed), int(img_dst.shape[1]/div), (0, 255, 0), -1)  # Draw circle on destination image
 
-    cv2.imwrite('static/src_img_updated.png', img_src)
-    cv2.imwrite('static/dst_img_updated.png', img_dst)
+    cv2.imwrite(f"{PATH_STATIC}/src_img_updated.png", img_src)
+    cv2.imwrite(f"{PATH_STATIC}/dst_img_updated.png", img_dst)
 
     return jsonify(
-        src_img='static/src_img_updated.png',
-        dst_img='static/dst_img_updated.png',
+        src_img=f"{PATH_STATIC}/src_img_updated.png",
+        dst_img=f"{PATH_STATIC}/dst_img_updated.png",
         x_transformed=x_transformed,
         y_transformed=y_transformed
     )
