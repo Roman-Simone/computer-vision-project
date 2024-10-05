@@ -5,7 +5,7 @@ from tqdm import tqdm
 from utils import *
 from config import *
 
-SKIP_FRAME = 850
+SKIP_FRAME = 199
 
 def extractFrame():
 
