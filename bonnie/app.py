@@ -5,7 +5,7 @@ from config import *
 from utils import *
 import os
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='static')
 
 available_cameras = [1, 2, 3, 4, 5, 6, 7, 8, 12, 13]
 interInfo = load_pickle(PATH_HOMOGRAPHY_MATRIX)
@@ -42,8 +42,6 @@ def get_images():
     camera_src = selected_cameras['camera_src']
     camera_dst = selected_cameras['camera_dst']
 
-    print("[INFO] Selected cameras: ", camera_src, camera_dst)
-
     img_src = cv2.imread(f"{PATH_FRAME_DISTORTED}/cam_{camera_src}.png")
     img_dst = cv2.imread(f"{PATH_FRAME_DISTORTED}/cam_{camera_dst}.png")
     
@@ -56,10 +54,13 @@ def get_images():
     if img_src is None or img_dst is None:
         return jsonify(error="Could not load images")
 
-    cv2.imwrite(f"{PATH_STATIC}/src_img.png", img_src)
-    cv2.imwrite(f"{PATH_STATIC}/dst_img.png", img_dst)
+    success_src = cv2.imwrite(os.path.join(PATH_STATIC, 'src_img.png'), img_src)
+    success_dst = cv2.imwrite(os.path.join(PATH_STATIC, 'dst_img.png'), img_dst)
 
-    return jsonify(src_img=f"{PATH_STATIC}/src_img.png", dst_img=f"{PATH_STATIC}/dst_img.png")
+    if not success_src or not success_dst:
+        print("Could not save images")
+
+    return jsonify(src_img='static/src_img.png', dst_img='static/dst_img.png')
 
 @app.route('/project_point', methods=['POST'])
 def project_point():
@@ -83,9 +84,10 @@ def project_point():
     point = np.array([[x + camera_info_1.roi[0], y + camera_info_1.roi[1]]], dtype=np.float32)
     
     point_transformed = cv2.perspectiveTransform(point.reshape(-1, 1, 2), homography).reshape(-1, 2)
+    
+    img_src = cv2.imread(os.path.join(PATH_STATIC, 'src_img.png'))
+    img_dst = cv2.imread(os.path.join(PATH_STATIC, 'dst_img.png'))
 
-    img_src = cv2.imread(f"{PATH_STATIC}/src_img.png")
-    img_dst = cv2.imread(f"{PATH_STATIC}/dst_img.png")
     
     cv2.circle(img_src, (x, y), 15, (0, 255, 0), -1)  # Draw circle on source image
     
@@ -96,12 +98,13 @@ def project_point():
         
     cv2.circle(img_dst, (x_transformed, y_transformed), int(img_dst.shape[1]/div), (0, 255, 0), -1)  # Draw circle on destination image
 
-    cv2.imwrite(f"{PATH_STATIC}/src_img_updated.png", img_src)
-    cv2.imwrite(f"{PATH_STATIC}/dst_img_updated.png", img_dst)
+    cv2.imwrite(os.path.join(PATH_STATIC, 'src_img_updated.png'), img_src)
+    cv2.imwrite(os.path.join(PATH_STATIC, 'dst_img_updated.png'), img_dst)
+    
 
     return jsonify(
-        src_img=f"{PATH_STATIC}/src_img_updated.png",
-        dst_img=f"{PATH_STATIC}/dst_img_updated.png",
+        src_img='static/src_img_updated.png',
+        dst_img='static/dst_img_updated.png',
         x_transformed=x_transformed,
         y_transformed=y_transformed
     )
