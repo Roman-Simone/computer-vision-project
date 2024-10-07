@@ -103,7 +103,12 @@ def project_point():
     x_transformed = int(point_transformed[0][0] - camera_info_2.roi[0])
     y_transformed = int(point_transformed[0][1] - camera_info_2.roi[1])
         
-    cv2.circle(img_dst, (x_transformed, y_transformed), int(img_dst.shape[1]/div), (0, 255, 0), -1)  # Draw circle on destination image
+    print("Img shape: ", img_dst.shape)
+    
+    print("Circle radius: ", int((img_dst.shape[1]/div + img_dst.shape[0]/div)/2))
+    
+    cv2.circle(img_dst, (x_transformed, y_transformed), int((img_dst.shape[1]/div + img_dst.shape[0]/div)/2), (0, 255, 0), -1)  # Draw circle on destination image
+    # cv2.circle(img_dst, (x_transformed, y_transformed), 15, (0, 255, 0), -1)  # Draw circle on destination image
 
     cv2.imwrite(os.path.join(PATH_STATIC, 'src_img_updated.png'), img_src)
     cv2.imwrite(os.path.join(PATH_STATIC, 'dst_img_updated.png'), img_dst)
