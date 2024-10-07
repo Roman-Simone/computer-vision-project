@@ -6,54 +6,51 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Main Menu - 3D Camera Calibration</title>
     <link rel="stylesheet" href="../static/css/style.css">
-    <style>
-        /* Add styles to center buttons and make them large */
-        .button-container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 50vh;
-            gap: 20px;
-        }
-
-        .button-container button {
-            font-size: 24px;
-            padding: 20px 40px;
-            cursor: pointer;
-            background-color: #007BFF;
-            color: white;
-            border: none;
-            border-radius: 10px;
-            transition: background-color 0.3s ease;
-        }
-
-        .button-container button:hover {
-            background-color: #0056b3;
-        }
-    </style>
 </head>
 
+    
 <body>
 
     <div class="title-section">
-        <h1 style="font-size: 48px;">3D CAMERA CALIBRATION (geometry and 3D reconstruction)</h1>
-        <br>
-        <hr>
-        <br>
-        <h2 style="font-size: 30px;">A project developed by Stefano Bonetto and Simone Roman</h2>
+        <h1>3D CAMERA CALIBRATION (geometry and 3D reconstruction)</h1>
+        <h2>A project developed by Stefano Bonetto and Simone Roman</h2>
     </div>
 
     <hr>
-    <hr>
 
-    <div class="button-container">
-        <!-- Point Projection Button -->
-        <button onclick="location.href='/point_projection'" style="font-size: 36px; padding: 30px 60px;">Point Projection</button>
+    <!-- Project Description -->
+    <div class="project-description">
+        <p>
+            Welcome to our 3D Camera Calibration demo! This project provides insights into how multiple cameras perceive the same 3D space for applications in computer vision and robotics.
+        </p>
+        <p>
+            We start with <strong>intrinsic camera calibration</strong> to identify each camera's internal characteristics, such as focal length and distortion, using calibration patterns from various angles.
+        </p>
+        <p>
+            Then, we proceed to <strong>extrinsic camera calibration</strong>, determining the spatial relationships between the cameras to create a cohesive 3D representation of the environment.
+        </p>
+        <p>
+            Our interactive tool allows you to select a point in the field, instantly visualizing it across all camera views, showcasing the differences in perspective.
+        </p>
+        <p>
+            Additionally, we offer <strong>3D ball tracking</strong>, which detects and tracks a moving ball across multiple camera views, providing real-time tracking useful for sports analysis and robotic navigation.
+        </p>
+        <p>
+            Discover how our project enhances your understanding of spatial data!
+        </p>
+        
 
-        <!-- Ball Tracking Button -->
-        <button onclick="location.href='/ball_tracking'" style="font-size: 36px; padding: 30px 60px;">Ball Tracking</button>
+        <!-- Button Container -->
+        <div class="button-container">
+            <!-- Point Projection Button -->
+            <button onclick="location.href='/point_projection'">Point Projection</button>
+
+            <!-- Ball Tracking Button -->
+            <button onclick="location.href='/ball_tracking'">Ball Tracking</button>
+        </div>
     </div>
 
 </body>
+
 
 </html>
