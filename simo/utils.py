@@ -2,6 +2,8 @@ import os
 import cv2
 import json
 import pickle
+import numpy as np
+from config import *
 
 
 def undistorted(frame1, camera_info):   
@@ -81,5 +83,4 @@ def take_info_camera(camera_number, camera_infos):
             return camera_info, pos
 
     return None
-
 
