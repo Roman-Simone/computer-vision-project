@@ -141,3 +141,40 @@ body {
     font-size: 16px;
     color: #2c3e50;
 }
+
+.button-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 50vh;
+    gap: 20px;
+}
+
+.button-container button {
+    font-size: 24px;
+    padding: 20px 40px;
+    cursor: pointer;
+    background-color: #007BFF;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    transition: background-color 0.3s ease;
+}
+
+.button-container button:hover {
+    background-color: #0056b3;
+}
+
+#back_to_menu {
+    padding: 10px 20px;
+    font-size: 16px;
+    background-color: #4CAF50; /* Green background */
+    color: white; /* White text */
+    border: none;
+    border-radius: 5px; /* Rounded corners */
+    cursor: pointer;
+}
+
+#back_to_menu:hover {
+    background-color: #45a049; /* Darker green on hover */
+}

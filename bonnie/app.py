@@ -5,7 +5,7 @@ from config import *
 from utils import *
 import os
 
-app = Flask(__name__, static_folder='static')
+app = Flask(__name__, static_folder=PATH_STATIC)
 
 available_cameras = [1, 2, 3, 4, 5, 6, 7, 8, 12, 13]
 interInfo = load_pickle(PATH_HOMOGRAPHY_MATRIX)
@@ -22,7 +22,15 @@ def ret_homography(camera_src, camera_dst):
 
 @app.route('/')
 def index():
-    return render_template('index.html', available_cameras=available_cameras)
+    return render_template('index.html', css_path=PATH_CSS)
+
+@app.route('/point_projection')
+def point_projection():
+    return render_template('point_projection.html', available_cameras=available_cameras, css_path=PATH_CSS)
+
+@app.route('/ball_tracking')
+def ball_tracking():
+    return render_template('ball_tracking.html', available_cameras=available_cameras, css_path=PATH_CSS)
 
 @app.route('/set_cameras', methods=['POST'])
 def set_cameras():
@@ -33,9 +41,8 @@ def set_cameras():
 
 @app.route('/get_images')
 def get_images():
-    static_folder = os.path.join(app.root_path, 'static')
-    for file_name in os.listdir(static_folder):
-        file_path = os.path.join(static_folder, file_name)
+    for file_name in os.listdir(PATH_STATIC):
+        file_path = os.path.join(PATH_STATIC, file_name)
         if os.path.isfile(file_path):
             os.remove(file_path)
             
