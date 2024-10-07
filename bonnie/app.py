@@ -42,8 +42,6 @@ def get_images():
     camera_src = selected_cameras['camera_src']
     camera_dst = selected_cameras['camera_dst']
 
-    print("[INFO] Selected cameras: ", camera_src, camera_dst)
-
     img_src = cv2.imread(f"{PATH_FRAME_DISTORTED}/cam_{camera_src}.png")
     img_dst = cv2.imread(f"{PATH_FRAME_DISTORTED}/cam_{camera_dst}.png")
     
@@ -56,10 +54,13 @@ def get_images():
     if img_src is None or img_dst is None:
         return jsonify(error="Could not load images")
 
-    cv2.imwrite(f"{PATH_STATIC}/src_img.png", img_src)
-    cv2.imwrite(f"{PATH_STATIC}/dst_img.png", img_dst)
+    success_src = cv2.imwrite(os.path.join(PATH_STATIC, 'src_img.png'), img_src)
+    success_dst = cv2.imwrite(os.path.join(PATH_STATIC, 'dst_img.png'), img_dst)
 
-    return jsonify(src_img=f"{PATH_STATIC}/src_img.png", dst_img=f"{PATH_STATIC}/dst_img.png")
+    if not success_src or not success_dst:
+        print("Could not save images")
+
+    return jsonify(src_img='static/src_img.png', dst_img='static/dst_img.png')
 
 @app.route('/project_point', methods=['POST'])
 def project_point():
@@ -87,6 +88,7 @@ def project_point():
     img_src = cv2.imread(os.path.join(PATH_STATIC, 'src_img.png'))
     img_dst = cv2.imread(os.path.join(PATH_STATIC, 'dst_img.png'))
 
+    
     cv2.circle(img_src, (x, y), 15, (0, 255, 0), -1)  # Draw circle on source image
     
     div = img_src.shape[1] / 15
@@ -99,9 +101,10 @@ def project_point():
     cv2.imwrite(os.path.join(PATH_STATIC, 'src_img_updated.png'), img_src)
     cv2.imwrite(os.path.join(PATH_STATIC, 'dst_img_updated.png'), img_dst)
     
+
     return jsonify(
-        src_img=f"{PATH_STATIC}/src_img_updated.png",
-        dst_img=f"{PATH_STATIC}/dst_img_updated.png",
+        src_img='static/src_img_updated.png',
+        dst_img='static/dst_img_updated.png',
         x_transformed=x_transformed,
         y_transformed=y_transformed
     )
