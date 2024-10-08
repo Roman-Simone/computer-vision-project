@@ -15,6 +15,6 @@ PATH_FRAME_UNDISTORTED = os.path.join(parent_path, 'data/images/undistorted')
 PATH_COURT = os.path.join(parent_path, 'data/images/courts.jpg')
 PATH_DATASET = os.path.join(parent_path, 'data/dataset')
 PATH_STATIC = os.path.join(parent_path, 'simo/static')
-PATH_WEIGHT = os.path.join(parent_path, 'data/weight/best.pt')
+PATH_WEIGHT = os.path.join(parent_path, 'data/weight')
 
 VALID_CAMERA_NUMBERS = [1, 2, 3, 4, 5, 6, 7, 8, 12, 13]
