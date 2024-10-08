@@ -57,6 +57,8 @@ def testModel():
 
             frameUndistorted = undistorted(frame, cameraInfo)
 
+            frameUndistorted = cv2.resize(frameUndistorted, (640, 640))
+
             frameWithBbox = applyModel(frameUndistorted, model)
 
             cv2.imshow('Frame', frameWithBbox)
