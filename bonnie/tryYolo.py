@@ -4,12 +4,19 @@ from utils import *
 from config import *
 from ultralytics import YOLO
 
-model = YOLO(PATH_WEIGHT)  
+
+pathWeight = os.path.join(PATH_WEIGHT, 'best_v11_800.pt')
+
+size = 800
+model = YOLO(pathWeight)  
 
 def applyModel(frame, model):
     results = model(frame)
+    
+    flagResults = False
 
     for box in results[0].boxes:
+        flagResults = True
         x1, y1, x2, y2 = box.xyxy[0]
         confidence = box.conf[0]
         class_id = box.cls[0]
@@ -26,7 +33,23 @@ def applyModel(frame, model):
         # Add the confidence score text
         cv2.putText(frame, label, label_position, cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
 
-    return frame
+        #center of the bounding box
+        x_center = (x1 + x2) / 2
+        y_center = (y1 + y2) / 2
+
+        #draw the center of the bounding box
+        cv2.circle(frame, (int(x_center), int(y_center)), 3, (0, 255, 0), -1)
+
+        center_ret = (int(x_center), int(y_center))
+    
+    if flagResults == False:
+        center_ret = (-1, -1)
+        confidence = -1
+
+
+    return frame, center_ret, confidence
+
+
 
 
 def testModel():
@@ -55,9 +78,11 @@ def testModel():
 
             frameUndistorted = undistorted(frame, cameraInfo)
 
-            frameUndistorted = cv2.resize(frameUndistorted, (640, 640))
-            
-            frameWithBbox = applyModel(frameUndistorted, model)
+            frameUndistorted = cv2.resize(frameUndistorted, (size, size))
+
+            frameWithBbox, center, confidence = applyModel(frameUndistorted, model)
+
+            print(center, confidence)
 
             cv2.imshow('Frame', frameWithBbox)
 
@@ -66,6 +91,10 @@ def testModel():
                 break
         videoCapture.release()
         cv2.destroyAllWindows()
+
+
+
+
 
 if __name__ == '__main__':
     testModel()

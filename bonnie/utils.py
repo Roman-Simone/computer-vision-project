@@ -2,7 +2,8 @@ import os
 import cv2
 import json
 import pickle
-
+import numpy as np
+from config import *
 
 def undistorted(frame1, camera_info):   
 
@@ -11,7 +12,6 @@ def undistorted(frame1, camera_info):
     undistorted_frame = undistorted_frame[y1:y1+h1, x1:x1+w1]
 
     return undistorted_frame
-
 
 def save_pickle(camerasInfo, filename):
     with open(filename, 'wb') as file:
@@ -80,6 +80,48 @@ def take_info_camera(camera_number, camera_infos):
         if camera_info.camera_number == camera_number:
             return camera_info, pos
 
-    return None
+    return None, None
 
 
+def get_positions():
+    with open(PATH_CAMERA_POS, "r") as file:
+        data = json.load(file)
+        positions = data["positions"]
+        field_corners = np.array(data["field_corners"]) * 1000
+    return positions, field_corners
+
+
+def set_axes_equal(ax):
+    """
+    Make axes of 3D plot have equal scale so that spheres appear as spheres,
+    cubes as cubes, etc.
+
+    Input
+        ax: a matplotlib axis, e.g., as output from plt.gca().
+    """
+
+    x_limits = ax.get_xlim3d()
+    y_limits = ax.get_ylim3d()
+    z_limits = ax.get_zlim3d()
+
+    x_range = abs(x_limits[1] - x_limits[0])
+    x_middle = np.mean(x_limits)
+    y_range = abs(y_limits[1] - y_limits[0])
+    y_middle = np.mean(y_limits)
+    z_range = abs(z_limits[1] - z_limits[0])
+    z_middle = np.mean(z_limits)
+
+    # The plot bounding box is a sphere in the sense of the infinity
+    # norm, hence I call half the max range the plot radius.
+    plot_radius = 0.5 * max([x_range, y_range, z_range])
+
+    ax.set_xlim3d([x_middle - plot_radius, x_middle + plot_radius])
+    ax.set_ylim3d([y_middle - plot_radius, y_middle + plot_radius])
+    ax.set_zlim3d([z_middle - plot_radius, z_middle + plot_radius])
+
+
+class NumpyEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, np.ndarray):
+            return obj.tolist()
+        return json.JSONEncoder.default(self, obj)

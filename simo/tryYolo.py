@@ -15,7 +15,6 @@ elif torch.backends.mps.is_available():
 else:
     device = 'cpu'
 
-
 size = 800
 model = YOLO(pathWeight)  
 
@@ -30,7 +29,6 @@ def applyModel(frame, model):
         confidence = box.conf[0]
         class_id = box.cls[0]
 
-        # Draw the bounding box
         cv2.rectangle(frame, (int(x1), int(y1)), (int(x2), int(y2)), (0, 255, 0), 2)
 
         # Prepare the confidence label
