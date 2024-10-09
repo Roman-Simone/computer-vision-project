@@ -12,19 +12,12 @@ This repository contains the code and resources for a Computer Vision project fo
 
 - [Table of Contents](#table-of-contents)
 - [Description](#description)
-  - [1. Calibration](#1-calibration)
-    - [Intrinsic parameter](#intrinsic-parameter)
-    - [Extrinsic Parameters](#extrinsic-parameters)
-  - [Implementation Details:](#implementation-details)
-- [Installation](#installation)
-- [Usage](#usage)
+- [1. Calibration](#1-calibration)
+  - [Intrinsic parameter](#intrinsic-parameter)
+  - [Extrinsic Parameters](#extrinsic-parameters)
+- [Homography:](#homography)
+- [3D ball tracking](#3d-ball-tracking)
 - [Project Structure](#project-structure)
-- [Data Preparation](#data-preparation)
-- [Augmentation Techniques](#augmentation-techniques)
-- [Model Training and Evaluation](#model-training-and-evaluation)
-- [Grad-CAM Visualization](#grad-cam-visualization)
-- [Jupyter Notebooks](#jupyter-notebooks)
-- [Contributing](#contributing)
 
 ## Description
 
@@ -35,13 +28,11 @@ This project focuses on processing 10 volleyball match videos captured from diff
  2. Develop a tool where you click on the field/on one camera and the same point is visualized on all the other cameras
  3. 3D ball tracking
 
-
-
-### 1. Calibration
+## 1. Calibration
 
 At first we have calculate the **Intrinsic** and **Extrinsic** parameters.
 
-#### Intrinsic parameter
+### Intrinsic parameter
 
 Some pinhole cameras introduce significant distortion to images, primarily in the form of radial and tangential distortion. These distortions can be corrected using a calibration process. For this, we use videos containing a chessboard pattern, and by following the [OpenCV tutorial](https://docs.opencv.org/4.x/dc/dbb/tutorial_py_calibration.html), we can compute the intrinsic camera matrix and mitigate distortion.
 
@@ -61,7 +52,7 @@ This is an example of the result:
 </p> 
 
 
-#### Extrinsic Parameters
+### Extrinsic Parameters
 
 To achieve the 3D reconstruction of camera positions relative to the field, we need to find the **extrinsic parameters**. These parameters describe the rigid body motion (rotation and translation) between the camera and the world frame. In order to compute the extrinsic matrix, at least **four paired points** from the camera plane to the real world are required. For this, we use a script that allows us to select points, typically the corners of the basketball or volleyball court.
 
@@ -84,37 +75,26 @@ This will produce the extrinsic parameters:
 </p> 
 
 
-### Implementation Details:
+## 2. Homography:
 
-- **Augmentation**: The `apply_augmentations` function is used to generate augmented images from the original input.
-- **Meta-Optimization**: The `tune_model` function fine-tunes the model using the augmented images and the specified cost function.
-- **Grad-CAM**: The `create_gradcam` function generates heatmaps that visualize the important regions of the input image for the model's predictions.
+To develop a tool where you click on the field/on one camera and the same point is visualized on all the other cameras we have need of Homography matrix that represents the transformation of points in an image plane to another image plane. To calculate these run the command:
 
-By using MEMO and MEMO_PLUS, the model becomes more robust to variations and can generalize better to new, unseen data.
+```bash
+python3 homograpphy.py
+```
 
-## Installation
+After that you can try the results with the webapp to have good user experience launch:
 
-1. Clone the repository:
+```bash
+python3 app.py
+```
 
-   ```bash
-   git clone https://github.com/stefanoobonetto/DeepLearning_project.git
-   cd DeepLearning_project
-   ```
+This is an example of the user interface:
+<p align="center"> 
+  <img src="data/images/exampleUserInterface.png" alt="Extrinsic Parameters" width="50%"/> <br> <i>Figure 2: Extrinsic parameters.</i> 
+</p> 
 
-2. Install the required dependencies:
-
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-## Usage
-
-1. Prepare your dataset by placing it in the `datasets` directory.
-2. Run the main script to start the training and evaluation process:
-
-   ```bash
-   python main.py
-   ```
+## 3. 3D ball tracking
 
 ## Project Structure
 
@@ -138,73 +118,17 @@ DeepLearning_project/
 ├── README.md
 ```
 
-## Data Preparation
+# Contacts
+For any inquiries, feel free to contact:
 
-1. Download the ImageNet-A dataset and place them in the `datasets` directory.
-    ```bash
-   wget https://people.eecs.berkeley.edu/\~hendrycks/imagenet-a.tar   
-   ```
-2. Ensure the directory structure is as follows:
+- Simone Roman - [simone.roman@studenti.unitn.it](mailto:simone.roman@studenti.unitn.it)
 
-   ```
-   datasets/
-   ├── imagenet-a/
-   ```
+- Stefano Bonetto - [stefano.bonetto@studenti.unitn.it](mailto:stefano.bonetto@studenti.unitn.it)
 
-3. Download the pretrained weights:
+<br>
 
-   ```bash
-   wget https://dl.fbaipublicfiles.com/segment_anything/sam_vit_b_01ec64.pth -P weights/
-   ```
-
-4. Ensure the directory structure is as follows:
-
-   ```
-   weights/
-   ├── sam_vit_b_01ec64.pth
-   ```
-
-## Augmentation Techniques
-
-This project implements various augmentation techniques to enhance the training data. The available augmentations include:
-
-- Rotation
-- Zoom
-- Horizontal Flip
-- Vertical Flip
-- Greyscale
-- Inverse
-- Blur
-- Crop
-- Affine
-- Change Gamma
-- Translation
-- Elastic Transform
-- Brightness
-- Histogram Equalization
-- Salt and Pepper Noise
-- Gaussian Blur
-- Poisson Noise
-- Speckle Noise
-- Contrast
-
-## Model Training and Evaluation
-
-1. The model is trained using the provided dataset and augmented data.
-2. The `tune_model` function fine-tunes the model using MEMO and MEMO_PLUS techniques.
-3. The `test_model` function evaluates the model on the test dataset.
-
-## Grad-CAM Visualization
-
-The `create_gradcam` function generates Grad-CAM heatmaps for visualizing the regions of the image that are important for the model's predictions.
-
-## Jupyter Notebooks
-
-This repository also includes a Jupyter Notebook `DeepLearningProject.ipynb` which provides additional insights and interactive analysis. To run the notebook open google colab and select the gpu T4, after that open the file.
-
-
-## Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request or open an Issue if you have any suggestions or improvements.
-
-
+<div>
+    <a href="https://www.unitn.it/">
+        <img src="https://ing-gest.disi.unitn.it/wp-content/uploads/2022/11/marchio_disi_bianco_vert_eng-1024x295.png" width="400px">
+    </a>
+</div>
