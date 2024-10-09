@@ -61,7 +61,7 @@ To run this script, execute the following command:
 ```bash
 python3 selectPoints.py
 ```
-<p align="center"> <img src="data/images/exampleSelectPoints.png" alt="Distorted Image" width="40%"/> <br> <i>Figure 1: Interface to select points.</i> </p>
+<p align="center"> <img src="data/images/exampleSelectPoints.png" alt="Distorted Image" width="50%"/> <br> <i>Figure 1: Interface to select points.</i> </p>
 Once the points are selected, they are saved in a .json file. You can then use this data to calculate the extrinsic parameters by running:
 
 ```bash
