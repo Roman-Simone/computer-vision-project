@@ -75,7 +75,7 @@ This will produce the extrinsic parameters:
 </p> 
 
 
-## 2. Homography:
+## 2. Homography
 
 To develop a tool where you click on the field/on one camera and the same point is visualized on all the other cameras we have need of Homography matrix that represents the transformation of points in an image plane to another image plane. To calculate these run the command:
 
