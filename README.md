@@ -15,8 +15,8 @@ This repository contains the code and resources for a Computer Vision project fo
 - [1. Calibration](#1-calibration)
   - [Intrinsic parameter](#intrinsic-parameter)
   - [Extrinsic Parameters](#extrinsic-parameters)
-- [Homography:](#homography)
-- [3D ball tracking](#3d-ball-tracking)
+- [2. Homography:](#2-homography)
+- [3. 3D ball tracking](#3-3d-ball-tracking)
 - [Project Structure](#project-structure)
 
 ## Description
