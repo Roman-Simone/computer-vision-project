@@ -45,10 +45,10 @@ python3 intrinsic.py
 This is an example of the result:
 
 <p align="center"> 
-  <img src="data/images/distorted/cam_2.png" alt="Distorted Image" width="30%"/> <br> <i>Figure 1: Distorted Image Before Calibration</i> 
+  <img src="data/images/distorted/cam_2.png" alt="Distorted Image" width="40%"/> <br> <i>Figure 1: Distorted Image Before Calibration</i> 
 </p> 
 <p align="center"> 
-  <img src="data/images/undistorted/cam_2.png" alt="Undistorted Image" width="30%"/> <br> <i>Figure 2: Undistorted Image After Calibration</i> 
+  <img src="data/images/undistorted/cam_2.png" alt="Undistorted Image" width="40%"/> <br> <i>Figure 2: Undistorted Image After Calibration</i> 
 </p> 
 
 
@@ -71,7 +71,7 @@ python3 extrinsic.py
 This will produce the extrinsic parameters:
 
 <p align="center"> 
-  <img src="data/images/exampleExtrinsic.png" alt="Extrinsic Parameters" width="30%"/> <br> <i>Figure 2: Extrinsic parameters.</i> 
+  <img src="data/images/exampleExtrinsic.png" alt="Extrinsic Parameters" width="40%"/> <br> <i>Figure 2: Extrinsic parameters.</i> 
 </p> 
 
 
