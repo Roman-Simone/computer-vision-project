@@ -6,65 +6,83 @@
 </div>
 
 
-This repository contains the code and resources for a deep learning project focused on image classification and segmentation using various augmentation techniques and Grad-CAM visualization.
+This repository contains the code and resources for a Computer Vision project focused on 3D Camera Calibration with also an application of homography matrix to find the same point in different camera views.
 
 ## Table of Contents
 
-- [DeepLearning Project](#deeplearning-project)
-  - [Table of Contents](#table-of-contents)
-  - [Introduction](#introduction)
-    - [MEMO](#memo)
-    - [MEMO\_PLUS](#memo_plus)
-    - [Implementation Details:](#implementation-details)
-  - [Installation](#installation)
-  - [Usage](#usage)
-  - [Project Structure](#project-structure)
-  - [Data Preparation](#data-preparation)
-  - [Augmentation Techniques](#augmentation-techniques)
-  - [Model Training and Evaluation](#model-training-and-evaluation)
-  - [Grad-CAM Visualization](#grad-cam-visualization)
-  - [Jupyter Notebooks](#jupyter-notebooks)
-  - [Contributing](#contributing)
+- [Table of Contents](#table-of-contents)
+- [Description](#description)
+  - [1. Calibration](#1-calibration)
+    - [Intrinsic parameter](#intrinsic-parameter)
+    - [Extrinsic Parameters](#extrinsic-parameters)
+  - [Implementation Details:](#implementation-details)
+- [Installation](#installation)
+- [Usage](#usage)
+- [Project Structure](#project-structure)
+- [Data Preparation](#data-preparation)
+- [Augmentation Techniques](#augmentation-techniques)
+- [Model Training and Evaluation](#model-training-and-evaluation)
+- [Grad-CAM Visualization](#grad-cam-visualization)
+- [Jupyter Notebooks](#jupyter-notebooks)
+- [Contributing](#contributing)
 
-## Introduction
+## Description
 
-Deep neural networks often suffer from severe performance degradation when tested on images that differ visually from those encountered during training. This degradation is caused by factors such as domain shift, noise, or changes in lighting.
+This project focuses on processing 10 volleyball match videos captured from different viewpoints. The main objectives are as follows:
+ 1. Create a 3D reconstruction of the camera positions relative to the field, this point is divided in two steps:
+    - intrinsic camera calibration. 
+    - extrinsic camera calibration
+ 2. Develop a tool where you click on the field/on one camera and the same point is visualized on all the other cameras
+ 3. 3D ball tracking
 
-Recent research has focused on domain adaptation techniques to build deep models that can adapt from an annotated source dataset to a target dataset. However, such methods usually require access to downstream training data, which can be challenging to collect.
-
-An alternative approach is **Test-Time Adaptation (TTA)**, which aims to improve the robustness of a pre-trained neural network to a test dataset, potentially by enhancing the network's predictions on one test sample at a time. 
 
 
-### MEMO
-For this project, MEMO was applied to a pretrained Convolutional Neural Network, **ViT-b/16**, using the **ImageNetV2** dataset. This network operates as follows: given a test point $x \in X$, it produces a conditional output distribution $p(y|x; w)$ over a set of classes $Y$, and predicts a label $\hat{y}$ as:
+### 1. Calibration
 
-$$
-  \hat{y} = M(x | w) = \arg \max_{y \in Y} p(y | x; w) 
-$$
+At first we have calculate the **Intrinsic** and **Extrinsic** parameters.
 
-<p align="center" text-align="center">
-  <img width="75%" src="https://github.com/christiansassi/deep-learning-project/blob/main/assets/img1.jpg?raw=true">
-  <br>
-  <span><b>Fig. 1</b> MEMO overview</span>
-</p>
+#### Intrinsic parameter
 
-Let $A = \{a_1,...,a_M\}$ be a set of augmentations (resizing, cropping, color jittering, etc.). Each augmentation $a_i \in A$ can be applied to an input sample $$x$$, resulting in a transformed sample denoted as $a_i(x)$, as shown in the figure. The objective here is to make the model's prediction invariant to those specific transformations.
+Some pinhole cameras introduce significant distortion to images, primarily in the form of radial and tangential distortion. These distortions can be corrected using a calibration process. For this, we use videos containing a chessboard pattern, and by following the [OpenCV tutorial](https://docs.opencv.org/4.x/dc/dbb/tutorial_py_calibration.html), we can compute the intrinsic camera matrix and mitigate distortion.
 
-MEMO starts by applying a set of $B$ augmentation functions sampled from $A$ to $x$. It then calculates the average, or marginal, output distribution $\bar{p}(y | x; w)$ by averaging the conditional output distributions over these augmentations, represented as:
+To run the calibration, use the following command:
 
-$$ 
-  \bar{p}(y | x; w) = \frac{1}{B} \sum_{i=1}^B p(y | a_i(x); w) 
-$$
+```bash
+python3 intrinsic.py
+```
 
-Since the true label $y$ is not available during testing, the objective of Test-Time Adaptation (TTA) is twofold: (i) to ensure that the model's predictions have the same label $y$ across various augmented versions of the test sample, and (i) to increase the confidence in the model's predictions, given that the augmented versions have the same label. To this end, the model is trained to minimize the entropy of the marginal output distribution across augmentations, defined as:
+This is an example of the result:
 
-$$ 
-  L(w; x) = H(\bar{p}(\cdot | x;w)) = -\sum_{y \in Y} \bar{p}(y | x;w) \log \bar{p}(y | x;w) 
-$$
+<p align="center"> 
+  <img src="data/images/distorted/cam_2.png" alt="Distorted Image" width="30%"/> <br> <i>Figure 1: Distorted Image Before Calibration</i> 
+</p> 
+<p align="center"> 
+  <img src="data/images/undistorted/cam_2.png" alt="Undistorted Image" width="30%"/> <br> <i>Figure 2: Undistorted Image After Calibration</i> 
+</p> 
 
-### MEMO_PLUS
 
-We create our version of this implemantation called MEMO_PLUS that  extends the MEMO technique by incorporating additional segmentation masks and processing steps. The masks help the model focus on specific regions of interest in the image, which can further enhance the robustness and performance of the model.
+#### Extrinsic Parameters
+
+To achieve the 3D reconstruction of camera positions relative to the field, we need to find the **extrinsic parameters**. These parameters describe the rigid body motion (rotation and translation) between the camera and the world frame. In order to compute the extrinsic matrix, at least **four paired points** from the camera plane to the real world are required. For this, we use a script that allows us to select points, typically the corners of the basketball or volleyball court.
+
+To run this script, execute the following command:
+
+```bash
+python3 selectPoints.py
+```
+<p align="center"> <img src="data/images/exampleSelectPoints.png" alt="Distorted Image" width="40%"/> <br> <i>Figure 1: Interface to select points.</i> </p>
+Once the points are selected, they are saved in a .json file. You can then use this data to calculate the extrinsic parameters by running:
+
+```bash
+python3 extrinsic.py
+```
+
+This will produce the extrinsic parameters:
+
+<p align="center"> 
+  <img src="data/images/exampleExtrinsic.png" alt="Extrinsic Parameters" width="30%"/> <br> <i>Figure 2: Extrinsic parameters.</i> 
+</p> 
+
 
 ### Implementation Details:
 
