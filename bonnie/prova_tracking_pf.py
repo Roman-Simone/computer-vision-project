@@ -73,7 +73,7 @@ class ParticleFilterBallTracker:
 
 def applyModel(frame, model, tracker):
     
-    results = model(frame, verbose=False, device=device)
+    results = model.track(frame,save=True, verbose=False, device=device)
     
     center_ret = (-1, -1)
     confidence = -1
@@ -122,4 +122,4 @@ def testModel(num_cam):
     cv2.destroyAllWindows()
 
 if __name__ == '__main__':
-    testModel(1)
+    testModel(6)
