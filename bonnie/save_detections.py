@@ -66,7 +66,7 @@ def process_all_cameras(yolo_model, video_paths):
     all_detections = {}
     
     for cam_id, video_path in video_paths.items():
-        if cam_id != 1:
+        if cam_id > 2:
             print(f"Processing camera {cam_id}...")
             detections = process_video(yolo_model, video_path, cam_id)
             all_detections.update(detections)
