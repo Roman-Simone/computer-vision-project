@@ -174,6 +174,7 @@ def calibrateCameraIntrinsic(camera_number):
     cameraInfo = compute_calibration_single(cameraInfo)
     
     flagFind = False
+    
     # Sostituisci l'elemento nella lista usando l'indice
     for i, camera in enumerate(camerasInfo):
         if camera.camera_number == camera_number:
@@ -233,7 +234,7 @@ if __name__ == '__main__':
 
     # CALIBRATE SPECIFIC CAM
     # camera_number = 3
-    # calibrateCameraIntrinsic(camera_number)
+    calibrateCameraIntrinsic(camera_number)
 
     # ONLY FOR TESTING
     test_calibration()

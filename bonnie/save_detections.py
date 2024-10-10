@@ -5,6 +5,8 @@ from config import *
 from utils import *
 from ultralytics import YOLO
 import numpy as np
+from tqdm import tqdm
+
 
 cameraInfos = load_pickle(PATH_CALIBRATION_MATRIX)
 SIZE = 800
@@ -43,42 +45,67 @@ def detect_balls(yolo_model, frame, cameraInfo):
     return volleyball_detections
 
 def process_video(yolo_model, video_path, cam_id):
+    
     cap = cv2.VideoCapture(video_path)
     frame_idx = 0
     detections = {}
-    
-    while cap.isOpened() and frame_idx < END:  
-        ret, frame = cap.read()
-        if not ret:
-            break
-        
-        cameraInfo, _ = take_info_camera(cam_id, cameraInfos)
-        volleyball_detections = detect_balls(yolo_model, frame, cameraInfo)
-        detections[(cam_id, frame_idx)] = volleyball_detections
-        
-        print("(", cam_id, ", ", frame_idx, ") : ", detections[(cam_id, frame_idx)], "\n")
-        frame_idx += 1
-    
+
+    # Estimate the total number of frames if needed (cap.get(cv2.CAP_PROP_FRAME_COUNT))
+    total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT)) if END is None else END
+
+    # Use tqdm for a progress bar
+    with tqdm(total=total_frames, desc="Processing frames") as pbar:
+        while cap.isOpened() and frame_idx < END:  
+            ret, frame = cap.read()
+            if not ret:
+                break
+            
+            cameraInfo, _ = take_info_camera(cam_id, cameraInfos)
+            volleyball_detections = detect_balls(yolo_model, frame, cameraInfo)
+            detections[(cam_id, frame_idx)] = volleyball_detections
+            
+            # print("(", cam_id, ", ", frame_idx, ") : ", detections[(cam_id, frame_idx)], "\n")
+            frame_idx += 1
+            pbar.update(1)  # Update tqdm progress bar
+
     cap.release()
     return detections
 
 def process_all_cameras(yolo_model, video_paths):
-    all_detections = {}
+    pathDetections = os.path.join(PATH_DETECTIONS, "detections.pkl")
+
+    all_detections = load_pickle(pathDetections)
     
     for cam_id, video_path in video_paths.items():
-        if cam_id > 2:
-            print(f"Processing camera {cam_id}...")
-            detections = process_video(yolo_model, video_path, cam_id)
-            all_detections.update(detections)
 
+        if cam_id not in VALID_CAMERA_NUMBERS:
+            continue
 
-            # il formato con cui vengono salvati i dati nel pkl è: 
-            #           (camera_id, frame_idx) : [(x_center, y_center), ...]        
+        print(f"Processing camera {cam_id}...")
             
-            with open(os.path.join(PATH_DETECTIONS, "detections.pkl"), "wb") as f:
-                pickle.dump(all_detections, f)
+        countDetection = 0
+
             
-            print(f"Detections for camera {cam_id} saved to detections.pkl")
+        for key in all_detections.keys():
+            if key[0] == cam_id:
+                countDetection += 1
+        
+        if countDetection >= END - 1:
+            print(f"Camera {cam_id} already processed. Skipping...")
+            continue
+            
+        detections = process_video(yolo_model, video_path, cam_id)
+        all_detections.update(detections)
+
+        save_pickle(all_detections, pathDetections)
+
+        # il formato con cui vengono salvati i dati nel pkl è: 
+        #           (camera_id, frame_idx) : [(x_center, y_center), ...]        
+        
+        # with open(os.path.join(PATH_DETECTIONS, "detections.pkl"), "wb") as f:
+        #     pickle.dump(all_detections, f)
+        
+        print(f"Detections for camera {cam_id} saved to detections.pkl")
     
     return all_detections
 
