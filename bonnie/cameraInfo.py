@@ -69,56 +69,74 @@ class CameraInfo:
             return point3d
 
     def detections_to_point(all_dets, camera_infos, prev_est=None):
+        # Ensure there are at least two camera detections to triangulate
         if len(all_dets.keys()) < 2:
             return None
 
-        triangulated_points = []
-        checked = {}
+        triangulated_points = []  # Store triangulated 3D points
+        checked = {}  # To avoid re-checking pairs of cameras
+
+        # Iterate over all pairs of camera detections
         for cam_idx_1, det1 in all_dets.items():
             for cam_idx_2, det2 in all_dets.items():
                 if cam_idx_1 == cam_idx_2:
-                    continue
+                    continue  # Skip comparison with the same camera
                 if (cam_idx_2, cam_idx_1) in checked:
-                    continue
+                    continue  # Skip if this camera pair has already been checked
+                
+                # Mark this camera pair as checked
                 checked[(cam_idx_1, cam_idx_2)] = True
+
+                # Get the camera information for both cameras
                 cam1, _ = take_info_camera(cam_idx_1, camera_infos)
                 cam2, _ = take_info_camera(cam_idx_2, camera_infos)
 
+                # Triangulate the 3D point using detections from both cameras
                 point3d = cam1.triangulate(cam2, det1, det2)
-
                 triangulated_points.append(point3d)
 
+        # Convert the list of triangulated points to a NumPy array
         triangulated_points_np = np.array(triangulated_points)
 
+        # If there is no previous estimate, compute the mean of valid triangulated points
         if prev_est is None:
-            ####################################################################################à
-            vec1 = torch.tensor(triangulated_points_np).unsqueeze(0)
-            vec2 = torch.tensor(triangulated_points_np).unsqueeze(1)
-            distances = torch.norm(vec1 - vec2, dim=2)
+            if len(triangulated_points_np) == 0:
+                return None  # Return None if there are no valid triangulated points
 
+            # Step 1: Compute pairwise distances between triangulated points
+            vec1 = torch.tensor(triangulated_points_np).unsqueeze(0)  # Shape (1, N, 3)
+            vec2 = torch.tensor(triangulated_points_np).unsqueeze(1)  # Shape (N, 1, 3)
+            distances = torch.norm(vec1 - vec2, dim=2)  # Compute pairwise distances
+
+            # Step 2: Filter out points that are too far from each other
             good_points = []
             for i in range(distances.shape[0]):
-                for j in range(i, distances.shape[1]):
-                    if distances[i][j] < 1000 and i != j:
+                for j in range(i + 1, distances.shape[1]):  # Compare distinct pairs
+                    if distances[i][j] < 1000:  # Threshold distance (e.g., 1000 units)
                         if i not in good_points:
                             good_points.append(i)
+                        if j not in good_points:
+                            good_points.append(j)
 
-            good_points = np.array([triangulated_points_np[i] for i in good_points])
-
+            # Step 3: Check if any points survived the filtering
             if len(good_points) == 0:
+                return None  # Return None if no good points were found
 
-                return None
+            # Step 4: Compute the mean of the filtered points
+            good_points = np.array([triangulated_points_np[i] for i in good_points])
+            final_point = np.mean(good_points, axis=0)  # Compute the average of good points
 
-            final_point = np.mean(good_points, axis=0)
-            ####################################################################################
         else:
-            dst = [np.linalg.norm(vec - prev_est) for vec in triangulated_points_np]
-            closest = np.array(dst).argmin()
-            final_point = triangulated_points_np[closest]
-            if dst[closest] > 1000:
+            # If a previous estimate exists, choose the triangulated point closest to it
+            dst = [np.linalg.norm(vec - prev_est) for vec in triangulated_points_np]  # Compute distances to previous estimate
+            closest = np.array(dst).argmin()  # Find the closest point index
+            final_point = triangulated_points_np[closest]  # Select the closest point
+
+            # If the closest point is too far from the previous estimate, discard it
+            if dst[closest] > 1000:  # Threshold distance from previous estimate
                 final_point = None
 
-        return final_point
+        return final_point  # Return the final selected or averaged point
 
 
     def __str__(self):

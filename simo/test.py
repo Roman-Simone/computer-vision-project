@@ -19,7 +19,7 @@ else:
 
 size = 800
 model = YOLO(pathWeight)  
-SOURCES = ["/Users/simoneroman/Desktop/CV/Computer_Vision_project/data/videos/video/out1.mp4", "/Users/simoneroman/Desktop/CV/Computer_Vision_project/data/videos/video/out2.mp4"]  # local video, 0 for webcam
+SOURCES = [f"{PATH_VIDEOS}/out1.mp4", f"{PATH_VIDEOS}/out2.mp4"]  # local video, 0 for webcam
 
 
 def run_tracker_in_thread(filename):

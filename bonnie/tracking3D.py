@@ -1,248 +1,237 @@
-import re
-import cv2
-from utils import *
-from config import *
-from ultralytics import YOLO
+import sys
+import torch
+import cv2 as cv
+import os
 import numpy as np
+import json
 from matplotlib import pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
-from tqdm import tqdm  
+from config import *
+from yolo_model import YoloModel 
+from utils import *  
+from cameraInfo import CameraInfo  
+from tracker import Tracker  
+
+START = 2750                # starting frame
+END = 2950                  # ending frame 
+FRAME_SKIP = 30  
+MODE = 2
 
 pathWeight = os.path.join(PATH_WEIGHT, 'best_v8_800.pt')
-model = YOLO(pathWeight, verbose=False)
 
-SIZE = 800
-NUMBER_FRAMES = 50
+if MODE == 1:
+    print("FULL RESOLUTION")
+    model = YoloModel(model_path=pathWeight, wsize=(3840, 2160), overlap=(0, 0))
+elif MODE == 2:
+    print("MAX SPEED")
+    model = YoloModel(model_path=pathWeight, wsize=(1920, 1130), overlap=(0.1, 0.1))
+elif MODE == 3:
+    print("BALANCED")
+    model = YoloModel(model_path=pathWeight, wsize=(1300, 1130), overlap=(0.05, 0.1))
+elif MODE == 4:
+    print("STANDARD")
+    model = YoloModel(model_path=pathWeight, wsize=(640, 640), overlap=(0.1, 0.1))
 
-def plot_3D_trajectory(points_3D):
-    """
-    Plotta la traiettoria 3D del pallone.
+video_paths = [os.path.join(PATH_VIDEOS, f'out{cam_idx}.mp4') for cam_idx in VALID_CAMERA_NUMBERS]
+cams = []  # Initialize camera controllers
+
+camera_infos = load_pickle(PATH_CALIBRATION_MATRIX)
     
-    Args:
-        points_3D (np.array): Lista di punti 3D triangolati.
-    """
-    x_vals = points_3D[:, 0]
-    y_vals = points_3D[:, 1]
-    z_vals = points_3D[:, 2]
+caps = [cv.VideoCapture(video_paths[idx]) for idx in range(len(video_paths))]  # Initialize video captures
+trackers = [Tracker(idx) for idx in VALID_CAMERA_NUMBERS]  # Initialize trackers for each camera
 
-    fig = plt.figure()
-    ax = fig.add_subplot(111, projection='3d')
+cv.namedWindow("frame", cv.WINDOW_NORMAL)
 
-    # Punti in 3D
-    ax.scatter(x_vals, y_vals, z_vals, c='r', marker='o', label='Points')
+# Lists to store tracked points and detections
+tracked_points = []
+every_det = []
 
-    # Traiettoria (linea che unisce i punti)
-    ax.plot(x_vals, y_vals, z_vals, color='b', linewidth=2, label='Trajectory')
+if START > 0:
+    for cap in caps:
+        cap.set(cv.CAP_PROP_POS_FRAMES, START)
 
-    ax.set_xlabel('X')
-    ax.set_ylabel('Y')
-    ax.set_zlabel('Z')
-    ax.set_title('3D Ball trajectory')
+# Initialize frame index and final tracking point
+frame_idx = START
+final_point = None
 
-    ax.legend()
-    plt.show()
+# Dictionary to hold detections for each camera
+detecs = {}
+for idx in VALID_CAMERA_NUMBERS:
+    detecs[idx] = []
 
-def applyModel(frame, model):
-    results = model(frame, verbose=False)
+# Initialize lists to store frames and detections
+all_dets = {}  # Dictionary to hold detections from all cameras
 
-    flagResults = False
-    center_ret = []
-    confidence_ret = []
+# Main loop for processing frames
+while True:
+    all_frames = []  # List to hold frames from all cameras
 
-    for box in results[0].boxes:
-        flagResults = True
-        x1, y1, x2, y2 = box.xyxy[0]
-        confidence = box.conf[0]
-        class_id = box.cls[0]
+    print(f"FRAME {frame_idx}-------------------------------")
 
-        # Draw the bounding box
-        cv2.rectangle(frame, (int(x1), int(y1)), (int(x2), int(y2)), (0, 255, 0), 2)
+    ret = True  # Flag to check if frames are read successfully
 
-        # Prepare the confidence label
-        label = f'{confidence:.2f}'
+    for curr_cam_idx in range(len(VALID_CAMERA_NUMBERS)):
+        cap = caps[curr_cam_idx]  # Get the current camera capture
+        cam, _ = take_info_camera(curr_cam_idx, camera_infos) # Get the current camera controller
 
-        # Determine position for the label (slightly above the top-left corner of the bbox)
-        label_position = (int(x1), int(y1) - 10)
+        ret, frame = cap.read()  # Read the next frame
+        if not ret:
+            print("[TRACK] Frame corrupt, exiting...")
+            exit()  # Exit if the frame is corrupt
 
-        # Add the confidence score text
-        cv2.putText(frame, label, label_position, cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+        # Save the undistorted frame for visualization later
+        uframe = frame
 
-        # Center of the bounding box
-        x_center = (x1 + x2) / 2
-        y_center = (y1 + y2) / 2
+        # Perform object detection on the frame using the Sliced YOLO model
+        out, det, uframe = model.predict(uframe, viz=True)
 
-        # Draw the center of the bounding box
-        cv2.circle(frame, (int(x_center), int(y_center)), 3, (0, 255, 0), -1)
+        # Initialize tracking coordinates
+        track_x = -1
+        track_y = -1
+        if out is not None:
+            # Get detection output
+            x, y, w, h, c = out
+            # Store detections in all_dets
+            all_dets[curr_cam_idx] = [x, y]
+            # Append current detection details to the corresponding camera index
+            detecs[VALID_CAMERA_NUMBERS[curr_cam_idx]].append([x, y, w, h])
 
-        center_ret.append((int(x_center), int(y_center)))
-        confidence_ret.append(confidence)
-        
+        # Resize the undistorted frame for display to common size
+        all_frames.append(uframe)  # Append the resized frame
 
-    if len(center_ret) > 1:
-        max_confidence = max(confidence_ret)
-        for pos, elem in enumerate(confidence_ret):
-            if elem == max_confidence:
-                center_rett = center_ret[pos]
-                confidence_rett = max_confidence
-                break
-    elif len(center_ret) == 1:
-        center_rett = center_ret[0]
-        confidence_rett = confidence_ret[0]
+        # Update frame index with the current position
+        frame_idx = cap.get(cv.CAP_PROP_POS_FRAMES)
+
+    #  Dictionary to hold filtered detections after processing
+    filt_dets = {}
+    for idx, tracker in enumerate(trackers):
+        # Update tracker with the current detections or None if no detection
+        if VALID_CAMERA_NUMBERS[idx] not in all_dets:
+            point = tracker.update(None)
+        else:
+            point = tracker.update(all_dets[VALID_CAMERA_NUMBERS[idx]])
+        if point is not None:
+            # Store the filtered detection point if available
+            filt_dets[VALID_CAMERA_NUMBERS[idx]] = point
+
+    # Update all detections with filtered detections
+    all_dets = filt_dets
+
+    # Convert detections to a single point using camera controllers
+    final_point = CameraInfo.detections_to_point(all_dets, camera_infos, final_point)
+
+    if final_point is not None:
+        tracked_points.append(final_point)  # Append the final tracked point
+
+
+    # for i, frame in enumerate(all_frames):
+        # print(f"Frame {i+1} shape:", frame.shape)
+
+    # Resize all frames to the same common size before stacking
+
+    # Now proceed with stacking
+    if len(all_frames) > 0:  # Only stack if there are frames
+        try:
+            frame = np.vstack([np.hstack(all_frames[:4]), 
+                            np.hstack(all_frames[4:8]), 
+                            np.hstack(all_frames[8:])])
+        except ValueError as e:
+            print(f"Error during frame stacking: {e}")
+
+    if final_point is not None:
+        # Draw a green circle if a point was tracked
+        cv.circle(frame, (50, 50), 30, (0, 255, 0), -1)
+        cv.putText(
+            frame,
+            f"{len(all_dets)}",  # Display the number of detections
+            (40, 60),
+            cv.FONT_HERSHEY_SIMPLEX,
+            1,
+            (0, 0, 0),
+            2,
+            cv.LINE_AA,
+        )
     else:
-        center_rett = (-1, -1)
-        confidence_rett = -1
-
-    return frame, center_rett, confidence_rett
-
-
-def takeBallCoordinates(pathVideo, cameraInfo, model):
-    videoCapture = cv2.VideoCapture(pathVideo)
-
-    countFrame = 0
-    retPoints = []
-
-    while True:
-        ret, frame = videoCapture.read()
-
-        if not ret or countFrame > NUMBER_FRAMES:
-            break
-
-        countFrame += 1
-
-        frameUndistorted = undistorted(frame, cameraInfo)
-        frameUndistorted = cv2.resize(frameUndistorted, (SIZE, SIZE))
-
-        frameWithBbox, center, confidence = applyModel(frameUndistorted, model)
-
-        element = [center[0], center[1], confidence]
-        retPoints.append(element)
-        
-
-        key = cv2.waitKey(1) & 0xFF
-        if key == ord('s'):
-            break
-
-    videoCapture.release()
-    cv2.destroyAllWindows()
-
-    return retPoints
-
-def get_projection_matrix(camera_number, cameraInfos):
-    """
-    Gets the projection matrix for a camera.
-
-    Args:
-        camera_number (int): Camera number.
-        cameraInfos (dict): Dictionary containing the camera information.
+        # Draw a red circle if no point was tracked
+        cv.circle(frame, (50, 50), 30, (0, 0, 255), -1)
     
-    Returns:
-        np.array: Projection matrix for the camera.
-    """
+    # Show the combined frame in the window
+    cv.imshow("frame", frame)
 
-    cameraInfo, _ = take_info_camera(camera_number, cameraInfos)
-    K = cameraInfo.newcameramtx  # 3x3 
-    
-    # (4x4)
-    extrinsic_matrix = cameraInfo.extrinsic_matrix  
-    
-    # get the top 3x4 part (first 3 rows and 4 columns)
-    extrinsic_matrix_3x4 = extrinsic_matrix[:3, :]  
-    
-    print("K: ", K)
-    print("Extrinsic matrix (3x4): ", extrinsic_matrix_3x4)
-    
-    # return projection matrix P = K * [R | t]    
-    return np.dot(K, extrinsic_matrix_3x4)
+    # Check for keyboard input
+    k = cv.waitKey(1)  # Wait for a key event
+    if k == ord("d"):
+        print(f"SKIPPING {FRAME_SKIP} FRAMES")
+        # Skip the specified number of frames for each camera
+        for cap in caps:
+            cap.set(cv.CAP_PROP_POS_FRAMES, frame_idx + FRAME_SKIP)
+    if k == ord("q"):
+        print("EXITING")
+        break  # Exit the loop if 'q' is pressed
 
-def tracking3D():
-    videosCalibration = find_files(PATH_VIDEOS)
-    videosCalibration.sort()
-    cameraInfos = load_pickle(PATH_CALIBRATION_MATRIX)
+# Save detection results to a text file
+with open("detcs.txt", "w") as f:
+    for idx in VALID_CAMERA_NUMBERS:
+        for det in detecs[idx]:
+            f.write(f"{idx} {' '.join([str(x) for x in det])}\n")  # Write camera index and detection data
 
-    points_2D = {}
-    
-    for video in tqdm(videosCalibration, desc="Processing videos"):
-        numero_camera = re.findall(r'\d+', video.replace(".mp4", ""))
-        numero_camera = int(numero_camera[0])
+###################### PLOTS #######################
+# Convert tracked points to a NumPy array for plotting
+tracked_points_np = np.array(tracked_points)
+plot_points = np.array(tracked_points_np).T  # Transpose for easier access
 
-        if numero_camera not in VALID_CAMERA_NUMBERS:
-            continue
+print("Plot points shape:", plot_points.shape)
+print("Plot points:", plot_points)
 
-        cameraInfo, _ = take_info_camera(numero_camera, cameraInfos)
-        pathVideo = os.path.join(PATH_VIDEOS, video)
-        
-        points_2D[numero_camera] = takeBallCoordinates(pathVideo, cameraInfo, model)
+fig = plt.figure()
+ax = fig.add_subplot(111, projection="3d")  # Create a 3D plot
+ax.set_box_aspect([1, 1, 1])  # Set aspect ratio for the 3D plot
 
-    # Assumendo che abbiamo punti da almeno due videocamere per triangolare
-    if 1 in points_2D and 2 in points_2D:  
-        camera1_points = [p[:2] for p in points_2D[1] if p[0] != -1 and p[1] != -1]  # Filter valid points
-        camera2_points = [p[:2] for p in points_2D[2] if p[0] != -1 and p[1] != -1]  # Filter valid points
+# Get real corner positions and field corners for comparison
+positions, field_corners = get_positions()
 
-        # Print shapes for debugging
-        print("Camera 1 Points Shape:", np.array(camera1_points).shape)
-        print("Camera 2 Points Shape:", np.array(camera2_points).shape)
+# Plot real corners on the 3D plot
+ax.scatter(
+    field_corners[:, 0],
+    field_corners[:, 1],
+    field_corners[:, 2],
+    c="red",  # Color for real corners
+    label="Real Corners",
+)
 
-        # Ensure the number of points is the same for triangulation
-        min_length = min(len(camera1_points), len(camera2_points))
+x_coords = plot_points[0]  
+y_coords = plot_points[1]  
+z_coords = plot_points[2]  
 
-        # Truncate both lists to the minimum length
-        camera1_points = camera1_points[:min_length]
-        camera2_points = camera2_points[:min_length]
+ax.scatter(
+    x_coords,  
+    y_coords,  
+    z_coords,  
+    c='blue',  
+    label="Tracked Points",
+    s=50, 
+    marker='o'
+)
 
-        # Check if there are valid points to triangulate
-        if len(camera1_points) == 0 or len(camera2_points) == 0:
-            print("No valid points to triangulate. Skipping.")
-            return
+ax.plot(
+    x_coords,  
+    y_coords,  
+    z_coords,  
+    color='blue',  
+    label="Tracked Path",
+)
 
-        # Matrici di proiezione delle due videocamere
-        P1 = get_projection_matrix(6, cameraInfos)
-        P2 = get_projection_matrix(7, cameraInfos)
+ax.set_xlabel('X axis')
+ax.set_ylabel('Y axis')
+ax.set_zlabel('Z axis')
 
-        if P1.shape != (3, 4) or P2.shape != (3, 4):
-            print("Projection matrix shapes are incorrect")
-            return
+ax.set_xlim([np.min(x_coords) - 1, np.max(x_coords) + 1])  
+ax.set_ylim([np.min(y_coords) - 1, np.max(y_coords) + 1])  
+ax.set_zlim([np.min(z_coords) - 1, np.max(z_coords) + 1])  
 
-        # Triangolazione
-        # points_3D = triangulate_3D_points(camera1_points, camera2_points, P1, P2)
+ax.set_title('3D Tracked Points and Real Corners (with Path)')
 
-        # Plot dei punti triangolati
-        plot_3D_trajectory(points_3D)
+ax.legend()
 
-    save_pickle(points_2D, 'points_2D.pkl')
+set_axes_equal(ax)
 
-# def triangulate_3D_points(camera1_points, camera2_points, P1, P2):
-#     """
-#     Triangola i punti 3D usando i punti 2D di due videocamere.
-#     """
-#     # Ensure that points are numpy arrays and transpose them correctly
-#     camera1_points = np.array(camera1_points).T  # (2, N)
-#     camera2_points = np.array(camera2_points).T  # (2, N)
-
-#     print("Camera 1 Points Shape:", camera1_points.shape)
-#     print("Camera 2 Points Shape:", camera2_points.shape)
-
-#     # Check if the points array have matching dimensions
-#     if camera1_points.shape != camera2_points.shape:
-#         raise ValueError("Camera 1 and Camera 2 points do not have the same dimensions")
-
-#     # Perform triangulation
-#     points_3D_homogeneous = cv2.triangulatePoints(P1, P2, camera1_points, camera2_points)
-    
-#     # Convert from homogeneous to Cartesian coordinates
-#     points_3D = cv2.convertPointsFromHomogeneous(points_3D_homogeneous.T)
-    
-#     return points_3D.squeeze()
-
-
-def testPoints():
-    points = load_pickle('points.pkl')
-
-    print("\n\n\n\n")
-
-    for camera, coords in points.items():
-        print(f"Camera {camera}: {coords}")
-
-
-if __name__ == '__main__':
-    tracking3D()
-    testPoints()
+plt.show()
