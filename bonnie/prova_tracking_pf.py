@@ -21,6 +21,7 @@ else:
 print(f'Using device: {device}')
 
 size = 800
+DISTANCE_THRESHOLD = 100  # Define a threshold distance to detect a new ball
 
 # Define particle filter ball tracker
 class ParticleFilterBallTracker:
@@ -31,6 +32,7 @@ class ParticleFilterBallTracker:
         self.particles = np.random.rand(self.num_particles, 2) * size  # Initialize particles randomly within frame size
         self.weights = np.ones(self.num_particles) / self.num_particles  # Equal weights initially
         self.ball_positions = []  # Store the ball's previous positions
+        self.last_position = None  # Store the last detected ball position
 
     def predict(self):
         # Add random motion to particles (process noise)
@@ -39,6 +41,15 @@ class ParticleFilterBallTracker:
 
     def update(self, measurement):
         if measurement != (-1, -1):
+            # Check if this is a new ball by comparing distances
+            if self.last_position is not None:
+                distance = np.linalg.norm(np.array(measurement) - np.array(self.last_position))
+                if distance > DISTANCE_THRESHOLD:  # New ball detected
+                    self.ball_positions.clear()  # Reset trajectory
+                    print(f"New ball detected, resetting trajectory. Distance: {distance}")
+            
+            self.last_position = measurement
+
             # Compute weights based on distance from measurement (ball center)
             distances = np.linalg.norm(self.particles - np.array(measurement), axis=1)
             self.weights = np.exp(-distances / (2 * self.measurement_noise**2))
@@ -84,15 +95,15 @@ def applyModel(frame, model, tracker):
         class_id = box.cls[0]
 
         if class_id == 0 and confidence > 0.5:
-            cv2.rectangle(frame, (int(x1), int(y1)), (int(x2), int(y2)), (0, 255, 0), 2)
-            x_center = (x1 + x2) / 2
+            # cv2.rectangle(frame, (int(x1), int(y1)), (int(x2), int(y2)), (0, 255, 0), 2)
+            x_center = (x1 + x2) / 2    
             y_center = (y1 + y2) / 2
             center_ret = (int(x_center), int(y_center))
-            cv2.circle(frame, center_ret, 3, (0, 255, 0), -1)
+            # cv2.circle(frame, center_ret, 3, (0, 255, 0), -1)
 
     tracker.update(center_ret)
     tracker.draw_particles(frame)  # Draw particles
-    tracker.draw_estimated_position(frame)  # Draw the estimated position of the ball
+    # tracker.draw_estimated_position(frame)  # Draw the estimated position of the ball
     tracker.draw_trajectory(frame)  # Draw the trajectory of the ball
 
     return frame, center_ret, confidence
@@ -122,4 +133,4 @@ def testModel(num_cam):
     cv2.destroyAllWindows()
 
 if __name__ == '__main__':
-    testModel(1)
+    testModel(6)
