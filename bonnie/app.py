@@ -48,9 +48,9 @@ def get_images():
             
     camera_src = selected_cameras['camera_src']
     camera_dst = selected_cameras['camera_dst']
-
-    img_src = cv2.imread(f"{PATH_FRAME_DISTORTED}/cam_{camera_src}.png")
-    img_dst = cv2.imread(f"{PATH_FRAME_DISTORTED}/cam_{camera_dst}.png")
+    
+    img_src = cv2.imread(os.path.join(PATH_FRAME_DISTORTED, f'cam_{camera_src}.png'))
+    img_dst = cv2.imread(os.path.join(PATH_FRAME_DISTORTED, f'cam_{camera_dst}.png'))
     
     camera_info_1, _ = take_info_camera(camera_src, cameras_info)
     camera_info_2, _ = take_info_camera(camera_dst, cameras_info)
@@ -67,7 +67,10 @@ def get_images():
     if not success_src or not success_dst:
         print("Could not save images")
 
-    return jsonify(src_img='static/src_img.png', dst_img='static/dst_img.png')
+    return jsonify(
+        src_img='static/src_img.png', 
+        dst_img='static/dst_img.png'
+    )
 
 @app.route('/project_point', methods=['POST'])
 def project_point():

@@ -1,5 +1,6 @@
 from config import *
 from utils import *
+from matplotlib import pyplot as plt
 import os
 
 MAX_FRAME = 5100
@@ -33,22 +34,23 @@ def triangulate(cam1, cam2, point2d1, point2d2):
     point4d = cv2.triangulatePoints(proj1, proj2, point2d1.T, point2d2.T)
     point3d = cv2.convertPointsFromHomogeneous(point4d.T)[0][0]
     return point3d
-        
+
 def is_valid_point(point3d):
     
-    
-    ##############################################################
-    ###################### NOT COMPLETE ##########################
-    ##############################################################
-    
     x, y, z = point3d
-    
-    if x < 0 or y < 0 or z < 0:
+        
+    if z < 0 or x < -14 or y < -7.5 or x > 14 or y > 7.5:
         return False
     else:
         print("Point3d: ", point3d)
-    # implementing checks for valid 3D points
-    return True
+        return True
+        
+def get_positions():
+    with open(PATH_CAMERA_POS, "r") as file:
+        data = json.load(file)
+        positions = data["positions"]
+        field_corners = np.array(data["field_corners"]) * 1000
+    return positions, field_corners
         
 def main():
     det_3D = {}  # store valid 3D detections for each frame
@@ -82,6 +84,78 @@ def main():
         det_3D[i] = det_frame_3D
     
     save_pickle(det_3D, os.path.join(PATH_DETECTIONS, 'detections_3D.pkl'))
+
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection="3d")  # Create a 3D plot
+    ax.set_box_aspect([1, 1, 1])  # Set aspect ratio for the 3D plot
+
+    # Get real corner positions and field corners for comparison
+    positions, field_corners = get_positions()
+
+    # Plot real corners on the 3D plot
+    ax.scatter(
+        field_corners[:, 0],
+        field_corners[:, 1],
+        field_corners[:, 2],
+        c="red",  # Color for real corners
+        label="Real Corners",
+    )
+    
+    x_coords, y_coords, z_coords = [], [], []
+    
+    
+    for frame in det_3D:
+        print("Points: ", len(det_3D[frame]))
+        for point in det_3D[frame]:
+            
+            
+            
+            x, y, z = point
+            
+            x_coords.append(x)
+            y_coords.append(y)
+            z_coords.append(z)
+
+        
+    
+    # x_coords = [det_3D[i][0] for i in range(len(det_3D))]
+    # y_coords = [det_3D[i][1] for i in range(len(det_3D))]
+    # z_coords = [det_3D[i][2] for i in range(len(det_3D))]  
+
+    ax.scatter(
+        x_coords,  
+        y_coords,  
+        z_coords,  
+        c='blue',  
+        label="Tracked Points",
+        s=50, 
+        marker='o'
+    )
+
+    ax.plot(
+        x_coords,  
+        y_coords,  
+        z_coords,  
+        color='blue',  
+        label="Tracked Path",
+    )
+
+    ax.set_xlabel('X axis')
+    ax.set_ylabel('Y axis')
+    ax.set_zlabel('Z axis')
+
+    ax.set_xlim([np.min(x_coords) - 1, np.max(x_coords) + 1])  
+    ax.set_ylim([np.min(y_coords) - 1, np.max(y_coords) + 1])  
+    ax.set_zlim([np.min(z_coords) - 1, np.max(z_coords) + 1])  
+
+    ax.set_title('3D Tracked Points and Real Corners (with Path)')
+
+    ax.legend()
+
+    set_axes_equal(ax)
+
+    plt.show()
+
 
 if __name__ == "__main__":
     main()
