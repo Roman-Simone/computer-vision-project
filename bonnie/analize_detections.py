@@ -36,11 +36,16 @@ def triangulate(cam1, cam2, point2d1, point2d2):
         
 def is_valid_point(point3d):
     
+    
+    ##############################################################
+    ###################### NOT COMPLETE ##########################
+    ##############################################################
+    
     x, y, z = point3d
     
     if x < 0 or y < 0 or z < 0:
         return False
-    elif :
+    else:
         print("Point3d: ", point3d)
     # implementing checks for valid 3D points
     return True
