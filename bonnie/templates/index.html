@@ -6,6 +6,222 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Main Menu - 3D Camera Calibration</title>
     <link rel="stylesheet" href="../static/css/style.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin: 0;
+            padding: 0;
+            background-color: #a8a2a2;
+        }
+
+        .title-section {
+            text-align: center;
+            color: #34495e;
+            margin-top: 40px;
+        }
+
+        .title-section h1 {
+            font-size: 48px;
+            font-weight: bold;
+            color: #2c3e50;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+            margin-bottom: 10px;
+        }
+
+        .title-section h2 {
+            font-size: 24px;
+            font-weight: 300;
+            color: #464f50;
+            margin-top: 0;
+            font-style: italic;
+        }
+
+        .camera-selection {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 40px;
+            width: 80%;
+        }
+
+        .camera-group {
+            text-align: center;
+            padding: 20px;
+            border-radius: 10px;
+            width: 40%;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+            background-color: #ecf0f1;
+        }
+
+        .camera-group h3 {
+            margin-bottom: 20px;
+            color: #2c3e50;
+        }
+
+        .camera-group button {
+            margin: 5px;
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .camera-group button.selected {
+            background-color: #27ae60;
+        }
+
+        .camera-group button:hover {
+            background-color: #27ae60;
+            transition: background-color 0.3s ease;
+            transform: translateY(-2px);
+        }
+
+        .camera-src, .camera-dst {
+            border: 3px solid #2980b9;
+        }
+
+        #load_images {
+            margin: 20px;
+            padding: 15px 30px;
+            font-size: 18px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        #load_images:hover {
+            background-color: #27ae60;
+            transition: background-color 0.3s ease;
+            transform: translateY(-2px);
+        }
+
+        .disabled {
+            background-color: #bdc3c7 !important;
+            cursor: not-allowed;
+        }
+
+        .image-container {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 20px;
+            width: 80%;
+        }
+
+        .image-container img {
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            max-width: 60%;
+            cursor: pointer;
+            height: auto;
+            transition: box-shadow 0.3s;
+            margin-right: 20px;
+        }
+
+        .image-container img:last-child {
+            margin-right: 0;
+        }
+
+        .image-container img:hover {
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        #image-dimensions {
+            margin-top: 20px;
+            font-size: 16px;
+            color: #2c3e50;
+        }
+
+        .button-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 20vh;
+            gap: 100px;
+        }
+
+        .button-container button {
+            font-size: 35px;
+            padding: 20px 40px;
+            cursor: pointer;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            transition: background-color 0.3s ease;
+        }
+
+        .button-container button:hover {
+            background-color: #27ae60;
+            transition: background-color 0.3s ease;
+            transform: translateY(-2px);
+        }
+
+        #back_to_menu {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #58ad7b;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            z-index: 1000;
+        }
+
+        #back_to_menu:hover {
+            background-color: #27ae60;
+            transition: background-color 0.3s ease;
+            transform: translateY(-2px);
+        }
+
+        @media (max-width: 768px) {
+            .button-container button {
+                font-size: 20px;
+                padding: 10px 20px;
+            }
+        }
+
+        .project-description {
+            padding: 20px;
+            font-family: sans-serif;
+            font-size: 20px;
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 20px auto;
+            background-color: #a8a2a2;
+            text-align: left;
+        }
+
+        .menu-button {
+            font-size: 35px;
+            padding: 20px 40px;
+            cursor: pointer;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            transition: background-color 0.3s ease;
+        }
+
+        .menu-button:hover {
+            background-color: #27ae60;
+            transform: translateY(-2px);
+        }
+
+    </style>
+</head>
 </head>
 
     
@@ -40,14 +256,11 @@
         </p>
         
 
-        <!-- Button Container -->
         <div class="button-container">
-            <!-- Point Projection Button -->
-            <button onclick="location.href='/point_projection'">Point Projection</button>
-
-            <!-- Ball Tracking Button -->
-            <button onclick="location.href='/ball_tracking'">Ball Tracking</button>
+            <button class="menu-button" onclick="location.href='/point_projection'">Point Projection</button>
+            <button class="menu-button" onclick="location.href='/ball_tracking'">Ball Tracking</button>
         </div>
+        
     </div>
 
 </body>
