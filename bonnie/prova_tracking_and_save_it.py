@@ -5,10 +5,12 @@ from ultralytics import YOLO
 from config import *
 from utils import *
 import os
+import pickle  # Import pickle for saving the data
+import random  # Import random for color generation
 
 pathWeight = os.path.join(PATH_WEIGHT, 'best_v11_800.pt')
 cameraInfos = load_pickle(PATH_CALIBRATION_MATRIX)
-
+END = 30 * 120  # 120 seconds at 30 fps
 model = YOLO(pathWeight)
 
 if torch.cuda.is_available():
@@ -21,11 +23,13 @@ else:
 print(f'Using device: {device}')
 
 size = 800
-DISTANCE_THRESHOLD = 100  # Define a threshold distance to detect a new ball
+DISTANCE_THRESHOLD = 200  # Define a threshold distance to detect a new ball
 
 # Define particle filter ball tracker
 class ParticleFilterBallTracker:
-    def __init__(self, num_particles=1000, process_noise=1.0, measurement_noise=2.0):
+    def __init__(self, tracker_id, color, num_particles=1000, process_noise=1.0, measurement_noise=2.0):
+        self.tracker_id = tracker_id  # Unique ID for the tracker
+        self.color = color  # Color for this tracker
         self.num_particles = num_particles
         self.process_noise = process_noise
         self.measurement_noise = measurement_noise
@@ -46,7 +50,7 @@ class ParticleFilterBallTracker:
                 distance = np.linalg.norm(np.array(measurement) - np.array(self.last_position))
                 if distance > DISTANCE_THRESHOLD:  # New ball detected
                     self.ball_positions.clear()  # Reset trajectory
-                    print(f"New ball detected, resetting trajectory. Distance: {distance}")
+                    print(f"New ball detected, resetting trajectory for Tracker ID {self.tracker_id}. Distance: {distance}")
             
             self.last_position = measurement
 
@@ -70,19 +74,19 @@ class ParticleFilterBallTracker:
 
     def draw_particles(self, frame):
         for particle in self.particles:
-            cv2.circle(frame, tuple(particle.astype(int)), 1, (255, 0, 0), -1)  # Draw each particle
+            cv2.circle(frame, tuple(particle.astype(int)), 1, self.color, -1)  # Draw each particle with the tracker's color
 
     def draw_estimated_position(self, frame):
         estimated_position = self.estimate()
-        cv2.circle(frame, tuple(estimated_position), 5, (0, 0, 255), -1)  # Draw estimated ball position
+        cv2.circle(frame, tuple(estimated_position), 5, self.color, -1)  # Draw estimated ball position with the tracker's color
 
     def draw_trajectory(self, frame):
         if len(self.ball_positions) > 1:
             for i in range(1, len(self.ball_positions)):
                 # Draw line connecting the previous position to the current one
-                cv2.line(frame, self.ball_positions[i-1], self.ball_positions[i], (0, 255, 0), 2)  # Trajectory in green
+                cv2.line(frame, self.ball_positions[i-1], self.ball_positions[i], self.color, 2)  # Trajectory in tracker's color
 
-def applyModel(frame, model, tracker):
+def applyModel(frame, model):
     results = model.track(frame, save=True, verbose=False, device=device)
     
     center_ret = (-1, -1)
@@ -94,50 +98,81 @@ def applyModel(frame, model, tracker):
         confidence = box.conf[0]
         class_id = box.cls[0]
 
-        if class_id == 0 and confidence > 0.5:
+        if class_id == 0 and confidence > 0.5:  # Assuming class_id 0 is for the ball
             x_center = (x1 + x2) / 2    
             y_center = (y1 + y2) / 2
             center_ret = (int(x_center), int(y_center))
             detections.append(center_ret)  # Add detected center coordinates to the list
             
             # Optionally draw bounding box and center circle
-            # cv2.rectangle(frame, (int(x1), int(y1)), (int(x2), int(y2)), (0, 255, 0), 2)
-            # cv2.circle(frame, center_ret, 3, (0, 255, 0), -1)
+            cv2.rectangle(frame, (int(x1), int(y1)), (int(x2), int(y2)), (0, 255, 0), 2)
+            cv2.circle(frame, center_ret, 3, (0, 255, 0), -1)
 
-    tracker.update(center_ret)
-    tracker.draw_particles(frame)  # Draw particles
-    # tracker.draw_estimated_position(frame)  # Draw the estimated position of the ball
-    tracker.draw_trajectory(frame)  # Draw the trajectory of the ball
-
-    # Draw detection coordinates on the frame
-    for i, detection in enumerate(detections):
-        cv2.putText(frame, f'Detection {i+1}: {detection}', (10, 30 + i * 20), 
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
-
-    return frame, center_ret, confidence
+    return detections, center_ret, confidence
 
 def testModel(num_cam):
     pathVideo = os.path.join(PATH_VIDEOS, f'out{num_cam}.mp4')
     cameraInfo, _ = take_info_camera(num_cam, cameraInfos)
 
     videoCapture = cv2.VideoCapture(pathVideo)
-    tracker = ParticleFilterBallTracker()
+    trackers = []  # List to hold multiple tracker instances
 
-    while True:
+    frame_count = 0
+    trajectory_data = []  # List to store the trajectory data for each frame
+
+    while frame_count < END:
         ret, frame = videoCapture.read()
         if not ret:
             break
 
         frameUndistorted = undistorted(frame, cameraInfo)
         frameUndistorted = cv2.resize(frameUndistorted, (size, size))
-        frameWithBbox, center, confidence = applyModel(frameUndistorted, model, tracker)
-        cv2.imshow('Frame', frameWithBbox)
+        detections, center, confidence = applyModel(frameUndistorted, model)
+
+        # Update trackers
+        new_trackers = []
+        for detection in detections:
+            # Check if an existing tracker can be updated
+            matched = False
+            for tracker in trackers:
+                distance = np.linalg.norm(np.array(tracker.last_position) - np.array(detection)) if tracker.last_position else float('inf')
+                if distance < DISTANCE_THRESHOLD:
+                    tracker.update(detection)
+                    matched = True
+                    break
+            
+            # If no tracker matched the detection, create a new tracker
+            if not matched:
+                # Generate a random color for the new tracker
+                color = (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
+                new_tracker = ParticleFilterBallTracker(len(trackers), color)  # Pass the random color to the tracker
+                new_tracker.update(detection)
+                new_trackers.append(new_tracker)
+
+        # Add new trackers to the list
+        trackers.extend(new_trackers)
+
+        # Draw all tracker trajectories
+        for tracker in trackers:
+            tracker.draw_particles(frameUndistorted)  # Draw particles
+            tracker.draw_estimated_position(frameUndistorted)  # Draw the estimated position of the ball
+            tracker.draw_trajectory(frameUndistorted)  # Draw the trajectory of the ball
+
+        # Save the trajectory points
+        trajectory_data.append([tracker.ball_positions for tracker in trackers])  # Store trajectories for each tracker
+
+        # Display the frame
+        cv2.imshow('Frame', frameUndistorted)
 
         key = cv2.waitKey(10) & 0xFF
         if key == ord('s'):
             break
         
-        
+        frame_count += 1
+
+    # Save trajectory data to a pickle file
+    with open('detections_traj.pkl', 'wb') as f:
+        pickle.dump(trajectory_data, f)
 
     videoCapture.release()
     cv2.destroyAllWindows()

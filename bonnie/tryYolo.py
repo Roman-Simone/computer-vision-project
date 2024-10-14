@@ -47,10 +47,7 @@ def applyModel(frame, model):
         confidence = -1
 
 
-    return frame, center_ret, confidence
-
-
-
+    return frame, center_ret, confidence    
 
 def testModel():
     videosCalibration = find_files(PATH_VIDEOS)

@@ -20,3 +20,5 @@ PATH_CSS = os.path.join(parent_path, 'bonnie/static/css')
 PATH_WEIGHT = os.path.join(parent_path, 'data/weight')
 PATH_CAMERA_POS = os.path.join(parent_path, 'data//camera_positions.json')
 VALID_CAMERA_NUMBERS = [1, 2, 3, 4, 5, 6, 7, 8, 12, 13]
+
+
