@@ -63,6 +63,31 @@ def get_positions():
 def are_points_close(point1, point2):
     return np.linalg.norm(point1 - point2) < TOLERANCE
 
+def draw_detection_on_image(image, point2d):
+    if image is None:
+        raise FileNotFoundError(f"Image not found")
+    
+    # Get original image dimensions
+    orig_height, orig_width = image.shape[:2]  # Shape gives (height, width, channels)
+    
+    # Calculate scaling factors (resized image is 800x800)
+    scale_x = orig_width / 800.0
+    scale_y = orig_height / 800.0
+    
+    print("Original image size ----> ", (orig_width, orig_height))
+    print("Original point on resized image ----> ", point2d)
+    
+    # Scale the detected point2d back to the original image size
+    scaled_point2d = (point2d[0] * scale_x, point2d[1] * scale_y)
+    scaled_point2d = tuple(map(int, scaled_point2d))  # Convert to integer pixel coordinates
+    
+    print("Scaled point to original size ----> ", scaled_point2d)
+    
+    # Draw a blue circle at the detected point on the original image
+    cv2.circle(image, scaled_point2d, 20, (255, 0, 0), -1)
+    
+    return image
+
 def main():
     det_3D = {}
     plt.ion()  # Turn on interactive mode
@@ -107,7 +132,49 @@ def main():
                                     break
 
                             if not found_close:
-                                det_frame_3D[tuple(point3d)] = 1  
+                                det_frame_3D[tuple(point3d)] = 1
+
+                            path_video1 = os.path.join(PATH_VIDEOS, f"out{cam1}.mp4")
+                            path_video2 = os.path.join(PATH_VIDEOS, f"out{cam2}.mp4")
+                            
+                            # Take frame i from both videos
+                            cap1 = cv2.VideoCapture(path_video1)
+                            cap2 = cv2.VideoCapture(path_video2)
+
+                            cap1.set(cv2.CAP_PROP_POS_FRAMES, i)
+                            cap2.set(cv2.CAP_PROP_POS_FRAMES, i)
+
+                            ret1, frame1 = cap1.read()
+                            ret2, frame2 = cap2.read()
+
+                            cap1.release()
+                            cap2.release()
+
+                            if not ret1 or not ret2:
+                                raise FileNotFoundError("Failed to read frames from videos")
+
+                            # Disegna i punti sui frame originali
+                            img_cam1 = draw_detection_on_image(frame1, point2d1)
+                            img_cam2 = draw_detection_on_image(frame2, point2d2)
+
+                            cv2.namedWindow(f"Camera {cam1} Frame {i}", cv2.WINDOW_NORMAL)
+                            cv2.imshow(f"Camera {cam1} Frame {i}", img_cam1)
+                            cv2.waitKey(1)  
+                            
+                            while True:
+                                key = cv2.waitKey(10) & 0xFF
+                                if key == ord('s'):
+                                    break
+                                
+                            cv2.namedWindow(f"Camera {cam2} Frame {i}", cv2.WINDOW_NORMAL)
+                            cv2.imshow(f"Camera {cam2} Frame {i}", img_cam2)
+    
+                            while True:
+                                key = cv2.waitKey(10) & 0xFF
+                                if key == ord('s'):
+                                    break
+                            
+                            cv2.destroyAllWindows()
 
         valid_points = {point: count for point, count in det_frame_3D.items() if count >= 2}
         det_3D[i] = list(valid_points.keys())
@@ -138,9 +205,7 @@ def main():
         # Pause briefly to allow the plot to update
         plt.pause(0.001)
 
-    # Finalize the plot window
-    plt.ioff()  # Turn off interactive mode
-    plt.show()  # Keep the window open for interaction
+        plt.show()  # Keep the window open for interaction
 
     # Save the final detections
     save_pickle(det_3D, os.path.join(PATH_DETECTIONS, 'detections_3D.pkl'))
