@@ -202,10 +202,8 @@ def main():
         ax.set_title('3D Tracked Points and Real Corners (with Path)')
         ax.legend()
 
-        # Pause briefly to allow the plot to update
-        plt.pause(0.001)
-
-        plt.show()  # Keep the window open for interaction
+        plt.savefig("3D_tracking.png")
+        # plt.show()
 
     # Save the final detections
     save_pickle(det_3D, os.path.join(PATH_DETECTIONS, 'detections_3D.pkl'))
