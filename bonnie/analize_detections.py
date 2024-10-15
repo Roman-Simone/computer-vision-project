@@ -203,7 +203,7 @@ def main():
         ax.legend()
 
         plt.savefig("3D_tracking.png")
-        # plt.show()
+        plt.show()
 
     # Save the final detections
     save_pickle(det_3D, os.path.join(PATH_DETECTIONS, 'detections_3D.pkl'))
