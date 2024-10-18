@@ -14,7 +14,7 @@ camerasInfo = load_pickle(PATH_CALIBRATION_MATRIX)
 
 cam = [take_info_camera(n, camerasInfo)[0] for n in VALID_CAMERA_NUMBERS]
 
-TOLERANCE = 0.5
+TOLERANCE = 0.45
 
 def get_projection_matrix(cam):
     K = cam.newcameramtx  
@@ -61,7 +61,13 @@ def get_positions():
         return data["positions"], np.array(data["field_corners"]) 
 
 def are_points_close(point1, point2):
-    return np.linalg.norm(point1 - point2) < TOLERANCE
+    
+    if np.linalg.norm(point1 - point2) < TOLERANCE:
+        print("Distance: ", np.linalg.norm(point1 - point2), " - ACCEPTED")
+        return True
+    elif np.linalg.norm(point1 - point2) >= TOLERANCE:
+        print("Distance: ", np.linalg.norm(point1 - point2), " - DISCARDED")
+        return False
 
 def draw_detection_on_image(image, point2d):
     if image is None:
@@ -102,7 +108,7 @@ def main():
 
     previous_points = set()  # Store points from all previous frames
     scatter_current = ax.scatter([], [], [], c='darkgreen', s=30, marker='o', label="Current frame detections")
-    scatter_previous = ax.scatter([], [], [], c='yellow', s=20, marker='o', label="Previous frame detections")
+    scatter_previous = ax.scatter([], [], [], c='lightgreen', s=20, marker='o', label="Previous frame detections")
 
     for i in range(1, MAX_FRAME):
         det_frame_3D = {}
@@ -134,47 +140,47 @@ def main():
                             if not found_close:
                                 det_frame_3D[tuple(point3d)] = 1
 
-                            path_video1 = os.path.join(PATH_VIDEOS, f"out{cam1}.mp4")
-                            path_video2 = os.path.join(PATH_VIDEOS, f"out{cam2}.mp4")
+                            # path_video1 = os.path.join(PATH_VIDEOS, f"out{cam1}.mp4")
+                            # path_video2 = os.path.join(PATH_VIDEOS, f"out{cam2}.mp4")
                             
-                            # Take frame i from both videos
-                            cap1 = cv2.VideoCapture(path_video1)
-                            cap2 = cv2.VideoCapture(path_video2)
+                            # # Take frame i from both videos
+                            # cap1 = cv2.VideoCapture(path_video1)
+                            # cap2 = cv2.VideoCapture(path_video2)
 
-                            cap1.set(cv2.CAP_PROP_POS_FRAMES, i)
-                            cap2.set(cv2.CAP_PROP_POS_FRAMES, i)
+                            # cap1.set(cv2.CAP_PROP_POS_FRAMES, i)
+                            # cap2.set(cv2.CAP_PROP_POS_FRAMES, i)
 
-                            ret1, frame1 = cap1.read()
-                            ret2, frame2 = cap2.read()
+                            # ret1, frame1 = cap1.read()
+                            # ret2, frame2 = cap2.read()
 
-                            cap1.release()
-                            cap2.release()
+                            # cap1.release()
+                            # cap2.release()
 
-                            if not ret1 or not ret2:
-                                raise FileNotFoundError("Failed to read frames from videos")
+                            # if not ret1 or not ret2:
+                            #     raise FileNotFoundError("Failed to read frames from videos")
 
-                            # Disegna i punti sui frame originali
-                            img_cam1 = draw_detection_on_image(frame1, point2d1)
-                            img_cam2 = draw_detection_on_image(frame2, point2d2)
+                            # # Disegna i punti sui frame originali
+                            # img_cam1 = draw_detection_on_image(frame1, point2d1)
+                            # img_cam2 = draw_detection_on_image(frame2, point2d2)
 
-                            cv2.namedWindow(f"Camera {cam1} Frame {i}", cv2.WINDOW_NORMAL)
-                            cv2.imshow(f"Camera {cam1} Frame {i}", img_cam1)
-                            cv2.waitKey(1)  
+                            # cv2.namedWindow(f"Camera {cam1} Frame {i}", cv2.WINDOW_NORMAL)
+                            # cv2.imshow(f"Camera {cam1} Frame {i}", img_cam1)
+                            # cv2.waitKey(1)  
                             
-                            while True:
-                                key = cv2.waitKey(10) & 0xFF
-                                if key == ord('s'):
-                                    break
+                            # while True:
+                            #     key = cv2.waitKey(10) & 0xFF
+                            #     if key == ord('s'):
+                            #         break
                                 
-                            cv2.namedWindow(f"Camera {cam2} Frame {i}", cv2.WINDOW_NORMAL)
-                            cv2.imshow(f"Camera {cam2} Frame {i}", img_cam2)
+                            # cv2.namedWindow(f"Camera {cam2} Frame {i}", cv2.WINDOW_NORMAL)
+                            # cv2.imshow(f"Camera {cam2} Frame {i}", img_cam2)
     
-                            while True:
-                                key = cv2.waitKey(10) & 0xFF
-                                if key == ord('s'):
-                                    break
+                            # while True:
+                            #     key = cv2.waitKey(10) & 0xFF
+                            #     if key == ord('s'):
+                            #         break
                             
-                            cv2.destroyAllWindows()
+                            # cv2.destroyAllWindows()
 
         valid_points = {point: count for point, count in det_frame_3D.items() if count >= 2}
         det_3D[i] = list(valid_points.keys())
@@ -184,11 +190,18 @@ def main():
             previous_points.update(current_points)
 
         # Update scatter plots for current and previous points
+        if previous_points:
+            temp_previous = np.array(list(set(previous_points) - set(current_points)))
+            
+            # Controlla se temp_previous non è vuoto
+            if temp_previous.size > 0:
+                scatter_previous._offsets3d = (temp_previous[:, 0], temp_previous[:, 1], temp_previous[:, 2])
+            else:
+                scatter_previous._offsets3d = ([], [], [])
+                
         if current_points:
             scatter_current._offsets3d = (np.array(current_points)[:, 0], np.array(current_points)[:, 1], np.array(current_points)[:, 2])
         
-        if previous_points:
-            scatter_previous._offsets3d = (np.array(list(previous_points))[:, 0], np.array(list(previous_points))[:, 1], np.array(list(previous_points))[:, 2])
 
         print(f"Frame {i} - valid points: {len(valid_points)}")
 

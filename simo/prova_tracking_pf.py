@@ -21,7 +21,7 @@ else:
 print(f'Using device: {device}')
 
 size = 800
-MIN_DISTANCE = 50  # Distanza minima tra le detection in pixel
+MIN_DISTANCE = 20  # Distanza minima tra le detection in pixel
 MAX_BALLS = 3  # Numero massimo di palle da tracciare
 CONFIDENCE_THRESHOLD = 0.5
 AGE_THRESHOLD = 10  # Numero di frame dopo i quali un tracker viene rimosso se non aggiornato
@@ -86,7 +86,7 @@ class MultiballTracker:
     def draw(self, frame):
         for ball in self.balls:
             # Disegna la posizione stimata
-            cv2.circle(frame, tuple(ball.position.astype(int)), 5, (0, 0, 255), -1)
+            # cv2.circle(frame, tuple(ball.position.astype(int)), 5, (0, 0, 255), -1)
             
             # Disegna la traiettoria
             if len(ball.history) > 1:
@@ -108,7 +108,7 @@ def applyModel(frame, model, tracker):
             y_center = (y1 + y2) / 2
             center = (int(x_center), int(y_center))
             detections.append(center)
-            cv2.circle(frame, center, 3, (0, 255, 0), -1)
+            # cv2.circle(frame, center, 3, (0, 255, 0), -1)
 
     tracker.update(detections)
     tracker.draw(frame)
