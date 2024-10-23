@@ -1,12 +1,18 @@
-import pickle
-import cv2
-import torch
 import os
-import numpy as np
+import cv2
+import sys
+import torch
 from tqdm import tqdm
 from ultralytics import YOLO
-from src.utils.config import *
-from src.utils.utils import *
+
+# Add the parent directory to the system path
+current_path = os.path.dirname(os.path.abspath(__file__))
+parent_path = os.path.abspath(os.path.join(current_path, os.pardir))
+sys.path.append(parent_path)
+
+# Now you can import the utils module from the parent directory
+from utils.utils import *
+from utils.config import *
 
 # Load calibration matrix
 cameraInfos = load_pickle(PATH_CALIBRATION_MATRIX)

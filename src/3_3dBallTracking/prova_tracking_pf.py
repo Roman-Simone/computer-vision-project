@@ -1,12 +1,20 @@
-import numpy as np
-import cv2
-import torch
-from ultralytics import YOLO
-from src.utils.config import *
-from src.utils.utils import *
 import os
+import cv2
+import sys
+import torch
 import pickle
 import random
+import numpy as np
+from ultralytics import YOLO
+
+# Add the parent directory to the system path
+current_path = os.path.dirname(os.path.abspath(__file__))
+parent_path = os.path.abspath(os.path.join(current_path, os.pardir))
+sys.path.append(parent_path)
+
+# Now you can import the utils module from the parent directory
+from utils.utils import *
+from utils.config import *
 
 # Action frame ranges
 ACTIONS = {

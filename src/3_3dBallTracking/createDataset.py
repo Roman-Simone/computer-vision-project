@@ -1,9 +1,18 @@
 import re
 import os
 import cv2
+import sys
 from tqdm import tqdm
-from src.utils.utils import *
-from src.utils.config import *
+from cameraInfo import *
+
+# Add the parent directory to the system path
+current_path = os.path.dirname(os.path.abspath(__file__))
+parent_path = os.path.abspath(os.path.join(current_path, os.pardir))
+sys.path.append(parent_path)
+
+# Now you can import the utils module from the parent directory
+from utils.utils import *
+from utils.config import *
 
 SKIP_FRAME = 342
 

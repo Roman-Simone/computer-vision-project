@@ -1,8 +1,17 @@
 import re
+import os
 import cv2
-from src.utils.utils import *
-from src.utils.config import *
+import sys
 from ultralytics import YOLO
+
+# Add the parent directory to the system path
+current_path = os.path.dirname(os.path.abspath(__file__))
+parent_path = os.path.abspath(os.path.join(current_path, os.pardir))
+sys.path.append(parent_path)
+
+# Now you can import the utils module from the parent directory
+from utils.utils import *
+from utils.config import *
 
 
 pathWeight = os.path.join(PATH_WEIGHT, 'best_v11_800.pt')

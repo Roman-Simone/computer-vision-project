@@ -1,6 +1,14 @@
-import cv2 
 import os
-from src.utils.config import *
+import cv2 
+import sys
+
+# Add the parent directory to the system path
+current_path = os.path.dirname(os.path.abspath(__file__))
+parent_path = os.path.abspath(os.path.join(current_path, os.pardir))
+sys.path.append(parent_path)
+
+# Now you can import the utils module from the parent directory
+from utils.config import *
 
 # FINO A FRAME 5100 OK
 

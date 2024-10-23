@@ -1,10 +1,18 @@
-from src.utils.config import *
-from src.utils.utils import *
-from matplotlib import pyplot as plt
 import os
-import numpy as np
+import sys
 import cv2
 import json
+import numpy as np
+from matplotlib import pyplot as plt
+
+# Add the parent directory to the system path
+current_path = os.path.dirname(os.path.abspath(__file__))
+parent_path = os.path.abspath(os.path.join(current_path, os.pardir))
+sys.path.append(parent_path)
+
+# Now you can import the utils module from the parent directory
+from utils.utils import *
+from utils.config import *
 
 ACTIONS = {
     1: (48, 230),
