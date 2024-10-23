@@ -36,8 +36,6 @@ def find_common_points(camera_number_1: int, camera_number_2: int):
 
 def homographyUndistortedCameras(points_1, points_2, camera_number_1, camera_number_2):
 
-    homography_ret = None
-
     camera_info_1, _ = take_info_camera(camera_number_1, camera_infos)
     camera_info_2, _ = take_info_camera(camera_number_2, camera_infos)
 

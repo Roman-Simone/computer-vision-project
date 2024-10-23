@@ -19,6 +19,7 @@ class HomographyInfo:
         self.camera_number_1 = camera_number_1
         self.camera_number_2 = camera_number_2
         self.homography = None
+        self.fundamental = None
     
     def __str__(self):
         return f"Camera 1: {self.camera_number_1}, Camera 2: {self.camera_number_2}"
