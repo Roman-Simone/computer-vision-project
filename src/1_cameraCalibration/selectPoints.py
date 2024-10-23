@@ -1,10 +1,20 @@
 import os
 import re
 import cv2
+import sys
 import json
 import numpy as np
-from src.utils.utils import *
-from src.utils.config import *
+from cameraInfo import *
+
+# Add the parent directory to the system path
+current_path = os.path.dirname(os.path.abspath(__file__))
+parent_path = os.path.abspath(os.path.join(current_path, os.pardir))
+sys.path.append(parent_path)
+
+# Now you can import the utils module from the parent directory
+from utils.utils import *
+from utils.config import *
+
 
 
 valid_camera_numbers = [1, 2, 3, 4, 5, 6, 7, 8, 12, 13]
@@ -279,7 +289,7 @@ def edit_image(image, camera_number=1):
 
     return image
 
-def takePoints(imageUndistorted, courtImg, camera_number, rightCameraFlag):
+def takePoints(imageUndistorted, courtImg, camera_number, rightCameraFlag, undistortedFlag = False, cameraInfo = None):
     global clicked_point, points, img_copy
 
     print("Select the corners of the court")
@@ -302,6 +312,9 @@ def takePoints(imageUndistorted, courtImg, camera_number, rightCameraFlag):
                     # User clicked on the image
                     points[point] = 1
                     print(f"Point {point} selected at {clicked_point}")
+
+                    if undistortedFlag:
+                        clicked_point = (clicked_point[0] + cameraInfo.roi[0], clicked_point[1] + cameraInfo.roi[1])
 
                     for worldPoint in worldPoints:
                         if worldPoints[worldPoint] == ():
@@ -360,16 +373,15 @@ def commonList(camera_number, world_image_coordinates):
         print(f"No valid points selected for camera {camera_number}. Data not saved.")
 
 
-def selectPointsAllCameras():
+def selectPointsAllCameras(undistortedFlag = False):
     #global rateoImages
+    frames = find_files(PATH_FRAME_DISTORTED)
+    frames.sort()
 
-    videos = find_file_mp4(path_videos)
-    camera_infos = load_pickle(PATH_CALIBRATION_MATRIX)
+    for frame in frames:
+        print(frame)
 
-    for video in videos:
-        print(video)
-
-        camera_number = re.findall(r'\d+', video.replace(".mp4", ""))
+        camera_number = re.findall(r'\d+', frame.replace(".png", ""))
         camera_number = int(camera_number[0])
         if camera_number not in valid_camera_numbers:
             continue
@@ -379,65 +391,48 @@ def selectPointsAllCameras():
         else:
             rightCameraFlag = False
 
-        # Open the video
-        camera_info, _ = take_info_camera(camera_number, camera_infos)
-        path_video = os.path.join(path_videos, video)
-        video_capture = cv2.VideoCapture(path_video)
+        frameImg = cv2.imread(os.path.join(PATH_FRAME_DISTORTED, frame))
+        courtImg = cv2.imread(PATH_COURT)
+        
+        if undistortedFlag:
+            camerasInfo = load_pickle(PATH_CALIBRATION_MATRIX)
+            cameraInfo, _ = take_info_camera(camera_number, camerasInfo)
 
-        # Show the video
-        while True:
-            ret, frame = video_capture.read()
-            if not ret:
-                break
-            
-            # undistorted_frame= undistorted(frame, camera_info)
+            frameImg = undistorted(frameImg, cameraInfo)
+            world_image_coordinates = takePoints(frameImg, courtImg, camera_number, rightCameraFlag, undistortedFlag, cameraInfo)
 
-            # undistorted_frame_copy = undistorted_frame.copy()
+        else:
+            world_image_coordinates = takePoints(frameImg, courtImg, camera_number, rightCameraFlag)
 
-            undistorted_frame = frame.copy()
-            undistorted_frame_copy = undistorted_frame.copy()
-
-
-            courtImg = cv2.imread(path_court)
-
-            cv2.imshow(f"Camera {camera_number}", undistorted_frame)
-            key = cv2.waitKey(0)
-            if key == ord('s'):
-
-                frame_filename = os.path.join(PATH_FRAME, f"cam_{camera_number}.png")
-                cv2.imwrite(frame_filename, undistorted_frame)
-                cv2.destroyAllWindows()
-
-                world_image_coordinates = takePoints(undistorted_frame_copy, courtImg, camera_number, rightCameraFlag)
-
-                print(world_image_coordinates)
-                # Save worldPoints and imagePoints to the global dictionary
-                commonList(camera_number, world_image_coordinates)
-                break
+        # Save worldPoints and imagePoints to the global dictionary
+        commonList(camera_number, world_image_coordinates)
 
         cv2.destroyAllWindows()
-        video_capture.release()
 
     cv2.destroyAllWindows()
+
+    pathToSave = PATH_JSON_DISTORTED
+    if undistortedFlag:
+        pathToSave = PATH_JSON_UNDISTORTED
+    
     # After processing all videos, save the combined JSON file
     if all_world_points:
-        with open(PATH_JSON, 'w') as json_file:
+        with open(pathToSave, 'w') as json_file:
             json.dump(all_world_points, json_file, indent=4)
-        print(f"All world points saved to {PATH_JSON}")
+        print(f"All world points saved to {pathToSave}")
     else:
         print("No valid points selected for any camera. No data saved.")
 
 
-def selectPointsCamera(camera_to_select):
+def selectPointsCamera(camera_to_select, undistortedFlag = False):
     #global rateoImages
 
-    videos = find_file_mp4(path_videos)
-    camera_infos = load_pickle(PATH_CALIBRATION_MATRIX)
+    frames = find_files(PATH_FRAME_DISTORTED)
 
-    for video in videos:
-        print(video)
+    for frame in frames:
+        print(frame)
 
-        camera_number = re.findall(r'\d+', video.replace(".mp4", ""))
+        camera_number = re.findall(r'\d+', frame.replace(".png", ""))
         camera_number = int(camera_number[0])
         if camera_number not in VALID_CAMERA_NUMBERS or camera_number != camera_to_select:
             continue
@@ -447,43 +442,26 @@ def selectPointsCamera(camera_to_select):
         else:
             rightCameraFlag = False
 
-        # Open the video
-        camera_info, _ = take_info_camera(camera_number, camera_infos)
-        path_video = os.path.join(path_videos, video)
-        video_capture = cv2.VideoCapture(path_video)
+        frameImg = cv2.imread(os.path.join(PATH_FRAME_DISTORTED, frame))
+        courtImg = cv2.imread(PATH_COURT)
+        
+        if undistortedFlag:
+            camerasInfo = load_pickle(PATH_CALIBRATION_MATRIX)
+            cameraInfo, _ = take_info_camera(camera_number, camerasInfo)
 
-        # Show the video
-        while True:
-            ret, frame = video_capture.read()
-            if not ret:
-                break
+            frameImg = undistorted(frameImg, cameraInfo)
+            world_image_coordinates = takePoints(frameImg, courtImg, camera_number, rightCameraFlag, undistortedFlag, cameraInfo)
 
-            # undistorted_frame = undistorted(frame, camera_info)
+        else:
+            world_image_coordinates = takePoints(frameImg, courtImg, camera_number, rightCameraFlag)
+        
+        pathToSave = PATH_JSON_DISTORTED
+        if undistortedFlag:
+            pathToSave = PATH_JSON_UNDISTORTED
 
-            # undistorted_frame_copy = undistorted_frame.copy()
-
-            undistorted_frame = frame.copy()
-            undistorted_frame_copy = undistorted_frame.copy()
-
-            courtImg = cv2.imread(path_court)
-
-            cv2.imshow(f"Camera {camera_number}", undistorted_frame)
-            key = cv2.waitKey(0)
-            if key == ord('s'):
-
-                frame_filename = os.path.join(PATH_FRAME, f"cam_{camera_number}.png")
-                cv2.imwrite(frame_filename, undistorted_frame)
-                cv2.destroyAllWindows()
-                print("shape und")
-                print(undistorted_frame_copy.shape)
-
-                world_image_coordinates = takePoints(undistorted_frame_copy, courtImg, camera_number, rightCameraFlag)
-
-                update_json_file(camera_number, world_image_coordinates, PATH_JSON)
-                break
-
+        update_json_file(camera_number, world_image_coordinates, pathToSave)
+    
         cv2.destroyAllWindows()
-        video_capture.release()
 
 
 
@@ -522,9 +500,11 @@ def update_json_file(camera_number, world_image_coordinates, file_name):
 
 if __name__ == '__main__':
     # Select points for all cameras
-    # selectPointsAllCameras()
+    # undistortedFlag = False
+    # selectPointsAllCameras(undistortedFlag)
 
     # Select points for a specific camera
-    camera_to_select = 6
-    selectPointsCamera(camera_to_select)
+    camera_to_select = 4
+    undistortedFlag = False
+    selectPointsCamera(camera_to_select, undistortedFlag)
 

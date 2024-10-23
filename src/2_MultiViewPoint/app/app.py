@@ -1,9 +1,23 @@
-from flask import Flask, render_template, jsonify, request, send_file
-import cv2
-import numpy as np
-from src.utils.config import *
-from src.utils.utils import *
 import os
+import cv2
+import sys
+import numpy as np
+from flask import Flask, render_template, jsonify, request
+
+# Add the parent directory to the system path
+current_path = os.path.dirname(os.path.abspath(__file__))
+parent_path = os.path.abspath(os.path.join(current_path, os.pardir))
+sys.path.append(parent_path)
+
+from cameraInfo import *
+
+current_path = os.path.dirname(os.path.abspath(__file__))
+grandparent_path = os.path.abspath(os.path.join(current_path, os.pardir, os.pardir))
+sys.path.append(grandparent_path)
+
+# Now you can import the utils module from the parent directory
+from utils.utils import *
+from utils.config import *
 
 app = Flask(__name__, static_folder=PATH_STATIC)
 

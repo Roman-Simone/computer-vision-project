@@ -4,6 +4,7 @@ import cv2
 import sys
 import numpy as np
 from tqdm import tqdm
+from cameraInfo import *
 
 # Add the parent directory to the system path
 current_path = os.path.dirname(os.path.abspath(__file__))
@@ -13,7 +14,6 @@ sys.path.append(parent_path)
 # Now you can import the utils module from the parent directory
 from utils.utils import *
 from utils.config import *
-from utils.cameraInfo import *
 
 all_chessboard_sizes = {1: (5, 7), 2: (5, 7), 3: (5, 7), 4: (5, 7), 5: (6, 9), 6: (6, 9), 7: (5, 7), 8: (6, 9), 12: (5, 7), 13: (5, 7)}
 SKIP_FRAME = 10
@@ -243,7 +243,7 @@ if __name__ == '__main__':
 
     # CALIBRATE SPECIFIC CAM
     # camera_number = 3
-    calibrateCameraIntrinsic(camera_number)
+    # calibrateCameraIntrinsic(camera_number)
 
     # ONLY FOR TESTING
     test_calibration()
