@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 from src.utils.utils import *
 from src.utils.config import *
-from cameraInfo import *
+from src.utils.cameraInfo import *
 
 
 coordinates_by_camera = read_json_file_and_structure_data(PATH_JSON_DISTORTED)

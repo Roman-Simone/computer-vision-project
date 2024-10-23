@@ -1,9 +1,18 @@
+import os
 import cv2
+import sys
 import json
 import numpy as np
-from src.utils.utils import *
-from src.utils.config import *
-import matplotlib.pyplot as plt
+
+# Add the parent directory to the system path
+current_path = os.path.dirname(os.path.abspath(__file__))
+parent_path = os.path.abspath(os.path.join(current_path, os.pardir))
+sys.path.append(parent_path)
+
+# Now you can import the utils module from the parent directory
+from utils.utils import *
+from utils.config import *
+from utils.cameraInfo import *
 
 
 def calculate_extrinsics(camera_number, undistortedFlag = False):

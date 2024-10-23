@@ -2,8 +2,6 @@ import os
 import cv2
 import json
 import pickle
-import numpy as np
-from src.utils.config import *
 
 
 def undistorted(frame1, camera_info):   
