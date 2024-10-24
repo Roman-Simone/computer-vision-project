@@ -30,11 +30,12 @@ camerasInfo = load_pickle(PATH_CALIBRATION_MATRIX)
 
 cam = [take_info_camera(n, camerasInfo)[0] for n in VALID_CAMERA_NUMBERS]
 
-TOLERANCE = 0.45
+TOLERANCE = 0.5
 
 def get_projection_matrix(cam):
     K = cam.newcameramtx  
-    extrinsic_matrix = cam.extrinsic_matrix  
+    extrinsic_matrix = cam.extrinsic_matrix
+    extrinsic_matrix = np.linalg.inv(extrinsic_matrix)
     extrinsic_matrix_3x4 = extrinsic_matrix[:3, :]  
     return np.dot(K, extrinsic_matrix_3x4)
 

@@ -43,13 +43,13 @@ ACTIONS = {
 
 
 # Ask user to select an action (1-8)
-action = int(input("Select the action to process (1-7): "))
-if action not in ACTIONS:
-    print("Invalid action selected. Please choose between 1 and 7.")
-    exit()
+# action = int(input("Select the action to process (1-7): "))
+# if action not in ACTIONS:
+#     print("Invalid action selected. Please choose between 1 and 7.")
+#     exit()
 
 # Set START and END based on the action chosen
-START, END = ACTIONS[action]
+# START, END = ACTIONS[action]
 
 pathWeight = os.path.join(PATH_WEIGHT, 'best_v11_800.pt')
 cameraInfos = load_pickle(PATH_CALIBRATION_MATRIX)
@@ -163,9 +163,8 @@ class ParticleFilterBallTracker:
                 pt2 = tuple(np.clip(self.ball_positions[i], 0, size-1).astype(int))
                 cv2.line(frame, pt1, pt2, self.color, 2)
 
-
 def applyModel(frame, model):
-    results = model.track(frame,  verbose=False, device=device)
+    results = model.track(frame, save=False, verbose=False, device=device)
     
     center_ret = (-1, -1)
     confidence = -1
