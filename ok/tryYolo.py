@@ -1,5 +1,6 @@
 import re
 import cv2
+import torch
 from utils import *
 from config import *
 from ultralytics import YOLO
@@ -7,11 +8,18 @@ from ultralytics import YOLO
 
 pathWeight = os.path.join(PATH_WEIGHT, 'best_v11_800.pt')
 
+if torch.cuda.is_available():
+    device = 'cuda'
+elif torch.backends.mps.is_available():
+    device = 'mps'
+else:
+    device = 'cpu'
+
 size = 800
 model = YOLO(pathWeight)  
 
 def applyModel(frame, model):
-    results = model(frame)
+    results = model.track(frame, verbose = False, device=device)
     
     flagResults = False
 
@@ -21,7 +29,6 @@ def applyModel(frame, model):
         confidence = box.conf[0]
         class_id = box.cls[0]
 
-        # Draw the bounding box
         cv2.rectangle(frame, (int(x1), int(y1)), (int(x2), int(y2)), (0, 255, 0), 2)
 
         # Prepare the confidence label
@@ -47,7 +54,10 @@ def applyModel(frame, model):
         confidence = -1
 
 
-    return frame, center_ret, confidence    
+    return frame, center_ret, confidence
+
+
+
 
 def testModel():
     videosCalibration = find_files(PATH_VIDEOS)
@@ -75,7 +85,7 @@ def testModel():
 
             frameUndistorted = undistorted(frame, cameraInfo)
 
-            frameUndistorted = cv2.resize(frameUndistorted, (size, size))
+            frameUndistorted = cv2.resize(frameUndistorted, (size, 480))
 
             frameWithBbox, center, confidence = applyModel(frameUndistorted, model)
 

@@ -35,13 +35,13 @@ ACTIONS = {
 
 
 # Ask user to select an action (1-8)
-action = int(input("Select the action to process (1-7): "))
-if action not in ACTIONS:
-    print("Invalid action selected. Please choose between 1 and 7.")
-    exit()
+# action = int(input("Select the action to process (1-7): "))
+# if action not in ACTIONS:
+#     print("Invalid action selected. Please choose between 1 and 7.")
+#     exit()
 
 # Set START and END based on the action chosen
-START, END = ACTIONS[action]
+# START, END = ACTIONS[action]
 
 pathWeight = os.path.join(PATH_WEIGHT, 'best_v11_800.pt')
 cameraInfos = load_pickle(PATH_CALIBRATION_MATRIX)
@@ -155,83 +155,8 @@ class ParticleFilterBallTracker:
                 pt2 = tuple(np.clip(self.ball_positions[i], 0, size-1).astype(int))
                 cv2.line(frame, pt1, pt2, self.color, 2)
 
-def testModel(num_cam, action):
-    """Process the video for the given camera and action, return trajectory points"""
-    pathVideo = os.path.join(PATH_VIDEOS, f'out{num_cam}.mp4')
-    cameraInfo, _ = take_info_camera(num_cam, cameraInfos)
-    videoCapture = cv2.VideoCapture(pathVideo)
-
-    START, END = ACTIONS[action]
-    videoCapture.set(cv2.CAP_PROP_POS_FRAMES, START)
-
-    trackers = []
-    trajectory_points = []
-    frame_count = 0
-
-    while True:
-        current_frame = int(videoCapture.get(cv2.CAP_PROP_POS_FRAMES))
-        if current_frame > END:
-            break
-
-        ret, frame = videoCapture.read()
-        if not ret:
-            break
-
-        frame_count += 1
-        frameUndistorted = undistorted(frame, cameraInfo)
-        frameUndistorted = cv2.resize(frameUndistorted, (size, size))
-        detections, center, confidence = applyModel(frameUndistorted, model)
-
-        # First, predict next state for all active trackers
-        for tracker in trackers:
-            if tracker.active:
-                tracker.predict()
-
-        # Then, update trackers with new detections
-        for detection in detections:
-            matched_tracker = None
-            min_distance = float('inf')
-            
-            # Find the closest active tracker
-            for tracker in trackers:
-                if not tracker.active:
-                    continue
-                if tracker.last_position is not None:
-                    distance = np.linalg.norm(np.array(detection) - np.array(tracker.last_position))
-                    if distance < DISTANCE_THRESHOLD and distance < min_distance:
-                        min_distance = distance
-                        matched_tracker = tracker
-            
-            if matched_tracker is None:
-                # Create new tracker
-                color = (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
-                new_tracker = ParticleFilterBallTracker(len(trackers), color)
-                new_tracker.reset_tracker(detection)
-                trackers.append(new_tracker)
-            else:
-                # Update existing tracker
-                matched_tracker.update(detection)
-
-        # Draw visualizations for active trackers
-        for tracker in trackers:
-            if tracker.active:
-                tracker.draw_particles(frameUndistorted)
-                tracker.draw_estimated_position(frameUndistorted)
-                tracker.draw_trajectory(frameUndistorted)
-                if tracker.last_position is not None:
-                    trajectory_points.append(tracker.last_position)
-
-        cv2.imshow('Frame', frameUndistorted)
-        key = cv2.waitKey(1) & 0xFF
-        if key == ord('s'):
-            break
-
-    videoCapture.release()
-    cv2.destroyAllWindows()
-    return trajectory_points
-
 def applyModel(frame, model):
-    results = model.track(frame, save=True, verbose=False, device=device)
+    results = model.track(frame, save=False, verbose=False, device=device)
     
     center_ret = (-1, -1)
     confidence = -1
