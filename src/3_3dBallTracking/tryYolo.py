@@ -1,13 +1,8 @@
 import re
 import os
 import cv2
-<<<<<<< HEAD:ok/tryYolo.py
-import torch
-from utils import *
-from config import *
-=======
 import sys
->>>>>>> 3b38591041be2c3bbd94d667c1f07c35a5ddcadb:src/3_3dBallTracking/tryYolo.py
+import torch
 from ultralytics import YOLO
 
 # Add the parent directory to the system path
@@ -21,7 +16,10 @@ from utils.config import *
 
 
 pathWeight = os.path.join(PATH_WEIGHT, 'best_v11_800.pt')
+cameraInfos = load_pickle(PATH_CALIBRATION_MATRIX)
+model = YOLO(pathWeight)
 
+# Select the device to use (CUDA, MPS, or CPU)
 if torch.cuda.is_available():
     device = 'cuda'
 elif torch.backends.mps.is_available():
@@ -30,19 +28,33 @@ else:
     device = 'cpu'
 
 size = 800
-model = YOLO(pathWeight)  
 
 def applyModel(frame, model):
-    results = model.track(frame, verbose = False, device=device)
-    
-    flagResults = False
 
+    originalSizeHeight, originalSizeWidth, _ = frame.shape
+
+    results = model.track(frame, verbose = False, device=device)
+
+    frameResized = cv2.resize(frame, (size, size))
+    
+    results = model.track(frameResized, verbose=False, device=device)
+    
     for box in results[0].boxes:
-        flagResults = True
+
         x1, y1, x2, y2 = box.xyxy[0]
+
+        x1 = x1 * originalSizeWidth / size
+        y1 = y1 * originalSizeHeight / size
+        x2 = x2 * originalSizeWidth / size
+        y2 = y2 * originalSizeHeight / size
+
         confidence = box.conf[0]
         class_id = box.cls[0]
 
+        if confidence < 0.5:
+            continue
+
+        # Draw the bounding box
         cv2.rectangle(frame, (int(x1), int(y1)), (int(x2), int(y2)), (0, 255, 0), 2)
 
         # Prepare the confidence label
@@ -61,24 +73,18 @@ def applyModel(frame, model):
         #draw the center of the bounding box
         cv2.circle(frame, (int(x_center), int(y_center)), 3, (0, 255, 0), -1)
 
-        center_ret = (int(x_center), int(y_center))
-    
-    if flagResults == False:
-        center_ret = (-1, -1)
-        confidence = -1
+    return frame 
 
-
-    return frame, center_ret, confidence
 
 
 
 
 def testModel():
-    videosCalibration = find_files(PATH_VIDEOS)
-    videosCalibration.sort()
+    videos = find_files(PATH_VIDEOS)
+    videos.sort()
     cameraInfos = load_pickle(PATH_CALIBRATION_MATRIX)
 
-    for video in videosCalibration:
+    for video in videos:
         numero_camera = re.findall(r'\d+', video.replace(".mp4", ""))
         numero_camera = int(numero_camera[0])
         
@@ -99,22 +105,17 @@ def testModel():
 
             frameUndistorted = undistorted(frame, cameraInfo)
 
-            frameUndistorted = cv2.resize(frameUndistorted, (size, 480))
-
-            frameWithBbox, center, confidence = applyModel(frameUndistorted, model)
-
-            print(center, confidence)
+            frameWithBbox = applyModel(frameUndistorted, model)
 
             cv2.imshow('Frame', frameWithBbox)
 
             key = cv2.waitKey(10) & 0xFF
             if key == ord('s'):
                 break
+
+            
         videoCapture.release()
         cv2.destroyAllWindows()
-
-
-
 
 
 if __name__ == '__main__':
