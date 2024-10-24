@@ -202,9 +202,6 @@ def test_calibration():
     videos = find_files(PATH_VIDEOS)
     videos.sort()
     camera_infos = load_pickle(PATH_CALIBRATION_MATRIX)
-
-    for camera_info in camera_infos:
-        print(f"Camera {camera_info.camera_number} rvecs: {camera_info.rvecs}")
     
     for video in videos:
 
@@ -239,7 +236,7 @@ def test_calibration():
 if __name__ == '__main__':
 
     # CALIBRATE ALL THE CAMS
-    calibrateAllIntrinsic()
+    # calibrateAllIntrinsic()
 
     # CALIBRATE SPECIFIC CAM
     # camera_number = 3
