@@ -44,7 +44,7 @@ def findPoints(path_video, cameraInfo, debug=True):
 
     if debug:
         # Create a directory to save the screen captures named as the video file
-        output_dir = f"samples/Camera{cameraInfo.camera_number}"
+        output_dir = f"{PATH_FRAME_SAMPLES_CALIBRATION}/Camera{cameraInfo.camera_number}"
         output_dir = os.path.join(os.path.dirname(__file__), output_dir)
         os.makedirs(output_dir, exist_ok=True)
         print("Saving frames to ", output_dir)

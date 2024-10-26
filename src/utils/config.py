@@ -5,7 +5,7 @@ current_path = os.path.dirname(os.path.abspath(__file__))
 # parent_path = os.path.abspath(parent_path)
 grandparent_path = os.path.abspath(os.path.join(current_path, os.pardir, os.pardir))
 
-
+PATH_FRAME_SAMPLES_CALIBRATION = os.path.join(grandparent_path, 'data/images/samples_calibration')
 PATH_VIDEOS_CALIBRATION = os.path.join(grandparent_path, 'data/videos/calibration')
 PATH_VIDEOS = os.path.join(grandparent_path, 'data/videos/video')
 PATH_CALIBRATION_MATRIX = os.path.join(grandparent_path, 'data/calibrationMatrix/calibration.pkl')
