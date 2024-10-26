@@ -15,6 +15,7 @@ sys.path.append(parent_path)
 # Now you can import the utils module from the parent directory
 from utils.utils import *
 from utils.config import *
+from utils.particleFilter import *
 
 # Action frame ranges
 ACTIONS = {

@@ -16,7 +16,7 @@ from utils.utils import *
 from utils.config import *
 
 all_chessboard_sizes = {1: (5, 7), 2: (5, 7), 3: (5, 7), 4: (5, 7), 5: (6, 9), 6: (6, 9), 7: (5, 7), 8: (6, 9), 12: (5, 7), 13: (5, 7)}
-SKIP_FRAME = 10
+SKIP_FRAME = 6
 
 
 def findPoints(path_video, cameraInfo, debug=True):
@@ -30,7 +30,6 @@ def findPoints(path_video, cameraInfo, debug=True):
     # prepare object points, like (0,0,0), (1,0,0), (2,0,0) ....,(6,5,0)
     objp = np.zeros((chess_width * chess_height,3), np.float32)
     objp[:,:2] = np.mgrid[0:chess_height , 0:chess_width].T.reshape(-1,2)
-
 
     # Arrays to store object points and image points from all the images.
     retObjpoints = [] # 3d point in real world space
@@ -135,13 +134,14 @@ def compute_calibration_single(cameraInfo):
     for video in videosCalibration:
         numero_camera = re.findall(r'\d+', video.replace(".mp4", ""))
         numero_camera = int(numero_camera[0])
+
         if numero_camera != cameraInfo.camera_number:
             continue
 
 
         path_video = os.path.join(PATH_VIDEOS_CALIBRATION, video)
 
-        cameraInfo.objpoints, cameraInfo.imgpoints, gray = findPoints(path_video, cameraInfo, debug=False)
+        cameraInfo.objpoints, cameraInfo.imgpoints, gray = findPoints(path_video, cameraInfo, debug=True)
 
         if len(cameraInfo.objpoints) == 0:
             print(f"Camera {numero_camera} not calibrated - No points found")
@@ -171,6 +171,7 @@ def calibrateAllIntrinsic():
 
 
 def calibrateCameraIntrinsic(camera_number):
+
     camerasInfo = load_pickle(PATH_CALIBRATION_MATRIX)
 
     # Inizializza cameraInfo per la camera specifica
@@ -179,7 +180,8 @@ def calibrateCameraIntrinsic(camera_number):
             cameraInfo = CameraInfo(camera_number)
             cameraInfo.chessboard_size = all_chessboard_sizes[camera_number]
     
-    # Esegui la calibrazione
+
+    # Calibration from video
     cameraInfo = compute_calibration_single(cameraInfo)
     
     flagFind = False
@@ -189,12 +191,29 @@ def calibrateCameraIntrinsic(camera_number):
         if camera.camera_number == camera_number:
             camerasInfo[i] = cameraInfo  # Sostituisci l'elemento
             flagFind = True
+            break
     
     if not flagFind:
         camerasInfo.append(cameraInfo)
     
     # Salva la lista aggiornata
     save_pickle(camerasInfo, PATH_CALIBRATION_MATRIX)
+
+
+def check_errors():
+
+    camera_infos = load_pickle(PATH_CALIBRATION_MATRIX)
+
+    for elem in camera_infos:
+
+        mean_error = 0
+        for i in range(len(elem.objpoints)):
+            imgpoints2, _ = cv2.projectPoints(elem.objpoints[i], elem.rvecs[i], elem.tvecs[i], elem.mtx, elem.dist)
+            error = cv2.norm(elem.imgpoints[i], imgpoints2, cv2.NORM_L2)/len(imgpoints2)
+            mean_error += error
+        
+        print( "\ncamera number: {}".format(elem.camera_number) )
+        print( "total error: {}".format(mean_error/len(elem.objpoints)) )
 
 
 def test_calibration():
@@ -239,8 +258,9 @@ if __name__ == '__main__':
     # calibrateAllIntrinsic()
 
     # CALIBRATE SPECIFIC CAM
-    # camera_number = 3
-    # calibrateCameraIntrinsic(camera_number)
+    camera_number = 6
+    calibrateCameraIntrinsic(camera_number)
 
     # ONLY FOR TESTING
+    check_errors()
     test_calibration()

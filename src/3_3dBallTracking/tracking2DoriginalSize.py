@@ -42,7 +42,7 @@ else:
 print(f'Using device: {device}')
 
 YOLO_INPUT_SIZE = 800  # Size for YOLO model input
-DISTANCE_THRESHOLD = 400  # Threshold distance to detect a new ball
+DISTANCE_THRESHOLD = 800  # Threshold distance to detect a new ball
 
 class ParticleFilterBallTracker:
     def __init__(self, tracker_id, color, frame_size, num_particles=1000, process_noise=5.0, measurement_noise=2.0):
@@ -161,7 +161,7 @@ def applyModel(frame, model):
         confidence = box.conf[0]
         class_id = box.cls[0]
 
-        if class_id == 0 and confidence > 0.5:
+        if class_id == 0 and confidence > 0.35:
             x_center = (x1 + x2) / 2    
             y_center = (y1 + y2) / 2
             center_ret = (int(x_center), int(y_center))
