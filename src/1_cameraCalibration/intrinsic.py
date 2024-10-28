@@ -16,7 +16,7 @@ from utils.utils import *
 from utils.config import *
 
 all_chessboard_sizes = {1: (5, 7), 2: (5, 7), 3: (5, 7), 4: (5, 7), 5: (6, 9), 6: (6, 9), 7: (5, 7), 8: (6, 9), 12: (5, 7), 13: (5, 7)}
-SKIP_FRAME = 6
+SKIP_FRAME = 3
 
 
 def findPoints(path_video, cameraInfo, debug=True):
@@ -44,13 +44,21 @@ def findPoints(path_video, cameraInfo, debug=True):
 
     if debug:
         # Create a directory to save the screen captures named as the video file
-        output_dir = f"{PATH_FRAME_SAMPLES_CALIBRATION}/Camera{cameraInfo.camera_number}"
-        output_dir = os.path.join(os.path.dirname(__file__), output_dir)
-        os.makedirs(output_dir, exist_ok=True)
-        print("Saving frames to ", output_dir)
+        output_dir_original = f"{PATH_FRAME_SAMPLES_CALIBRATION}/Camera{cameraInfo.camera_number}/originalImages"
+        output_dir_original = os.path.join(os.path.dirname(__file__), output_dir_original)
+        os.makedirs(output_dir_original, exist_ok=True)
+        print("Saving frames to ", output_dir_original)
         # Remove all files in the directory
-        for file in os.listdir(output_dir):
-            os.remove(os.path.join(output_dir, file))
+        for file in os.listdir(output_dir_original):
+            os.remove(os.path.join(output_dir_original, file))
+        
+        output_dir_corners = f"{PATH_FRAME_SAMPLES_CALIBRATION}/Camera{cameraInfo.camera_number}/withCorners"
+        output_dir_corners = os.path.join(os.path.dirname(__file__), output_dir_corners)
+        os.makedirs(output_dir_corners, exist_ok=True)
+        print("Saving frames to ", output_dir_corners)
+        # Remove all files in the directory
+        for file in os.listdir(output_dir_corners):
+            os.remove(os.path.join(output_dir_corners, file))
         
 
     frame_count = 0
@@ -81,10 +89,11 @@ def findPoints(path_video, cameraInfo, debug=True):
                 retImgpoints.append(corners2)
 
                 if debug:
+                    cv2.imwrite(f"{output_dir_original}/frame{frame_count}.jpg", img)
                     # Draw and display the corners
                     cv2.drawChessboardCorners(img, (chess_height, chess_width), corners2, ret)
                     # Save the image with detected corners
-                    cv2.imwrite(f"{output_dir}/frame{frame_count}.jpg", img)
+                    cv2.imwrite(f"{output_dir_corners}/frame{frame_count}.jpg", img)
 
             # Update the progress bar
             pbar.update(SKIP_FRAME)
@@ -141,7 +150,7 @@ def compute_calibration_single(cameraInfo):
 
         path_video = os.path.join(PATH_VIDEOS_CALIBRATION, video)
 
-        cameraInfo.objpoints, cameraInfo.imgpoints, gray = findPoints(path_video, cameraInfo, debug=True)
+        cameraInfo.objpoints, cameraInfo.imgpoints, gray = findPoints(path_video, cameraInfo, debug=False)
 
         if len(cameraInfo.objpoints) == 0:
             print(f"Camera {numero_camera} not calibrated - No points found")
@@ -263,4 +272,4 @@ if __name__ == '__main__':
 
     # ONLY FOR TESTING
     check_errors()
-    test_calibration()
+    # test_calibration()

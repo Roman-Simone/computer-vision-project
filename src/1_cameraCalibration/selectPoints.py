@@ -504,7 +504,7 @@ if __name__ == '__main__':
     # selectPointsAllCameras(undistortedFlag)
 
     # Select points for a specific camera
-    camera_to_select = 4
+    camera_to_select = 6
     undistortedFlag = False
     selectPointsCamera(camera_to_select, undistortedFlag)
 
