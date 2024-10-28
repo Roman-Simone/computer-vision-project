@@ -4,92 +4,77 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ball Tracking</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="static/styles.css"> <!-- Link to your CSS file -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 <body>
 
-    <!-- Title Section -->
-    <div class="title-section">
-        <h1>Ball Tracking</h1>
-    </div>
+<div class="title-section">
+    <h1>Ball Tracking</h1>
+    <h2>Select a Camera and Action</h2>
+</div>
 
-    <!-- Camera Selection Buttons -->
-    <div class="camera-selection">
-        <h2>Select Camera:</h2>
-        <div class="camera-buttons">
-            {% for camera in available_cameras %}
-                <button class="camera-button" data-camera="{{ camera }}">Camera {{ camera }}</button>
-            {% endfor %}
-        </div>
-    </div>
-
-    <!-- Action Buttons -->
-    <div class="action-buttons">
-        <h2>Select Action:</h2>
-        {% for action_id in range(1, 8) %}
-            <button class="action-button" data-action="{{ action_id }}">Action {{ action_id }}</button>
+<div class="camera-selection">
+    <div class="camera-group">
+        <h3>Camera Selection</h3>
+        <!-- 10 buttons for camera selection -->
+        {% for i in available_cameras %}
+            <button onclick="selectCamera({{ i }})">Camera {{ i }}</button>
         {% endfor %}
     </div>
-
-    <!-- Button to Load Tracking -->
-    <button id="load_tracking">Ball 2D Tracking</button>
-
-    <!-- Image Container for Tracked Frame -->
-    <div class="image-container" style="display: none;">
-        <img id="tracked_frame" src="" alt="Tracked Frame">
+    
+    <div class="camera-group">
+        <h3>Action Selection</h3>
+        <!-- 6 buttons for action selection -->
+        {% for j in range(1, 8) %}
+            <button onclick="selectAction({{ j }})">Action {{ j }}</button>
+        {% endfor %}
     </div>
+</div>
 
-    <script>
-        let selectedCamera = null;
-        let selectedAction = null;
+<button id="load_video" onclick="loadVideo()">Load Video</button>
 
-        // Event listeners for camera buttons
-        document.querySelectorAll('.camera-button').forEach(button => {
-            button.addEventListener('click', function() {
-                // Remove selected class from all buttons
-                document.querySelectorAll('.camera-button').forEach(btn => btn.classList.remove('selected'));
-                // Add selected class to the clicked button
-                this.classList.add('selected');
-                // Set the selected camera
-                selectedCamera = this.dataset.camera;
+<h2>Tracking Video</h2>
+<div class="video-container">
+    <video id="tracking-video" controls style="width: 800px; height: auto;">
+        <source id="video-source" src="" type="video/mp4">
+        Your browser does not support the video tag.
+    </video>
+</div>
+
+<script>
+    // Variables to store selected camera and action
+    let selectedCamera = 1; // Default camera
+    let selectedAction = 1; // Default action
+
+    function selectCamera(camera) {
+        selectedCamera = camera;
+        console.log("Selected Camera:", selectedCamera);
+    }
+
+    function selectAction(action) {
+        selectedAction = action;
+        console.log("Selected Action:", selectedAction);
+    }
+
+    function loadVideo() {
+        const videoElement = document.getElementById('tracking-video');
+        const sourceElement = document.getElementById('video-source');
+
+        // Fetch the video URL using AJAX
+        $.getJSON('/get_ball_tracking_video', { camera: selectedCamera, action: selectedAction })
+            .done(function(data) {
+                // Set the video source
+                sourceElement.src = data.video_src;
+                // Load the video
+                videoElement.load();
+                videoElement.play();
+            })
+            .fail(function() {
+                alert("Failed to load tracking video");
             });
-        });
+    }
+</script>
 
-        // Event listeners for action buttons
-        document.querySelectorAll('.action-button').forEach(button => {
-            button.addEventListener('click', function() {
-                // Remove selected class from all buttons
-                document.querySelectorAll('.action-button').forEach(btn => btn.classList.remove('selected'));
-                // Add selected class to the clicked button
-                this.classList.add('selected');
-                // Set the selected action
-                selectedAction = this.dataset.action;
-            });
-        });
-
-        // Load tracking on button click
-        document.getElementById('load_tracking').addEventListener('click', function() {
-            if (!selectedAction || !selectedCamera) {
-                alert('Please select both an action and a camera.');
-                return;
-            }
-
-            // Fetch the tracked frame from the server
-            fetch(`/get_ball_tracking_frame?action=${selectedAction}&camera=${selectedCamera}`)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.frame_src) {
-                        const trackedFrameImg = document.getElementById('tracked_frame');
-                        trackedFrameImg.src = data.frame_src;
-                        trackedFrameImg.onload = () => {
-                            document.querySelector('.image-container').style.display = 'block'; // Show the image container
-                        };
-                    } else {
-                        alert("Error fetching frame: " + data.error);
-                    }
-                })
-                .catch(error => console.error('Error:', error));
-        });
-    </script>
 </body>
 </html>

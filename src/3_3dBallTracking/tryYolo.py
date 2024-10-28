@@ -75,10 +75,6 @@ def applyModel(frame, model):
 
     return frame 
 
-
-
-
-
 def testModel():
     videos = find_files(PATH_VIDEOS)
     videos.sort()

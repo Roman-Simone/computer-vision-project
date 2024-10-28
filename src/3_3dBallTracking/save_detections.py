@@ -110,13 +110,10 @@ def display_detections(detections, video_path, cam_id):
         if not ret:
             break
         
-        # Resize the frame to 800x800
         frame_resized = cv2.resize(frame, (SIZE, SIZE))
         
-        # Check if there are detections for the current camera and frame
         if (cam_id, frame_idx) in detections:
             for (x, y) in detections[(cam_id, frame_idx)]:
-                # Draw a circle around detected balls and write coordinates
                 cv2.circle(frame_resized, (x, y), 10, (0, 255, 0), -1)  # Green circle
                 cv2.putText(frame_resized, f'({x}, {y})', (x + 15, y), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 3, cv2.LINE_AA)
 
