@@ -15,7 +15,7 @@ def read_and_save_pkl(file_path, output_file_path):
     with open(file_path, 'rb') as file:
         data = pickle.load(file)
         with open(output_file_path, 'w') as output_file:
-            pprint.pprint(data, stream=output_file, indent=4)
+            output_file.write(str(data))
 
 if __name__ == "__main__":
     file_path = os.path.join(PATH_DETECTIONS, 'all_detections.pkl')
