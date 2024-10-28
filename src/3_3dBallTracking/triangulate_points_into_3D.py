@@ -4,7 +4,6 @@ import cv2
 import os
 import sys
 import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
 
 current_path = os.path.dirname(os.path.abspath(__file__))
 parent_path = os.path.abspath(os.path.join(current_path, os.pardir))
@@ -15,6 +14,17 @@ from utils.config import *
 
 pathPickle = os.path.join(PATH_DETECTIONS, 'all_detections.pkl')
 detections = load_pickle(pathPickle)
+
+# DICTIONARY (and pkl file) structure:
+# {
+#     '1' : {     # first camera
+#         '1' : {frame1: (x1, y1), frame2 : (x2, y2), ...},  # first action, a point for each frame (or 0 points if no balls detected)
+#         '2' : [...] 
+#         ....
+#     }, 
+#     ...
+# }
+
 camerasInfo = load_pickle(PATH_CALIBRATION_MATRIX)
 ACTIONS = [1, 2, 3, 4, 5, 6]
 
@@ -38,7 +48,7 @@ def get_projection_matrix(cam):
 def triangulate_points(detections, action_number):
     points_3D = []
     
-    for frame in detections['1'][str(action_number)]:  
+    for frame in detections['1'][str(action_number)]:               # loop through all frames of action action_number
         points_2D = []
         projection_matrices = []
         
