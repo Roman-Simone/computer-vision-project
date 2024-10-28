@@ -101,22 +101,55 @@ frame = 49
 
 points_2d = []
 
-for camera in VALID_CAMERA_NUMBERS:
-    if frame in detections[str(camera)]['1']:
-        point2d = detections[str(camera)]['1'][frame]
-        points_2d.append((camera, point2d))
-        print(f"Camera {camera} - Point: {point2d}")
-        
-if len(points_2d) >= 2:
-    for i in range(len(points_2d)):
-        for j in range(i + 1, len(points_2d)):
-            if i != j:
-                
-                cam1, point2d1 = points_2d[i]
-                cam2, point2d2 = points_2d[j]
+# 12: "world_coordinate": [
+#                     -9.0,
+#                     4.5,
+#                     0.0
+#                 ],
+#                 "image_coordinate": [
+#                     1282,
+#                     949
+#                 ]
 
-                if point2d1 is not None and point2d2 is not None:
-                    print(f'Triangle between cameras {cam1} and {cam2} with points {point2d1} and {point2d2}')
-                    print(f"Cameras: {cam1} - {cam2}")
-                    point3d = triangulate(cam[cam1], cam[cam2], point2d1, point2d2)
-                    print(f"3D point: {point3d}")
+# 13: "world_coordinate": [
+#                     -9.0,
+#                     4.5,
+#                     0.0
+#                 ],
+#                 "image_coordinate": [
+#                     2127,
+#                     540
+#                 ]
+#             },
+
+# 7: "world_coordinate": [
+#                     -9.0,
+#                     4.5,
+#                     0.0
+#                 ],
+#                 "image_coordinate": [
+#                     838,
+#                     1852
+#                 ]
+#             },
+
+# 8: "world_coordinate": [
+#                     -9.0,
+#                     4.5,
+#                     0.0
+#                 ],
+#                 "image_coordinate": [
+#                     1440,
+#                     899
+#                 ]
+
+cam1 = 7
+point2d1 = (838, 1852)
+cam2 = 8
+point2d2 = (1440, 899)
+
+if point2d1 is not None and point2d2 is not None:
+    print(f'Triangle between cameras {cam1} and {cam2} with points {point2d1} and {point2d2}')
+
+    point3d = triangulate(cam[cam1], cam[cam2], point2d1, point2d2)
+    print(f"3D point: {point3d} [-9, 4.5, 0]")
