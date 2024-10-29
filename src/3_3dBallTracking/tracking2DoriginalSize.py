@@ -196,7 +196,7 @@ def testModel(num_cam, action):
             break
 
         frameUndistorted = undistorted(frame, cameraInfo)
-        detections, center, confidence = applyModel(frameUndistorted, model)
+        detections = applyModel(frameUndistorted, model)
 
         new_trackers = []
         for detection in detections:

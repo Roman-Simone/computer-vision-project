@@ -33,7 +33,6 @@ def set_axes_equal_scaling(ax):
     ax.set_ylim([mean_vals[1] - range_vals, mean_vals[1] + range_vals])
     ax.set_zlim([mean_vals[2] - range_vals, mean_vals[2] + range_vals])
 
-
 def main():
 
     action_number = int(input("Enter the action number: "))

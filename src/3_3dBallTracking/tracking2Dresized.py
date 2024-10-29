@@ -117,7 +117,7 @@ def testModel(num_cam, action):
 
         frameUndistorted = undistorted(frame, cameraInfo)
         frameUndistorted = cv2.resize(frameUndistorted, (size, size))
-        detections, center, confidence = applyModel(frameUndistorted, model)
+        detections = applyModel(frameUndistorted, model)
 
         new_trackers = []
         for detection in detections:
