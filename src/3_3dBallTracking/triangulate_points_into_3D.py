@@ -6,7 +6,6 @@ import sys
 import matplotlib.pyplot as plt
 import json
 
-# Paths and configuration
 current_path = os.path.dirname(os.path.abspath(__file__))
 parent_path = os.path.abspath(os.path.join(current_path, os.pardir))
 sys.path.append(parent_path)
@@ -14,7 +13,6 @@ sys.path.append(parent_path)
 from utils.utils import *
 from utils.config import *
 
-# Load pickle files
 pathPickle = os.path.join(PATH_DETECTIONS, 'all_detections.pkl')
 detections = load_pickle(pathPickle)
 
@@ -39,7 +37,7 @@ ACTIONS = {
     6: (4450, 4600)
 }
 
-# User input for selecting action
+# user input for selecting action
 # action_number = -1
 # while action_number not in ACTIONS:
 #     action_number = int(input('Enter the action to analyze: '))
@@ -86,16 +84,6 @@ def get_positions():
     with open(PATH_CAMERA_POS, "r") as file:
         data = json.load(file)
         return np.array(data["field_corners"])
-
-# DICTIONARY (and pkl file) structure:
-# {
-#     '1' : {     # first camera
-#         '1' : {frame1: (x1, y1), frame2 : (x2, y2), ...},  # first action, a point for each frame (or 0 points if no balls detected)
-#         '2' : [...] 
-#         ....
-#     }, 
-#     ...
-# }
 
 for action_number in ACTIONS:
     frame_start, frame_end = ACTIONS[action_number]
