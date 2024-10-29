@@ -12,6 +12,8 @@ sys.path.append(parent_path)
 from utils.config import *
 from utils.utils import *
 
+CONFIDENCE = 0.4
+
 def load_pickle(file_path):
     with open(file_path, 'rb') as file:
         return pickle.load(file)
@@ -21,11 +23,25 @@ def get_positions():
         data = json.load(file)
         return np.array(data["field_corners"]) 
 
+def set_axes_equal_scaling(ax):
+    """Set equal scaling for 3D plot axes."""
+    limits = np.array([ax.get_xlim(), ax.get_ylim(), ax.get_zlim()])
+    mean_vals = np.mean(limits, axis=1)
+    range_vals = 0.5 * np.max(np.abs(limits[:, 1] - limits[:, 0]))
+
+    ax.set_xlim([mean_vals[0] - range_vals, mean_vals[0] + range_vals])
+    ax.set_ylim([mean_vals[1] - range_vals, mean_vals[1] + range_vals])
+    ax.set_zlim([mean_vals[2] - range_vals, mean_vals[2] + range_vals])
+
+
 def main():
 
     action_number = int(input("Enter the action number: "))
-    trajectory_data = load_pickle(os.path.join(PATH_3D_DETECTIONS, f'points_3D_action{action_number}.pkl'))  
-
+    if CONFIDENCE == 0.4:
+        trajectory_data = load_pickle(os.path.join(PATH_3D_DETECTIONS_04, f'points_3D_action{action_number}.pkl'))  
+    elif CONFIDENCE == 0.5:
+        trajectory_data = load_pickle(os.path.join(PATH_3D_DETECTIONS_05, f'points_3D_action{action_number}.pkl'))
+        
     selected_frames = []
     selected_points = []
     threshold_distance = 5  
@@ -36,7 +52,7 @@ def main():
         if not points:
             continue  # skip frames with no points
 
-        points = [point for point in points if (-15 < point[0] < 15 and -10 < point[1] < 10 and 0 < point[2] < 10)]  # out of field 
+        points = [point for point in points if (-15 < point[0] < 15 and -8 < point[1] < 8 and 0 < point[2] < 10)]  # out of field 
         
         if not points:
             continue
@@ -69,6 +85,11 @@ def main():
 
     plt.figure(figsize=(10, 6))
     ax = plt.axes(projection='3d')
+    set_axes_equal_scaling(ax)
+    
+    ax.set_xlim([-15, 15])
+    ax.set_ylim([-8.5, 8.5])
+    ax.set_zlim([-0.1, 10])
 
     field_points = get_positions()
     ax.scatter(field_points[:, 0], field_points[:, 1], field_points[:, 2], color='red', label='Field Corners')
