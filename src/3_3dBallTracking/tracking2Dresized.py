@@ -97,7 +97,7 @@ def applyModel(frame, model):
 def testModel(num_cam, action):
     """Process the video for the given camera and action, return trajectory points"""
     pathVideo = os.path.join(PATH_VIDEOS, f'out{num_cam}.mp4')
-    cameraInfo, _ = take_info_camera(num_cam, cameraInfos)
+    cameraInfo = take_info_camera(num_cam, cameraInfos)
     videoCapture = cv2.VideoCapture(pathVideo)
 
     START, END = ACTIONS[action]  # Set frame range based on the action
@@ -163,27 +163,21 @@ def load_existing_results(filename):
     return {}
 
 if __name__ == '__main__':
-    pickle_file = 'ball_trajectories.pkl'
-    results = load_existing_results(pickle_file)  # Load existing data if available
+    # pickle_file = 'ball_trajectories.pkl'
+    # results = load_existing_results(pickle_file)
 
-    for cam in VALID_CAMERA_NUMBERS:
-        if str(cam) not in results:
-            results[str(cam)] = {}  # Initialize a dictionary for each camera
+    cam = int(input("Enter camera number: "))
+    
+    # if str(cam) not in results:
+    #         results[str(cam)] = {}
+        
+    action = int(input("Enter action number: "))
 
-        for action in ACTIONS:
-            # If this action for this camera is already processed, skip it
-            # if str(action) in results[str(cam)]:
-            #     print(f"Skipping Camera {cam}, Action {action} (already processed).")
-            #     continue
+    print(f"Processing Camera {cam}, Action {action}...")
+    trajectory = testModel(cam, action)
+    # results[str(cam)][str(action)] = trajectory
 
-            print(f"Processing Camera {cam}, Action {action}...")
-            trajectory = testModel(cam, action)
-            results[str(cam)][str(action)] = trajectory  # Store the trajectory points for this camera-action pair
+    # with open(pickle_file, 'wb') as f:
+    #     pickle.dump(results, f)
 
-            # Save the updated results after processing each action
-            with open(pickle_file, 'wb') as f:
-                pickle.dump(results, f)
-
-            print(f"Camera {cam}, Action {action} saved to {pickle_file}")
-
-    print(f"Processing complete. Results saved in {pickle_file}")
+    # print(f"Camera {cam}, Action {action} saved to {pickle_file}")

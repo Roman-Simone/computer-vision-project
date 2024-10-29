@@ -172,7 +172,7 @@ def applyModel(frame, model):
 
 def testModel(num_cam, action):
     pathVideo = os.path.join(PATH_VIDEOS, f'out{num_cam}.mp4')
-    cameraInfo, _ = take_info_camera(num_cam, cameraInfos)
+    cameraInfo = take_info_camera(num_cam, cameraInfos)
     videoCapture = cv2.VideoCapture(pathVideo)
 
     # Get video dimensions
@@ -242,21 +242,21 @@ def load_existing_results(filename):
     return {}
 
 if __name__ == '__main__':
-    pickle_file = 'ball_trajectories.pkl'
-    results = load_existing_results(pickle_file)
+    # pickle_file = 'ball_trajectories.pkl'
+    # results = load_existing_results(pickle_file)
 
-    for cam in VALID_CAMERA_NUMBERS:
-        if str(cam) not in results:
-            results[str(cam)] = {}
+    cam = int(input("Enter camera number: "))
+    
+    # if str(cam) not in results:
+    #         results[str(cam)] = {}
+            
+    action = int(input("Enter action number: "))
 
-        for action in ACTIONS:
-            print(f"Processing Camera {cam}, Action {action}...")
-            trajectory = testModel(cam, action)
-            results[str(cam)][str(action)] = trajectory
+    print(f"Processing Camera {cam}, Action {action}...")
+    trajectory = testModel(cam, action)
+    # results[str(cam)][str(action)] = trajectory
 
-            with open(pickle_file, 'wb') as f:
-                pickle.dump(results, f)
+    # with open(pickle_file, 'wb') as f:
+    #     pickle.dump(results, f)
 
-            print(f"Camera {cam}, Action {action} saved to {pickle_file}")
-
-    print(f"Processing complete. Results saved in {pickle_file}")
+    # print(f"Camera {cam}, Action {action} saved to {pickle_file}")
