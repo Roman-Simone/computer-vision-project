@@ -268,6 +268,6 @@ if __name__ == "__main__":
     plotAllCameras()
     
     # plot specific camera extrinsic matrix
-    camera_number = 6
-    plot_camera(camera_number)
+    # camera_number = 6
+    # plot_camera(camera_number)
     
