@@ -24,7 +24,7 @@ ACTIONS = {
     7: (5150, 5330)
 }
 
-pathPickle = os.path.join(PATH_DETECTIONS, 'detections.pkl')
+pathPickle = os.path.join(PATH_DETECTIONS, 'all_detections.pkl')
 detections = load_pickle(pathPickle)
 camerasInfo = load_pickle(PATH_CALIBRATION_MATRIX)
 
