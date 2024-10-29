@@ -87,8 +87,6 @@ def get_positions():
         data = json.load(file)
         return np.array(data["field_corners"])
 
-frame = 49
-
 # DICTIONARY (and pkl file) structure:
 # {
 #     '1' : {     # first camera
@@ -99,24 +97,40 @@ frame = 49
 #     ...
 # }
 
-points_2d = []
+for action_number in ACTIONS:
+    frame_start, frame_end = ACTIONS[action_number]
 
-for camera in VALID_CAMERA_NUMBERS:
-    if frame in detections[str(camera)]['1']:
-        point2d = detections[str(camera)]['1'][frame]
-        points_2d.append((camera, point2d))
-        print(f"Camera {camera} - Point: {point2d}")
-        
-if len(points_2d) >= 2:
-    for i in range(len(points_2d)):
-        for j in range(i + 1, len(points_2d)):
-            if i != j:
+    points_3d = {frame : [] for frame in range(frame_start, frame_end + 1)}
+
+
+    for frame in range(frame_start, frame_end + 1):
+        points_2d = []
+
+        for camera in VALID_CAMERA_NUMBERS:
+            if frame in detections[str(camera)][str(action_number)]:
+                point2d = detections[str(camera)][str(action_number)][frame]
+                points_2d.append((camera, point2d))
+                print(f"Camera {camera} - Point: {point2d}")
                 
-                cam1, point2d1 = points_2d[i]
-                cam2, point2d2 = points_2d[j]
 
-                if point2d1 is not None and point2d2 is not None:
-                    print(f'Triangle between cameras {cam1} and {cam2} with points {point2d1} and {point2d2}')
-                    print(f"Cameras: {cam1} - {cam2}")
-                    point3d = triangulate(cam[cam1], cam[cam2], point2d1, point2d2)
-                    print(f"3D point: {point3d}")
+        if len(points_2d) >= 2:
+            for i in range(len(points_2d)):
+                for j in range(i + 1, len(points_2d)):
+                    if i != j:
+                        
+                        cam1, point2d1 = points_2d[i]
+                        cam2, point2d2 = points_2d[j]
+
+                        if point2d1 is not None and point2d2 is not None:
+                            print(f'Triangle between cameras {cam1} and {cam2} with points {point2d1} and {point2d2}')
+                            print(f"Cameras: {cam1} - {cam2}")
+                            point3d = triangulate(cam[cam1], cam[cam2], point2d1, point2d2)
+                            points_3d[frame].append(point3d)
+                            print(f"3D point: {point3d}")
+
+    output_path = os.path.join(PATH_3D_DETECTIONS, f'points_3d_action{action_number}.pkl')
+
+    with open(output_path, 'wb') as f:
+        pickle.dump(points_3d, f)
+
+    print(f"3D points saved successfully at {output_path}")

@@ -19,6 +19,7 @@ PATH_DATASET = os.path.join(grandparent_path, 'data/dataset')
 PATH_STATIC = os.path.join(grandparent_path, 'src/app/static')
 PATH_DETECTIONS = os.path.join(grandparent_path, 'data/detections')
 PATH_CSS = os.path.join(grandparent_path, 'src/app/static/css')
+PATH_3D_DETECTIONS = os.path.join(grandparent_path, 'data/detections/3D_detections')
 PATH_WEIGHT = os.path.join(grandparent_path, 'data/weight')
 PATH_CAMERA_POS = os.path.join(grandparent_path, 'data/camera_positions.json')
 VALID_CAMERA_NUMBERS = [1, 2, 3, 4, 5, 6, 7, 8, 12, 13]
