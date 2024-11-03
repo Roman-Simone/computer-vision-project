@@ -14,17 +14,14 @@ from utils.utils import *
 
 CONFIDENCE = 0.4
 
-def load_pickle(file_path):
-    with open(file_path, 'rb') as file:
-        return pickle.load(file)
-
 def get_positions():
+    """Get the field corners from the pkl file."""
     with open(PATH_CAMERA_POS, 'r') as file:  
         data = json.load(file)
         return np.array(data["field_corners"]) 
 
 def set_axes_equal_scaling(ax):
-    """Set equal scaling for 3D plot axes."""
+    """Set equal scaling for 3D plot axes (preservate le proporzioni)."""
     limits = np.array([ax.get_xlim(), ax.get_ylim(), ax.get_zlim()])
     mean_vals = np.mean(limits, axis=1)
     range_vals = 0.5 * np.max(np.abs(limits[:, 1] - limits[:, 0]))
@@ -34,8 +31,10 @@ def set_axes_equal_scaling(ax):
     ax.set_zlim([mean_vals[2] - range_vals, mean_vals[2] + range_vals])
 
 def main():
+    action_number = input("Enter the action number: ")
+    while not action_number.isdigit() and int(action_number) not in VALID_CAMERA_NUMBERS:
+        action_number = input("Enter a valid action number: ")
 
-    action_number = int(input("Enter the action number: "))
     if CONFIDENCE == 0.4:
         trajectory_data = load_pickle(os.path.join(PATH_3D_DETECTIONS_04, f'points_3D_action{action_number}.pkl'))  
     elif CONFIDENCE == 0.5:
@@ -71,10 +70,6 @@ def main():
         selected_points.append(best_point)
 
     selected_points = np.array(selected_points)
-
-    # if selected_points.ndim != 2 or selected_points.shape[1] != 3:
-    #     print(f"Warning: Selected points shape is {selected_points.shape}. Expected shape is (N, 3).")
-    #     return  
 
     window_size = 5  
     smoothed_points = np.convolve(selected_points[:, 0], np.ones(window_size) / window_size, mode='valid')
