@@ -267,8 +267,8 @@ if __name__ == '__main__':
     # calibrateAllIntrinsic()
 
     # CALIBRATE SPECIFIC CAM
-    camera_number = 2
-    calibrateCameraIntrinsic(camera_number)
+    # camera_number = 2
+    # calibrateCameraIntrinsic(camera_number)
 
     # ONLY FOR TESTING
     check_errors()

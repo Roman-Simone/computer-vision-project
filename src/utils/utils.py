@@ -78,7 +78,7 @@ def take_info_camera(camera_number, camera_infos):
 
     for pos, camera_info in enumerate(camera_infos):
         if camera_info.camera_number == camera_number:
-            return camera_info
+            return camera_info, pos
 
-    return None
+    return None, None
 
