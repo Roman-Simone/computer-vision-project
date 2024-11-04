@@ -130,8 +130,8 @@ def plot_3d_data(extrinsic_matrices, camera_numbers=None):
 
         # Plot calculated camera location
         ax.scatter(camera_position[0], camera_position[1], camera_position[2], 
-                   c=calculated_camera_color, marker="o", s=100, 
-                   label='Calculated Camera Positions' if camera_number == camera_numbers[0] else '')
+                c=calculated_camera_color, marker="o", s=100, 
+                label='Calculated Camera Positions' if camera_number == camera_numbers[0] else '')
 
         # Plot camera direction
         direction_vector_size = 5
@@ -141,19 +141,20 @@ def plot_3d_data(extrinsic_matrices, camera_numbers=None):
                 [camera_position[2], camera_direction[2]],
                 c="red", label="Camera Direction" if camera_number == camera_numbers[0] else '')
 
-        # Add camera label for calculated position
-        ax.text(camera_position[0], camera_position[1], camera_position[2], 
+        # Add camera label for calculated position (above the point)
+        ax.text(camera_position[0], camera_position[1], camera_position[2] + 0.5,  # Adjusted to be above
                 f'Calc Cam {camera_number}', fontsize=8)
 
         # Plot real camera position if available in JSON data
         if str(camera_number) in data:
             real_camera_coords = data[str(camera_number)]['camera_coordinates']
             ax.scatter(*real_camera_coords, color=real_camera_color, s=100, 
-                       label='Real Camera Positions' if camera_number == camera_numbers[0] else '')
+                    label='Real Camera Positions' if camera_number == camera_numbers[0] else '')
             
-            # Add camera label for real position
-            ax.text(real_camera_coords[0], real_camera_coords[1], real_camera_coords[2], 
+            # Add camera label for real position (below the point)
+            ax.text(real_camera_coords[0], real_camera_coords[1], real_camera_coords[2] - 0.5,  # Adjusted to be below
                     f'Real Cam {camera_number}', fontsize=8)
+
 
     # Plot world points
     first_point = True
@@ -261,12 +262,12 @@ if __name__ == "__main__":
     undistortedFlag = False
     findAllExtrinsics(undistortedFlag)
 
-    #find the extrinsic matrix for specific camera
+    # find the extrinsic matrix for specific camera
     # camera_number = 2 
     # find_cam_extrinsic(camera_number)
 
 
-    #plot all camera extrinsic matrix
+    # plot all camera extrinsic matrix
     plotAllCameras()
     
     # plot specific camera extrinsic matrix

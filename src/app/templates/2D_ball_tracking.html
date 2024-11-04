@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <title>Ball Tracking</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        h1 {
+            color: #333;
+        }
+        select {
+            margin: 10px 0;
+            padding: 5px;
+        }
+        button {
+            margin: 10px 0;
+            padding: 10px 15px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        img {
+            width: 100%;  /* Set width to 100% to maintain aspect ratio */
+            height: auto;  /* Auto height to maintain aspect ratio */
+        }
+    </style>
+</head>
+<body>
+    <h1>Ball Tracking</h1>
+    <div>
+        <label for="camera_src">Select Camera Source:</label>
+        <select id="camera_src" name="camera_src">
+            {% for camera in available_cameras %}
+            <option value="{{ camera }}">{{ camera }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div>
+        <button onclick="startTracking()">Start Tracking</button>
+    </div>
+    <div>
+        <h2>Video Feed</h2>
+        <img id="videoFeed" src="" alt="Video Feed" />
+    </div>
+
+    <script>
+        function startTracking() {
+            const cameraSrc = document.getElementById('camera_src').value;
+            fetch('/start_tracking', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ camera_number: cameraSrc, action_number: 1 })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Tracking started:', data);
+                // Update the video feed source to include the camera number
+                document.getElementById('videoFeed').src = '/video_feed?camera=' + cameraSrc + '&action=1';
+            })
+            .catch(error => {
+                console.error('Error starting tracking:', error);
+            });
+        }
+    </script>
+</body>
+</html>
