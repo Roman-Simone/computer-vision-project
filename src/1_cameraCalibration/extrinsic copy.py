@@ -19,8 +19,8 @@ from utils.config import *
 def calculate_extrinsics(camera_number, undistortedFlag = False):
     # Read the data
     pathToRead = PATH_JSON_DISTORTED
-    if undistortedFlag:
-        pathToRead = PATH_JSON_UNDISTORTED
+    # if undistortedFlag:
+    #     pathToRead = PATH_JSON_UNDISTORTED
     coordinates_by_camera = read_json_file_and_structure_data(pathToRead)
 
     all_camera_coordinates = {}
@@ -49,11 +49,14 @@ def calculate_extrinsics(camera_number, undistortedFlag = False):
         return None
 
     if undistortedFlag:
+        # Undistort all image points at once (ensure it’s Nx1x2 format)
+        image_points = np.expand_dims(image_points, axis=1)  # Reshape to Nx1x2
+        image_points = cv2.undistortPoints(image_points, camera_info.mtx, camera_info.dist, None, camera_info.newcameramtx)
+        image_points = image_points.reshape(-1, 2)  # Reshape to Nx2
+
         camera_matrix = np.array(camera_info.newcameramtx, dtype=np.float32)
     else:
         camera_matrix = np.array(camera_info.mtx, dtype=np.float32)
-    
-    camera_matrix = np.array(camera_info.mtx, dtype=np.float32)
 
     distortion_coefficients = np.array(camera_info.dist, dtype=np.float32)
 
@@ -258,7 +261,7 @@ def rotationMatrixToEulerAngles(R):
 if __name__ == "__main__":
 
     #find extrinsic parameter for all cameras
-    undistortedFlag = False
+    undistortedFlag = True
     findAllExtrinsics(undistortedFlag)
 
     #find the extrinsic matrix for specific camera
@@ -270,6 +273,6 @@ if __name__ == "__main__":
     plotAllCameras()
     
     # plot specific camera extrinsic matrix
-    # camera_number = 6
+    # camera_number = 2
     # plot_camera(camera_number)
     
