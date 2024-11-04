@@ -74,10 +74,10 @@ def main():
         #     print("Invalid action number.")
         #     return
 
-        action_number = 1
+        camera_number = 2
 
-        camera_number = int(input("Enter the camera number: "))
-        if camera_number not in VALID_CAMERA_NUMBERS:
+        action_number = int(input("Enter the action number: "))
+        if action_number not in ACTIONS:
             print("Invalid camera number.")
             return
 

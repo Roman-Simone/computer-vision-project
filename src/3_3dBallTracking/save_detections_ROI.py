@@ -6,13 +6,14 @@ import torch
 import pickle
 from ultralytics import YOLO
 
-# Add the parent directory to the system path
 current_path = os.path.dirname(os.path.abspath(__file__))
 parent_path = os.path.abspath(os.path.join(current_path, os.pardir))
 sys.path.append(parent_path)
 
 from utils.utils import *
 from utils.config import *
+
+CONFIDENCE = 0.4
 
 # DICTIONARY (and pkl file) structure:
 # {
@@ -27,6 +28,7 @@ from utils.config import *
 pathWeight = os.path.join(PATH_WEIGHT, 'best_v11_800.pt')
 cameraInfos = load_pickle(PATH_CALIBRATION_MATRIX)
 model = YOLO(pathWeight)
+CONFIDENCE = 0.4
 
 if torch.cuda.is_available():
     device = 'cuda'
@@ -35,17 +37,19 @@ elif torch.backends.mps.is_available():
 else:
     device = 'cpu'
 
-size = 800
+SIZE = 800
+
 ACTIONS = {
-    1: (48, 230),               # 182
-    2: (1050, 1230),            # 180
+    1: (48, 230),               # 182 frames
+    2: (1050, 1230),            # 180 
     3: (1850, 2060),            # 210
     4: (2620, 2790),            # 170
     5: (3770, 3990),            # 220
     6: (4450, 4600)             # 150
 }
 
-output_file = os.path.join(PATH_DETECTIONS, 'all_detections.pkl')
+
+output_file = os.path.join(PATH_DETECTIONS_04, 'all_detections.pkl')
 
 def load_existing_detections(file_path):
     if os.path.exists(file_path):
@@ -54,11 +58,12 @@ def load_existing_detections(file_path):
     return {}
 
 def select_regions(frame):
+    """At the begining of the action, select regions to ignore for detection."""
     regions = []
     while True:
         region = cv2.selectROI("Select Region R", frame, showCrosshair=True)
         if region[2] == 0 or region[3] == 0:  # Check for zero-width or height
-            print("Region selection completed.")
+            # print("Region selection completed.")
             break
         regions.append(region)
         print(f"Selected region R: {region}")
@@ -66,6 +71,7 @@ def select_regions(frame):
     return regions
 
 def is_in_any_region(x_center, y_center, regions):
+    """Check if the point is in any of the selected regions to ignore."""
     for region in regions:
         x, y, w, h = region
         if x <= x_center <= x + w and y <= y_center <= y + h:
@@ -74,7 +80,7 @@ def is_in_any_region(x_center, y_center, regions):
 
 def applyModel(frame, model, regions):
     originalSizeHeight, originalSizeWidth, _ = frame.shape
-    frameResized = cv2.resize(frame, (size, size))
+    frameResized = cv2.resize(frame, (SIZE, SIZE))
     results = model.track(frameResized, verbose=False, device=device)
 
     detection_point = None
@@ -83,15 +89,14 @@ def applyModel(frame, model, regions):
 
     for box in results[0].boxes:
         x1, y1, x2, y2 = box.xyxy[0]
-        x1 = x1 * originalSizeWidth / size
-        y1 = y1 * originalSizeHeight / size
-        x2 = x2 * originalSizeWidth / size
-        y2 = y2 * originalSizeHeight / size
+        x1 = x1 * originalSizeWidth / SIZE
+        y1 = y1 * originalSizeHeight / SIZE
+        x2 = x2 * originalSizeWidth / SIZE
+        y2 = y2 * originalSizeHeight / SIZE
 
         confidence = box.conf[0]
-        # class_id = box.cls[0]
 
-        if confidence < 0.5:
+        if confidence < CONFIDENCE:
             continue
 
         x_center = (x1 + x2) / 2
