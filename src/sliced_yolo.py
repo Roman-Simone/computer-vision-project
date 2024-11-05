@@ -19,14 +19,7 @@ def applyModel(frame):
         frame, visualizeBBox=True, visualizeWindows=True
     )
 
-    # if detections:
-    #     for detection in detections:
-    #         x_center, y_center, width, height, confidence = detection
-    #         top_left = (int(x_center - width / 2), int(y_center - height / 2))
-    #         bottom_right = (int(x_center + width / 2), int(y_center + height / 2))
-    #         cv2.rectangle(
-    #             processed_frame, top_left, bottom_right, (0, 255, 0), thickness=2
-    #         )
+    
     return processed_frame
 
 def testModel():
@@ -38,7 +31,7 @@ def testModel():
         numero_camera = re.findall(r'\d+', video.replace(".mp4", ""))
         numero_camera = int(numero_camera[0])
 
-        if numero_camera not in VALID_CAMERA_NUMBERS or numero_camera != 2:
+        if numero_camera not in VALID_CAMERA_NUMBERS:
             continue
         print(f"Processing video {numero_camera}")
 
