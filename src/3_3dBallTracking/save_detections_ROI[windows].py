@@ -48,7 +48,7 @@ ACTIONS = {
     6: (4450, 4600)             # 150
 }
 
-output_file = os.path.join(PATH_DETECTIONS_WINDOW_05, 'all_detections.pkl')
+output_file = os.path.join(PATH_DETECTIONS_WINDOW_03, 'all_detections.pkl')
 
 def load_existing_detections(file_path):
     if os.path.exists(file_path):
@@ -64,12 +64,19 @@ def select_regions(frame):
         if region[2] == 0 or region[3] == 0:  # Check for zero-width or height
             # print("Region selection completed.")
             if input("Do you want to save these regions? (y/n)") == 'y':
-                regions_file = os.path.join(PATH_DETECTIONS_WINDOW_05, 'regions.pkl')
-                if os.path.exists(regions_file):
-                    with open(regions_file, 'rb') as f:
-                        all_regions = pickle.load(f)
-                else:
-                    all_regions = {}
+                regions_file = os.path.join(PATH_DETECTIONS_WINDOW_03, 'regions.pkl')
+
+                # Create the directory if it does not exist
+                os.makedirs(PATH_DETECTIONS_WINDOW_03, exist_ok=True)
+
+                # Create the file if it does not exist
+                if not os.path.exists(regions_file):
+                    with open(regions_file, 'wb') as f:
+                        pickle.dump({}, f)
+
+                # Load the file
+                with open(regions_file, 'rb') as f:
+                    all_regions = pickle.load(f)
 
                 key = (camera_number, action_id, CONFIDENCE)
                 all_regions[key] = regions
