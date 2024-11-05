@@ -4,7 +4,8 @@ import cv2
 import sys
 import torch
 import pickle
-from ultralytics import YOLO
+# from ultralytics import YOLO
+from  yoloWindows import yoloWindow
 
 current_path = os.path.dirname(os.path.abspath(__file__))
 parent_path = os.path.abspath(os.path.join(current_path, os.pardir))
@@ -13,7 +14,7 @@ sys.path.append(parent_path)
 from utils.utils import *
 from utils.config import *
 
-CONFIDENCE = 0.4
+CONFIDENCE = 0.3
 
 # DICTIONARY (and pkl file) structure:
 # {
@@ -27,8 +28,7 @@ CONFIDENCE = 0.4
 
 pathWeight = os.path.join(PATH_WEIGHT, 'best_v11_800.pt')
 cameraInfos = load_pickle(PATH_CALIBRATION_MATRIX)
-model = YOLO(pathWeight)
-CONFIDENCE = 0.4
+model = yoloWindow(pathWeight)
 
 if torch.cuda.is_available():
     device = 'cuda'
@@ -48,7 +48,7 @@ ACTIONS = {
     6: (4450, 4600)             # 150
 }
 
-output_file = os.path.join(PATH_DETECTIONS_04, 'all_detections.pkl')
+output_file = os.path.join(PATH_DETECTIONS_WINDOW_05, 'all_detections.pkl')
 
 def load_existing_detections(file_path):
     if os.path.exists(file_path):
@@ -69,45 +69,9 @@ def select_regions(frame):
     cv2.destroyWindow("Select Region R")
     return regions
 
-def is_in_any_region(x_center, y_center, regions):
-    """Check if the point is in any of the selected regions to ignore."""
-    for region in regions:
-        x, y, w, h = region
-        if x <= x_center <= x + w and y <= y_center <= y + h:
-            return True
-    return False
-
 def applyModel(frame, model, regions):
-    originalSizeHeight, originalSizeWidth, _ = frame.shape
-    frameResized = cv2.resize(frame, (SIZE, SIZE))
-    results, frame = model.track(frameResized, verbose=False, device=device)
-
-    detection_point = None
-
-    x1, y1, x2, y2 = -1, -1, -1, -1
-
-    for box in results[0].boxes:
-        x1, y1, x2, y2 = box.xyxy[0]
-        x1 = x1 * originalSizeWidth / SIZE
-        y1 = y1 * originalSizeHeight / SIZE
-        x2 = x2 * originalSizeWidth / SIZE
-        y2 = y2 * originalSizeHeight / SIZE
-
-        confidence = box.conf[0]
-
-        if confidence < CONFIDENCE:
-            continue
-
-        x_center = (x1 + x2) / 2
-        y_center = (y1 + y2) / 2
-
-        if is_in_any_region(x_center, y_center, regions):
-            continue
-
-        detection_point = (int(x_center), int(y_center))
-        break
-
-    return detection_point, x1, x2, y1, y2
+    
+    return model.detect(frame, visualizeBBox=True, thresholdConfidence=CONFIDENCE, regions=regions)
 
 def save_detections(detections, file_path):
     with open(file_path, 'wb') as f:
@@ -155,14 +119,14 @@ def process_single_action(camera_number, action_id):
             break
 
         frameUndistorted = undistorted(frame, cameraInfo)
-        detection_point, x1, x2, y1, y2 = applyModel(frameUndistorted, model, regions)
+        detection_point, frame = applyModel(frameUndistorted, model, regions)
         
         action_detections[frame_idx] = detection_point
 
-        if detection_point:
-            cv2.rectangle(frameUndistorted, (int(x1), int(y1)), (int(x2), int(y2)), (0, 255, 0), 2)
-            cv2.circle(frameUndistorted, detection_point, 5, (0, 255, 0), -1)
-        cv2.imshow('Frame', frameUndistorted)
+        # if detection_point:
+        #     cv2.rectangle(frameUndistorted, (int(x1), int(y1)), (int(x2), int(y2)), (0, 255, 0), 2)
+        #     cv2.circle(frameUndistorted, detection_point, 5, (0, 255, 0), -1)
+        cv2.imshow('Frame', frame)
 
         key = cv2.waitKey(10) & 0xFF
         if key == ord('s'):
