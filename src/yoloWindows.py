@@ -67,6 +67,35 @@ class yoloWindow:
 
         return windowsOrigins
 
+    def isRectangleOverlap(self, x1_c, y1_c, w1, h1, x2_c, y2_c, w2, h2):
+        """
+        Checks if two rectangles overlap based on their center coordinates and sizes.
+
+        Args:
+            x1_c, y1_c: Center coordinates of the first rectangle.
+            w1, h1: Width and height of the first rectangle.
+            x2_c, y2_c: Center coordinates of the second rectangle.
+            w2, h2: Width and height of the second rectangle.
+
+        Returns:
+            bool: True if rectangles overlap, False otherwise.
+        """
+        l1 = x1_c - w1 / 2
+        r1 = x1_c + w1 / 2
+        t1 = y1_c - h1 / 2
+        b1 = y1_c + h1 / 2
+
+        l2 = x2_c - w2 / 2
+        r2 = x2_c + w2 / 2
+        t2 = y2_c - h2 / 2
+        b2 = y2_c + h2 / 2
+
+        if l1 >= r2 or l2 >= r1:
+            return False
+        if t1 >= b2 or t2 >= b1:
+            return False
+        return True
+
     def detect(self, frame, visualizeBBox=False, visualizeWindows=False, thresholdConfidence=0):
         """_summary_
 
@@ -105,26 +134,47 @@ class yoloWindow:
         results = self.model.predict(batch, verbose=False, device=self.device)
 
         for win, result in zip(windows, results):
-            boxes = result.boxes.xywh.cpu().tolist()
+            boxes = result.boxes.xywh.cpu().numpy()
+            confs = result.boxes.conf.cpu().numpy()
             real_x, real_y, _, _ = win["coordinates"]
-            for idx, box in enumerate(boxes):
-                conf = result.boxes.conf.tolist()[idx]
-                x, y, w, h = map(int, box)
 
-                x, y = x + real_x, y + real_y,
+            for box, conf in zip(boxes, confs):
+                if conf >= thresholdConfidence:
+                    x_center, y_center, w, h = box
+                    x_center += real_x
+                    y_center += real_y
+                    detection = (x_center, y_center, w, h, conf)
 
+                    # Check for overlaps and keep the detection with higher confidence
+                    overlap_found = False
+                    for i, existing_det in enumerate(detections):
+                        if self.isRectangleOverlap(
+                            x_center, y_center, w, h,
+                            existing_det[0], existing_det[1], existing_det[2], existing_det[3]
+                        ):
+                            if conf > existing_det[4]:
+                                detections[i] = detection
+                            overlap_found = True
+                            break
+                    if not overlap_found:
+                        detections.append(detection)
                 
 
-                if visualizeBBox:
-                    if conf > thresholdConfidence:
-                        detections.append((x, y, w, h, conf))
-                        frame = cv2.rectangle(
-                            frame,
-                            (x - w // 2, y - h // 2),
-                            (x + w // 2, y + h // 2),
-                            (0, 255, 0),
-                            4,
-                        )
+        
+        if visualizeBBox:
+            for detection in detections:
+                x_center, y_center, w, h, conf = detection
+                x1 = int(x_center - w / 2)
+                y1 = int(y_center - h / 2)
+                x2 = int(x_center + w / 2)
+                y2 = int(y_center + h / 2)
+                cv2.rectangle(
+                    frame,
+                    (x1, y1),
+                    (x2, y2),
+                    (0, 0, 255),
+                    2,
+                )
 
         if visualizeWindows:
             frame = self.draWindows(frame)
