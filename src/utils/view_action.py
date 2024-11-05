@@ -13,14 +13,6 @@ from config import *
 # Define valid camera numbers if they are not defined in config
 VALID_CAMERA_NUMBERS = {1, 2, 3, 4, 5}  # Replace with your valid camera numbers
 
-ACTIONS = {
-    1: (48, 230),
-    2: (1050, 1230),
-    3: (1850, 2060),
-    4: (2620, 2790),
-    5: (3770, 3990),
-    6: (4450, 4600)
-}
 
 def show_frame_number(video_path, START, END, action_number):
     cap = cv2.VideoCapture(video_path)

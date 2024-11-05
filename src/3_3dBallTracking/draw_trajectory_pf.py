@@ -30,7 +30,7 @@ def set_axes_equal_scaling(ax):
     ax.set_zlim([mean_vals[2] - range_vals, mean_vals[2] + range_vals])
 
 action_number = input("Enter the action number: ")
-while not action_number.isdigit() and int(action_number) not in VALID_CAMERA_NUMBERS:
+while not action_number.isdigit() and int(action_number) not in ACTIONS:
     action_number = input("Enter a valid action number: ")
 
 detections_path = os.path.join(PATH_3D_DETECTIONS_05, f'points_3d_action{action_number}.pkl')
@@ -124,7 +124,7 @@ for frame in range(frames_with_detections[0], frames_with_detections[-1] + 1):
 frames, xs, ys, zs = zip(*trajectory)
 
 # Spline smoothing for x, y, z coordinates
-smoothing_factor = 12     # Adjust this factor for more smoothing
+smoothing_factor = 10     # Adjust this factor for more smoothing
 spline_x = UnivariateSpline(frames, xs, s=smoothing_factor)
 spline_y = UnivariateSpline(frames, ys, s=smoothing_factor)
 spline_z = UnivariateSpline(frames, zs, s=smoothing_factor)

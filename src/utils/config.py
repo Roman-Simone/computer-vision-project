@@ -26,5 +26,22 @@ PATH_WEIGHT = os.path.join(grandparent_path, 'data/weight')
 PATH_CAMERA_POS = os.path.join(grandparent_path, 'data/camera_positions.json')
 VALID_CAMERA_NUMBERS = [1, 2, 3, 4, 5, 6, 7, 8, 12, 13]
 
-print(PATH_CALIBRATION_MATRIX)
+ACTIONS = {
+    1: (48, 230),               
+    2: (1050, 1230),             
+    3: (1850, 2060),            
+    4: (3770, 3990)             
+}
+
+
+# ACTIONS = {
+#     1: (48, 230),
+#     2: (1050, 1230),
+#     3: (1850, 2060),
+#     4: (2620, 2790),
+#     5: (3770, 3990),
+#     6: (4450, 4600)
+# }
+
+
 
