@@ -113,8 +113,6 @@ class yoloWindow:
 
                 x, y = x + real_x, y + real_y,
 
-                
-
                 if visualizeBBox:
                     if conf > thresholdConfidence:
                         detections.append((x, y, w, h, conf))

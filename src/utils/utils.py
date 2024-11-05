@@ -78,11 +78,7 @@ def take_info_camera(camera_number, camera_infos):
 
     for pos, camera_info in enumerate(camera_infos):
         if camera_info.camera_number == camera_number:
-<<<<<<< Updated upstream
-            return camera_info, pos
-=======
             return camera_info, pos 
->>>>>>> Stashed changes
 
     return None, None
 

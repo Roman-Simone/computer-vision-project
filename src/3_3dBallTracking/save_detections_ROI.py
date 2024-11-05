@@ -48,7 +48,6 @@ ACTIONS = {
     6: (4450, 4600)             # 150
 }
 
-
 output_file = os.path.join(PATH_DETECTIONS_04, 'all_detections.pkl')
 
 def load_existing_detections(file_path):
