@@ -18,7 +18,6 @@ from utils.config import *
 all_chessboard_sizes = {1: (5, 7), 2: (5, 7), 3: (5, 7), 4: (5, 7), 5: (6, 9), 6: (6, 9), 7: (5, 7), 8: (6, 9), 12: (5, 7), 13: (5, 7)}
 SKIP_FRAME = 10
 
-
 def findPoints(path_video, cameraInfo, debug=True):
 
     chess_width = cameraInfo.chessboard_size[0]

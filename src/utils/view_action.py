@@ -8,7 +8,7 @@ parent_path = os.path.abspath(os.path.join(current_path, os.pardir))
 sys.path.append(parent_path)
 
 # Now you can import the utils module from the parent directory
-from utils.config import *
+from config import *
 
 # Define valid camera numbers if they are not defined in config
 VALID_CAMERA_NUMBERS = {1, 2, 3, 4, 5}  # Replace with your valid camera numbers
