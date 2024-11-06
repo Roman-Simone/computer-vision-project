@@ -38,6 +38,14 @@ class yoloWindow:
             )
         return frame
 
+    def is_in_any_region(self, x_center, y_center, regions):
+        """Check if the point is in any of the selected regions to ignore."""
+        for region in regions:
+            x, y, w, h = region
+            if x <= x_center <= x + w and y <= y_center <= y + h:
+                return True
+        return False
+    
     def createWindow(self, imgSize):
         """_summary_
 
@@ -96,7 +104,7 @@ class yoloWindow:
             return False
         return True
 
-    def detect(self, frame, visualizeBBox=False, visualizeWindows=False, thresholdConfidence=0):
+    def detect(self, frame, visualizeBBox=False, visualizeWindows=False, thresholdConfidence=0, regions=[]):
         """_summary_
 
         Args:
@@ -106,8 +114,10 @@ class yoloWindow:
             thresholdConfidence (int, optional): threshold to consider a detection. Defaults to 0.
 
         Returns:
-            detections, frame: a list of detections and the modified frame
+            detections, frame: a list of detections and the modified frame resized to the original size
         """
+        # Salva la dimensione originale
+        original_size = frame.shape[:2][::-1]  # (width, height)
         imgSize = frame.shape[:2][::-1]
 
         windowsOrigins = self.createWindow(imgSize)
@@ -158,8 +168,9 @@ class yoloWindow:
                             break
                     if not overlap_found:
                         detections.append(detection)
-                
 
+        if len(regions) > 0:
+            detections = [detection for detection in detections if not self.is_in_any_region(detection[0], detection[1], regions)]
         
         if visualizeBBox:
             for detection in detections:
@@ -172,17 +183,33 @@ class yoloWindow:
                     frame,
                     (x1, y1),
                     (x2, y2),
-                    (0, 0, 255),
-                    2,
+                    (0, 255, 0),
+                    7
                 )
 
         if visualizeWindows:
             frame = self.draWindows(frame)
 
-        if len(detections) == 0:
+        # Ridimensiona il frame alle dimensioni originali
+        frame = cv2.resize(frame, original_size)
+
+        # Ridimensiona i bounding box alle dimensioni originali
+        scale_x = original_size[0] / imgSize[0]
+        scale_y = original_size[1] / imgSize[1]
+
+        resized_detections = []
+        for detection in detections:
+            x_center, y_center, w, h, conf = detection
+            x_center *= scale_x
+            y_center *= scale_y
+            w *= scale_x
+            h *= scale_y
+            resized_detections.append((x_center, y_center, w, h, conf))
+
+        if len(resized_detections) == 0:
             return None, frame
 
+        return resized_detections, frame
 
-        return detections, frame
 
 
