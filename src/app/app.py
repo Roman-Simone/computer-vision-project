@@ -117,56 +117,61 @@ def project_point():
     data = request.json
     x = int(data['x'])
     y = int(data['y'])
+    source_image = data.get('source_image')
 
-    print(f"Received point: ({x}, {y})")
+    print(f"Received point: ({x}, {y}) from {source_image}")
 
-    camera_src = selected_cameras['camera_src']
-    camera_dst = selected_cameras['camera_dst']
+    # Determine cameras based on the source image
+    if source_image == 'src':
+        camera_src = selected_cameras['camera_src']
+        camera_dst = selected_cameras['camera_dst']
+    elif source_image == 'dst':
+        camera_src = selected_cameras['camera_dst']
+        camera_dst = selected_cameras['camera_src']
+    elif source_image == 'court':
+        camera_src = 0  # Assuming '0' represents the court
+        camera_dst = selected_cameras['camera_src']  # Or 'camera_dst', depending on your logic
+    else:
+        return jsonify(error="Invalid source image")
 
     homography = ret_homography(camera_src, camera_dst)
-    homography_court = ret_homography(camera_src, 0)
-
     if homography is None:
         return jsonify(error=f"No homography available for cameras {camera_src} and {camera_dst}")
 
-    camera_info_1, _ = take_info_camera(camera_src, cameras_info)
-    camera_info_2, _ = take_info_camera(camera_dst, cameras_info)
+    # Adjust point based on camera's ROI if needed
+    # If camera_src is not the court
+    if camera_src != 0:
+        # camera_info_src = take_info_camera(camera_src, cameras_info)
+        # x += camera_info_src.roi[0]
+        # y += camera_info_src.roi[1]
+        pass  # Replace with actual implementation
 
-    point = np.array([[x + camera_info_1.roi[0], y + camera_info_1.roi[1]]], dtype=np.float32)
-    
+    point = np.array([[x, y]], dtype=np.float32)
     point_transformed = cv2.perspectiveTransform(point.reshape(-1, 1, 2), homography).reshape(-1, 2)
-    point_transformed_court = cv2.perspectiveTransform(point.reshape(-1, 1, 2), homography_court).reshape(-1, 2)
-    
+
+    # Adjust transformed point based on destination camera's ROI if needed
+    x_transformed = int(point_transformed[0][0])
+    y_transformed = int(point_transformed[0][1])
+
+    # Load images
     img_src = cv2.imread(os.path.join(PATH_STATIC, 'src_img.png'))
     img_dst = cv2.imread(os.path.join(PATH_STATIC, 'dst_img.png'))
     img_court = cv2.imread(os.path.join(PATH_STATIC, 'court_img.jpg'))
 
-    cv2.circle(img_src, (x, y), 15, (0, 255, 0), -1)  # Draw circle on source image
-    
-    div = img_src.shape[1] / 15
-    
-    x_transformed = int(point_transformed[0][0] - camera_info_2.roi[0])
-    y_transformed = int(point_transformed[0][1] - camera_info_2.roi[1])
-    x_transformed_court = int(point_transformed_court[0][0])
-    y_transformed_court = int(point_transformed_court[0][1])
-            
-    cv2.circle(img_dst, (x_transformed, y_transformed), int((img_dst.shape[1]/div + img_dst.shape[0]/div)/2), (0, 255, 0), -1)  # Draw circle on destination image
-    cv2.circle(img_court, (x_transformed_court, y_transformed_court), 15, (0, 255, 0), -1)  # Draw circle on court image
+    # Draw circles on images
+    cv2.circle(img_src, (x, y), 15, (0, 255, 0), -1)
+    cv2.circle(img_dst, (x_transformed, y_transformed), 15, (0, 255, 0), -1)
+    cv2.circle(img_court, (x_transformed, y_transformed), 15, (0, 255, 0), -1)
 
     # Save updated images
     cv2.imwrite(os.path.join(PATH_STATIC, 'src_img_updated.png'), img_src)
     cv2.imwrite(os.path.join(PATH_STATIC, 'dst_img_updated.png'), img_dst)
     cv2.imwrite(os.path.join(PATH_STATIC, 'court_img_updated.jpg'), img_court)
-    
-    # Return relative paths (static/...) instead of absolute paths
+
     return jsonify(
         src_img='static/src_img_updated.png',
         dst_img='static/dst_img_updated.png',
-        court_img='static/court_img_updated.jpg',
-        x_transformed=x_transformed,
-        y_transformed=y_transformed,
-        x_transformed_court=x_transformed_court,
-        y_transformed_court=y_transformed_court
+        court_img='static/court_img_updated.jpg'
     )
 
 def applyModel(frame, model):
