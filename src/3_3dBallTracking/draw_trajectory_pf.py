@@ -42,6 +42,8 @@ process_noise_std = 1.0  # process noise
 measurement_noise_std = 2.0  # measurement noise
 initial_state_std = 1.0
 outlier_threshold = 4.0  # thresh for outlier rejection
+SMOOTHING_FACTOR = 10     
+WINDOW_SIZE = 9  # Adjust window size based on preference
 
 # particle states for first detection
 first_detection_frame = next((k for k, v in detections.items() if len(v) > 0), None)
@@ -80,11 +82,11 @@ def resample(particles, weights):
     indices = np.random.choice(len(particles), size=len(particles), p=weights)
     return particles[indices]
 
-def moving_average(data, window_size):
+def moving_average(data, WINDOW_SIZE):
     ''''This moving average function is used to smooth the trajectory.'''
-    if window_size < 1:
+    if WINDOW_SIZE < 1:
         return data
-    return np.convolve(data, np.ones(window_size) / window_size, mode='valid')
+    return np.convolve(data, np.ones(WINDOW_SIZE) / WINDOW_SIZE, mode='valid')
 
 trajectory = []
 frames_with_detections = sorted(detections.keys())
@@ -112,7 +114,7 @@ for frame in range(frames_with_detections[0], frames_with_detections[-1] + 1):
 
             # estimate current position
             estimated_state = particles[:, :3].mean(axis=0)
-            trajectory.append((frame, *estimated_state))
+            trajectory.append((frame, *estimated_state))            # estimated_state is a tuple
     else:
         # case in which we have only prediction (no detection available)
         particles = predict(particles)
@@ -123,24 +125,24 @@ for frame in range(frames_with_detections[0], frames_with_detections[-1] + 1):
 
 frames, xs, ys, zs = zip(*trajectory)
 
-# Spline smoothing for x, y, z coordinates
-smoothing_factor = 10     # Adjust this factor for more smoothing
-spline_x = UnivariateSpline(frames, xs, s=smoothing_factor)
-spline_y = UnivariateSpline(frames, ys, s=smoothing_factor)
-spline_z = UnivariateSpline(frames, zs, s=smoothing_factor)
+# smoothing the trajectory
+
+spline_x = UnivariateSpline(frames, xs, s=SMOOTHING_FACTOR)
+spline_y = UnivariateSpline(frames, ys, s=SMOOTHING_FACTOR)
+spline_z = UnivariateSpline(frames, zs, s=SMOOTHING_FACTOR)
 
 interp_frames = np.arange(frames[0], frames[-1] + 1, 1)
 interp_xs = spline_x(interp_frames)
 interp_ys = spline_y(interp_frames)
 interp_zs = spline_z(interp_frames)
 
-# Apply moving average for smoothing
-window_size = 9  # Adjust window size based on preference
-interp_xs = moving_average(interp_xs, window_size)
-interp_ys = moving_average(interp_ys, window_size)
-interp_zs = moving_average(interp_zs, window_size)
+interp_xs = moving_average(interp_xs, WINDOW_SIZE)
+interp_ys = moving_average(interp_ys, WINDOW_SIZE)
+interp_zs = moving_average(interp_zs, WINDOW_SIZE)
 
-interp_frames = interp_frames[window_size - 1:]  
+interp_frames = interp_frames[WINDOW_SIZE - 1:]  
+
+# plot the trajectory
 
 fig = plt.figure(figsize=(10, 7))
 ax = fig.add_subplot(111, projection='3d')
