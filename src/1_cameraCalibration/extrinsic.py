@@ -259,8 +259,8 @@ def rotationMatrixToEulerAngles(R):
 if __name__ == "__main__":
 
     #find extrinsic parameter for all cameras
-    undistortedFlag = False
-    findAllExtrinsics(undistortedFlag)
+    # undistortedFlag = False
+    # findAllExtrinsics(undistortedFlag)
 
     # find the extrinsic matrix for specific camera
     # camera_number = 2 

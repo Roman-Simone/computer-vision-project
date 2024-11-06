@@ -2541,5 +2541,384 @@
                 ]
             }
         ]
+    },
+    "0": {
+        "camera_coordinates": [],
+        "points": [
+            {
+                "world_coordinate": [
+                    -9.0,
+                    4.5,
+                    0.0
+                ],
+                "image_coordinate": [
+                    195,
+                    145
+                ]
+            },
+            {
+                "world_coordinate": [
+                    -9.0,
+                    -4.5,
+                    0.0
+                ],
+                "image_coordinate": [
+                    195,
+                    355
+                ]
+            },
+            {
+                "world_coordinate": [
+                    -3.0,
+                    -4.5,
+                    0.0
+                ],
+                "image_coordinate": [
+                    340,
+                    355
+                ]
+            },
+            {
+                "world_coordinate": [
+                    3.0,
+                    -4.5,
+                    0.0
+                ],
+                "image_coordinate": [
+                    480,
+                    355
+                ]
+            },
+            {
+                "world_coordinate": [
+                    9.0,
+                    -4.5,
+                    0.0
+                ],
+                "image_coordinate": [
+                    625,
+                    355
+                ]
+            },
+            {
+                "world_coordinate": [
+                    9.0,
+                    4.5,
+                    0.0
+                ],
+                "image_coordinate": [
+                    625,
+                    145
+                ]
+            },
+            {
+                "world_coordinate": [
+                    3.0,
+                    4.5,
+                    0.0
+                ],
+                "image_coordinate": [
+                    480,
+                    145
+                ]
+            },
+            {
+                "world_coordinate": [
+                    -3.0,
+                    4.5,
+                    0.0
+                ],
+                "image_coordinate": [
+                    340,
+                    145
+                ]
+            },
+            {
+                "world_coordinate": [
+                    -14.0,
+                    7.5,
+                    0.0
+                ],
+                "image_coordinate": [
+                    75,
+                    75
+                ]
+            },
+            {
+                "world_coordinate": [
+                    -14.0,
+                    6.55,
+                    0.0
+                ],
+                "image_coordinate": [
+                    75,
+                    110
+                ]
+            },
+            {
+                "world_coordinate": [
+                    -14.0,
+                    2.45,
+                    0.0
+                ],
+                "image_coordinate": [
+                    75,
+                    210
+                ]
+            },
+            {
+                "world_coordinate": [
+                    -8.2,
+                    2.45,
+                    0.0
+                ],
+                "image_coordinate": [
+                    200,
+                    210
+                ]
+            },
+            {
+                "world_coordinate": [
+                    -8.2,
+                    1.8,
+                    0.0
+                ],
+                "image_coordinate": [
+                    210,
+                    220
+                ]
+            },
+            {
+                "world_coordinate": [
+                    -8.2,
+                    -1.8,
+                    0.0
+                ],
+                "image_coordinate": [
+                    210,
+                    290
+                ]
+            },
+            {
+                "world_coordinate": [
+                    -8.2,
+                    -2.45,
+                    0.0
+                ],
+                "image_coordinate": [
+                    200,
+                    300
+                ]
+            },
+            {
+                "world_coordinate": [
+                    -14.0,
+                    -2.45,
+                    0.0
+                ],
+                "image_coordinate": [
+                    75,
+                    300
+                ]
+            },
+            {
+                "world_coordinate": [
+                    -14.0,
+                    -6.55,
+                    0.0
+                ],
+                "image_coordinate": [
+                    75,
+                    390
+                ]
+            },
+            {
+                "world_coordinate": [
+                    -14.0,
+                    -7.5,
+                    0.0
+                ],
+                "image_coordinate": [
+                    75,
+                    425
+                ]
+            },
+            {
+                "world_coordinate": [
+                    0.0,
+                    -7.5,
+                    0.0
+                ],
+                "image_coordinate": [
+                    410,
+                    425
+                ]
+            },
+            {
+                "world_coordinate": [
+                    14.0,
+                    -7.5,
+                    0.0
+                ],
+                "image_coordinate": [
+                    745,
+                    425
+                ]
+            },
+            {
+                "world_coordinate": [
+                    14.0,
+                    -6.55,
+                    0.0
+                ],
+                "image_coordinate": [
+                    745,
+                    390
+                ]
+            },
+            {
+                "world_coordinate": [
+                    14.0,
+                    -2.45,
+                    0.0
+                ],
+                "image_coordinate": [
+                    745,
+                    300
+                ]
+            },
+            {
+                "world_coordinate": [
+                    8.2,
+                    -2.45,
+                    0.0
+                ],
+                "image_coordinate": [
+                    620,
+                    300
+                ]
+            },
+            {
+                "world_coordinate": [
+                    8.2,
+                    -1.8,
+                    0.0
+                ],
+                "image_coordinate": [
+                    610,
+                    290
+                ]
+            },
+            {
+                "world_coordinate": [
+                    8.2,
+                    1.8,
+                    0.0
+                ],
+                "image_coordinate": [
+                    610,
+                    220
+                ]
+            },
+            {
+                "world_coordinate": [
+                    8.2,
+                    2.45,
+                    0.0
+                ],
+                "image_coordinate": [
+                    620,
+                    210
+                ]
+            },
+            {
+                "world_coordinate": [
+                    14.0,
+                    2.45,
+                    0.0
+                ],
+                "image_coordinate": [
+                    745,
+                    210
+                ]
+            },
+            {
+                "world_coordinate": [
+                    14.0,
+                    6.55,
+                    0.0
+                ],
+                "image_coordinate": [
+                    745,
+                    110
+                ]
+            },
+            {
+                "world_coordinate": [
+                    14.0,
+                    7.5,
+                    0.0
+                ],
+                "image_coordinate": [
+                    745,
+                    75
+                ]
+            },
+            {
+                "world_coordinate": [
+                    0.0,
+                    7.5,
+                    0.0
+                ],
+                "image_coordinate": [
+                    410,
+                    75
+                ]
+            },
+            {
+                "world_coordinate": [
+                    0.0,
+                    4.5,
+                    0.0
+                ],
+                "image_coordinate": [
+                    410,
+                    140
+                ]
+            },
+            {
+                "world_coordinate": [
+                    0.0,
+                    1.8,
+                    0.0
+                ],
+                "image_coordinate": [
+                    410,
+                    210
+                ]
+            },
+            {
+                "world_coordinate": [
+                    0.0,
+                    -1.8,
+                    0.0
+                ],
+                "image_coordinate": [
+                    410,
+                    290
+                ]
+            },
+            {
+                "world_coordinate": [
+                    0.0,
+                    -4.5,
+                    0.0
+                ],
+                "image_coordinate": [
+                    410,
+                    360
+                ]
+            }
+        ]
     }
 }

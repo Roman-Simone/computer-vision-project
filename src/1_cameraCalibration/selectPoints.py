@@ -426,8 +426,22 @@ def selectPointsAllCameras(undistortedFlag = False):
 
 def selectPointsCamera(camera_to_select, undistortedFlag = False):
     #global rateoImages
-
     frames = find_files(PATH_FRAME_DISTORTED)
+
+    if camera_to_select == "bonus":
+        frameImg = cv2.imread(PATH_COURT)
+        courtImg = cv2.imread(PATH_COURT)
+
+        world_image_coordinates = takePoints(frameImg, courtImg, camera_number, rightCameraFlag)
+
+        pathToSave = PATH_JSON_DISTORTED
+        update_json_file(camera_number, world_image_coordinates, pathToSave)
+        pathToSave = PATH_JSON_UNDISTORTED
+        update_json_file(camera_number, world_image_coordinates, pathToSave)
+    
+        cv2.destroyAllWindows()
+
+        return
 
     for frame in frames:
         print(frame)
@@ -495,7 +509,15 @@ def update_json_file(camera_number, world_image_coordinates, file_name):
 
     print(f"I dati per la camera {camera_number} sono stati aggiornati correttamente in {file_name}")
 
+def addCourtCoordinates():
+    world_image_coordinates = {}
+    for courtCord, worldCord in zip(points, worldPoints):
+        world_image_coordinates[worldCord] = courtCord
 
+    pathToSave = PATH_JSON_DISTORTED
+    update_json_file(0, world_image_coordinates, pathToSave)
+    pathToSave = PATH_JSON_UNDISTORTED
+    update_json_file(0, world_image_coordinates, pathToSave)
 
 
 if __name__ == '__main__':
@@ -504,7 +526,9 @@ if __name__ == '__main__':
     # selectPointsAllCameras(undistortedFlag)
 
     # Select points for a specific camera
-    camera_to_select = 6
-    undistortedFlag = False
-    selectPointsCamera(camera_to_select, undistortedFlag)
+    # camera_to_select = 6
+    # undistortedFlag = False
+    # selectPointsCamera(camera_to_select, undistortedFlag)
+
+    addCourtCoordinates()
 
