@@ -50,8 +50,13 @@
     <button id="load_images">Load Images</button>
 
     <div class="image-container">
-        <img id="src_image" src="">
-        <img id="dst_image" src="">
+        <div class="upper-images">
+            <img id="src_image" src="image1.jpg" alt="Image 1">
+            <img id="dst_image" src="image2.jpg" alt="Image 2">
+        </div>
+        <div class="lower-image">
+            <img id="court_image" src="image3.jpg" alt="Image 3">
+        </div>
     </div>
 
     <script>
@@ -59,6 +64,7 @@
         var camera_dst = null;
         var src_image_original = { width: 0, height: 0 };
         var dst_image_original = { width: 0, height: 0 };
+        var court_image_original = { width: 0, height: 0 };
 
         $(document).ready(function () {
             // Handle source camera button click
@@ -107,6 +113,7 @@
                                 if (!data.error) {
                                     $('#src_image').attr('src', data.src_img + '?' + new Date().getTime());
                                     $('#dst_image').attr('src', data.dst_img + '?' + new Date().getTime());
+                                    $('#court_image').attr('src', data.court_img + '?' + new Date().getTime());
 
                                     // Reset image dimensions
                                     $('#src_image').on('load', function () {
@@ -118,6 +125,12 @@
                                         dst_image_original.width = this.naturalWidth;
                                         dst_image_original.height = this.naturalHeight;
                                     });
+
+                                    $('#court_image').on('load', function () {
+                                        court_image_original.width = this.naturalWidth;
+                                        court_image_original.height = this.naturalHeight;
+                                    });
+
                                 } else {
                                     alert(data.error);
                                 }
@@ -160,6 +173,7 @@
                             // Update images with projected points
                             $('#src_image').attr('src', data.src_img + '?' + new Date().getTime());
                             $('#dst_image').attr('src', data.dst_img + '?' + new Date().getTime());
+                            $('#court_image').attr('src', data.court_img + '?' + new Date().getTime());
                         } else {
                             alert(data.error);
                         }
