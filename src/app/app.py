@@ -7,12 +7,10 @@ import torch
 import threading
 import random
 
-# Add the parent directory to the system path
 current_path = os.path.dirname(os.path.abspath(__file__))
 parent_path = os.path.abspath(os.path.join(current_path, os.pardir))
 sys.path.append(parent_path)
 
-# Now you can import the utils module from the parent directory
 from utils.utils import *
 from utils.config import *
 from utils.particleFilter import *
@@ -20,13 +18,11 @@ from ultralytics import YOLO
 
 app = Flask(__name__, static_folder=PATH_STATIC)
 
-# Load camera info and model weights
 available_cameras = [1, 2, 3, 4, 5, 6, 7, 8, 12, 13]
 interInfo = load_pickle(PATH_HOMOGRAPHY_MATRIX)
 cameras_info = load_pickle(PATH_CALIBRATION_MATRIX)
 YOLO_INPUT_SIZE = 800
 
-# Load the YOLO model for 2D ball tracking
 pathWeight = os.path.join(PATH_WEIGHT, 'best_v11_800.pt')
 model = YOLO(pathWeight)
 
@@ -37,7 +33,6 @@ elif torch.backends.mps.is_available():
 else:
     device = 'cpu'
 
-# Action frame ranges for the video processing
 ACTIONS = {
     1: (48, 230),
     2: (1050, 1230),

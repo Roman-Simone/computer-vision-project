@@ -42,13 +42,19 @@ process_noise_std = 1.0  # process noise
 measurement_noise_std = 2.0  # measurement noise
 initial_state_std = 1.0
 outlier_threshold = 4.0  # thresh for outlier rejection
-SMOOTHING_FACTOR = 10     
-WINDOW_SIZE = 9  # Adjust window size based on preference
+SMOOTHING_FACTOR = 2 # 5 - 2 ok
+# SMOOTHING_FACTOR = 10   # 1 ok
+
+
+
+        
+WINDOW_SIZE = 8  # Adjust window size based on preference
 
 # particle states for first detection
 first_detection_frame = next((k for k, v in detections.items() if len(v) > 0), None)
 if first_detection_frame is not None:
-    first_detection = np.mean(detections[first_detection_frame], axis=0)
+    first_detection_frame_cut = [d for d in detections[first_detection_frame] if -15 < d[0] < 15 and -8 < d[1] < 8 and 0 < d[2] < 10]
+    first_detection = np.mean(first_detection_frame_cut, axis=0)
 else:
     raise ValueError("No detections available to initialize")
 
