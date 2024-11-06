@@ -11,5 +11,7 @@ src/app/static/dst_img.png
 src/app/static/dst_img_updated.png
 src/app/static/src_img.png
 src/app/static/src_img_updated.png
+src/app/static/court_img.jpg
+src/app/static/court_img_updated.jpg
 /runs
 3D_plot.png

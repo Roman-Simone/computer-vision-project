@@ -88,6 +88,7 @@ def get_images():
 
     img_src = cv2.imread(os.path.join(PATH_FRAME_DISTORTED, f'cam_{camera_src}.png'))
     img_dst = cv2.imread(os.path.join(PATH_FRAME_DISTORTED, f'cam_{camera_dst}.png'))
+    img_court = cv2.imread(os.path.join(PATH_COURT))
 
     camera_info_1, _ = take_info_camera(camera_src, cameras_info)
     camera_info_2, _ = take_info_camera(camera_dst, cameras_info)
@@ -95,18 +96,20 @@ def get_images():
     img_src = undistorted(img_src, camera_info_1)
     img_dst = undistorted(img_dst, camera_info_2)
 
-    if img_src is None or img_dst is None:
+    if img_src is None or img_dst is None or img_court is None:
         return jsonify(error="Could not load images")
 
     success_src = cv2.imwrite(os.path.join(PATH_STATIC, 'src_img.png'), img_src)
     success_dst = cv2.imwrite(os.path.join(PATH_STATIC, 'dst_img.png'), img_dst)
+    success_court = cv2.imwrite(os.path.join(PATH_STATIC, 'court_img.jpg'), img_court)
 
-    if not success_src or not success_dst:
+    if not success_src or not success_dst or not success_court:
         print("Could not save images")
 
     return jsonify(
         src_img='static/src_img.png',
-        dst_img='static/dst_img.png'
+        dst_img='static/dst_img.png',
+        court_img='static/court_img.jpg'
     )
 
 @app.route('/project_point', methods=['POST'])
@@ -121,6 +124,7 @@ def project_point():
     camera_dst = selected_cameras['camera_dst']
 
     homography = ret_homography(camera_src, camera_dst)
+    homography_court = ret_homography(camera_src, 0)
 
     if homography is None:
         return jsonify(error=f"No homography available for cameras {camera_src} and {camera_dst}")
@@ -131,9 +135,11 @@ def project_point():
     point = np.array([[x + camera_info_1.roi[0], y + camera_info_1.roi[1]]], dtype=np.float32)
     
     point_transformed = cv2.perspectiveTransform(point.reshape(-1, 1, 2), homography).reshape(-1, 2)
+    point_transformed_court = cv2.perspectiveTransform(point.reshape(-1, 1, 2), homography_court).reshape(-1, 2)
     
     img_src = cv2.imread(os.path.join(PATH_STATIC, 'src_img.png'))
     img_dst = cv2.imread(os.path.join(PATH_STATIC, 'dst_img.png'))
+    img_court = cv2.imread(os.path.join(PATH_STATIC, 'court_img.jpg'))
 
     cv2.circle(img_src, (x, y), 15, (0, 255, 0), -1)  # Draw circle on source image
     
@@ -141,19 +147,26 @@ def project_point():
     
     x_transformed = int(point_transformed[0][0] - camera_info_2.roi[0])
     y_transformed = int(point_transformed[0][1] - camera_info_2.roi[1])
+    x_transformed_court = int(point_transformed_court[0][0])
+    y_transformed_court = int(point_transformed_court[0][1])
             
     cv2.circle(img_dst, (x_transformed, y_transformed), int((img_dst.shape[1]/div + img_dst.shape[0]/div)/2), (0, 255, 0), -1)  # Draw circle on destination image
+    cv2.circle(img_court, (x_transformed_court, y_transformed_court), 15, (0, 255, 0), -1)  # Draw circle on court image
 
     # Save updated images
     cv2.imwrite(os.path.join(PATH_STATIC, 'src_img_updated.png'), img_src)
     cv2.imwrite(os.path.join(PATH_STATIC, 'dst_img_updated.png'), img_dst)
+    cv2.imwrite(os.path.join(PATH_STATIC, 'court_img_updated.jpg'), img_court)
     
     # Return relative paths (static/...) instead of absolute paths
     return jsonify(
         src_img='static/src_img_updated.png',
         dst_img='static/dst_img_updated.png',
+        court_img='static/court_img_updated.jpg',
         x_transformed=x_transformed,
-        y_transformed=y_transformed
+        y_transformed=y_transformed,
+        x_transformed_court=x_transformed_court,
+        y_transformed_court=y_transformed_court
     )
 
 def applyModel(frame, model):

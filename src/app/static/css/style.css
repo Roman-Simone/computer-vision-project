@@ -101,12 +101,30 @@ body {
     cursor: not-allowed;
 }
 
+
 .image-container {
     display: flex;
-    justify-content: space-around;
-    margin-top: 20px;
-    width: 80%;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px; /* Space between the rows */
 }
+
+.upper-images {
+    display: flex;
+    gap: 10px; /* Space between the upper images */
+}
+
+.upper-images img,
+.lower-image img {
+    width: 500px; /* Adjust width as needed */
+    height: auto;
+}
+
+.lower-image {
+    display: flex;
+    justify-content: center;
+}
+
 
 .image-container img {
     border: 2px solid #ddd;
