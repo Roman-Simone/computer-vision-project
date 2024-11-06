@@ -3,13 +3,9 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Point Projection - 3D Camera Calibration</title>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <link rel="stylesheet" href="../static/css/style.css">
-    <style>
-
-    </style>
 </head>
 
 <body>
@@ -51,11 +47,11 @@
 
     <div class="image-container">
         <div class="upper-images">
-            <img id="src_image" src="image1.jpg" alt="Image 1">
-            <img id="dst_image" src="image2.jpg" alt="Image 2">
+            <img id="src_image" src="" alt="Source Image">
+            <img id="dst_image" src="" alt="Destination Image">
         </div>
         <div class="lower-image">
-            <img id="court_image" src="image3.jpg" alt="Image 3">
+            <img id="court_image" src="" alt="Court Image">
         </div>
     </div>
 
@@ -73,7 +69,7 @@
                 $('.camera_src_btn').removeClass('selected');
                 $(this).addClass('selected');
 
-                // Enable all destination buttons and disable the selected source camera button in destination buttons
+                // Disable the selected source camera in destination buttons
                 $('.camera_dst_btn').removeClass('disabled').prop('disabled', false);
                 $('.camera_dst_btn[data-camera="' + camera_src + '"]').addClass('disabled').prop('disabled', true);
             });
@@ -84,7 +80,7 @@
                 $('.camera_dst_btn').removeClass('selected');
                 $(this).addClass('selected');
 
-                // Enable all source buttons and disable the selected destination camera button in source buttons
+                // Disable the selected destination camera in source buttons
                 $('.camera_src_btn').removeClass('disabled').prop('disabled', false);
                 $('.camera_src_btn[data-camera="' + camera_dst + '"]').addClass('disabled').prop('disabled', true);
             });
@@ -115,7 +111,7 @@
                                     $('#dst_image').attr('src', data.dst_img + '?' + new Date().getTime());
                                     $('#court_image').attr('src', data.court_img + '?' + new Date().getTime());
 
-                                    // Reset image dimensions
+                                    // Set original dimensions
                                     $('#src_image').on('load', function () {
                                         src_image_original.width = this.naturalWidth;
                                         src_image_original.height = this.naturalHeight;
@@ -130,7 +126,6 @@
                                         court_image_original.width = this.naturalWidth;
                                         court_image_original.height = this.naturalHeight;
                                     });
-
                                 } else {
                                     alert(data.error);
                                 }
@@ -140,22 +135,30 @@
                 });
             });
 
-            // Handle click event on source image to project point
-            $('#src_image').on('click', function (e) {
+            // Function to handle image clicks
+            function handleImageClick(e, source_image) {
                 if (!camera_src || !camera_dst) {
                     alert("Please select both source and destination cameras.");
                     return;
                 }
 
                 var offset = $(this).offset();
-                var x_scaled = Math.round(e.pageX - offset.left);
-                var y_scaled = Math.round(e.pageY - offset.top);
+                var x_scaled = e.pageX - offset.left;
+                var y_scaled = e.pageY - offset.top;
 
-                // Calculate the scaling factors for width and height
-                var width_scale = src_image_original.width / $(this).width();
-                var height_scale = src_image_original.height / $(this).height();
+                var width_scale, height_scale;
 
-                // Adjust the coordinates using the scaling factors
+                if (source_image === 'src') {
+                    width_scale = src_image_original.width / $('#src_image').width();
+                    height_scale = src_image_original.height / $('#src_image').height();
+                } else if (source_image === 'dst') {
+                    width_scale = dst_image_original.width / $('#dst_image').width();
+                    height_scale = dst_image_original.height / $('#dst_image').height();
+                } else if (source_image === 'court') {
+                    width_scale = court_image_original.width / $('#court_image').width();
+                    height_scale = court_image_original.height / $('#court_image').height();
+                }
+
                 var x_original = Math.round(x_scaled * width_scale);
                 var y_original = Math.round(y_scaled * height_scale);
 
@@ -180,6 +183,19 @@
                         }
                     }
                 });
+            }
+
+            // Bind click events to images
+            $('#src_image').on('click', function (e) {
+                handleImageClick.call(this, e, 'src');
+            });
+
+            $('#dst_image').on('click', function (e) {
+                handleImageClick.call(this, e, 'dst');
+            });
+
+            $('#court_image').on('click', function (e) {
+                handleImageClick.call(this, e, 'court');
             });
         });
     </script>
