@@ -33,7 +33,7 @@ action_number = input("Enter the action number: ")
 while not action_number.isdigit() and int(action_number) not in ACTIONS:
     action_number = input("Enter a valid action number: ")
 
-detections_path = os.path.join(PATH_3D_DETECTIONS_05, f'points_3d_action{action_number}.pkl')
+detections_path = os.path.join(PATH_3D_DETECTIONS_04, f'points_3d_action{action_number}.pkl')
 with open(detections_path, "rb") as f:
     detections = pickle.load(f)
 
@@ -135,7 +135,7 @@ interp_ys = spline_y(interp_frames)
 interp_zs = spline_z(interp_frames)
 
 # Apply moving average for smoothing
-window_size = 10  # Adjust window size based on preference
+window_size = 9  # Adjust window size based on preference
 interp_xs = moving_average(interp_xs, window_size)
 interp_ys = moving_average(interp_ys, window_size)
 interp_zs = moving_average(interp_zs, window_size)

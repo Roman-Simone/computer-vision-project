@@ -80,7 +80,7 @@ def is_in_any_region(x_center, y_center, regions):
 def applyModel(frame, model, regions):
     originalSizeHeight, originalSizeWidth, _ = frame.shape
     frameResized = cv2.resize(frame, (SIZE, SIZE))
-    results, frame = model.track(frameResized, verbose=False, device=device)
+    results = model.track(frameResized, verbose=False, device=device)
 
     detection_point = None
 

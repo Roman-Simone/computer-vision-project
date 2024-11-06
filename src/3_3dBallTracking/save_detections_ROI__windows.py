@@ -14,7 +14,8 @@ sys.path.append(parent_path)
 from utils.utils import *
 from utils.config import *
 
-CONFIDENCE = 0.3
+CONFIDENCE = 0.4
+USE_PKL_REGIONS = True
 
 # DICTIONARY (and pkl file) structure:
 # {
@@ -29,7 +30,7 @@ CONFIDENCE = 0.3
 pathWeight = os.path.join(PATH_WEIGHT, 'best_v11_800.pt')
 cameraInfos = load_pickle(PATH_CALIBRATION_MATRIX)
 model = yoloWindow(pathWeight)
-
+# model = YOLO(pathWeight)
 if torch.cuda.is_available():
     device = 'cuda'
 elif torch.backends.mps.is_available():
@@ -47,9 +48,13 @@ ACTIONS = {
     5: (3770, 3990),            # 220
     6: (4450, 4600)             # 150
 }
-
-output_file = os.path.join(PATH_DETECTIONS_WINDOW_03, 'all_detections.pkl')
-
+if CONFIDENCE == 0.3:
+    output_file = os.path.join(PATH_DETECTIONS_WINDOW_03, 'all_detections.pkl')
+elif CONFIDENCE == 0.35:
+    output_file = os.path.join(PATH_DETECTIONS_WINDOW_035, 'all_detections.pkl')
+elif CONFIDENCE == 0.4:
+    output_file = os.path.join(PATH_DETECTIONS_WINDOW_04, 'all_detections.pkl')
+    
 def load_existing_detections(file_path):
     if os.path.exists(file_path):
         with open(file_path, 'rb') as f:
@@ -64,8 +69,8 @@ def select_regions(frame):
         if region[2] == 0 or region[3] == 0:  
             # print("Region selection completed.")
             if input("Do you want to save these regions? (y/n)") == 'y':
-                regions_file = os.path.join(PATH_DETECTIONS_WINDOW_03, 'regions.pkl')
-                os.makedirs(PATH_DETECTIONS_WINDOW_03, exist_ok=True)
+                regions_file = os.path.join(PATH_DETECTIONS, 'regions.pkl')
+                os.makedirs(PATH_DETECTIONS, exist_ok=True)
 
                 if not os.path.exists(regions_file):
                     with open(regions_file, 'wb') as f:
@@ -123,7 +128,14 @@ def process_single_action(camera_number, action_id):
         return
     
     first_frame = undistorted(first_frame, cameraInfo)
-    regions = select_regions(first_frame)
+    if not USE_PKL_REGIONS:
+        regions = select_regions(first_frame)
+    else:
+        regions_file = os.path.join(PATH_DETECTIONS, 'regions.pkl')
+        with open(regions_file, 'rb') as f:
+            all_regions = pickle.load(f)
+        key = (camera_number, action_id, CONFIDENCE)
+        regions = all_regions.get(key, [])
     
     action_detections = {}
 

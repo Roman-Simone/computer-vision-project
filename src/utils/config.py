@@ -18,31 +18,30 @@ PATH_COURT = os.path.join(grandparent_path, 'data/images/courts.jpg')
 PATH_DATASET = os.path.join(grandparent_path, 'data/dataset')
 PATH_STATIC = os.path.join(grandparent_path, 'src/app/static')
 PATH_CSS = os.path.join(grandparent_path, 'src/app/static/css')
-PATH_DETECTIONS_WINDOW_03 = os.path.join(grandparent_path, 'data/detections[windows_0.3]')
-PATH_DETECTIONS_04 = os.path.join(grandparent_path, 'data/detections[0.4_confidence]')
-PATH_DETECTIONS_05 = os.path.join(grandparent_path, 'data/detections[0.5_confidence]')
-PATH_3D_DETECTIONS_04 = os.path.join(grandparent_path, 'data/detections[0.4_confidence]/3D_detections')
-PATH_3D_DETECTIONS_05 = os.path.join(grandparent_path, 'data/detections[0.5_confidence]/3D_detections')
+PATH_DETECTIONS = os.path.join(grandparent_path, 'data/detections')
+PATH_DETECTIONS_WINDOW_04 = os.path.join(grandparent_path, 'data/detections/detections[windows_0.4]')
+PATH_DETECTIONS_04 = os.path.join(grandparent_path, 'data/detections/detections[0.4_confidence]')
+PATH_3D_DETECTIONS_04 = os.path.join(grandparent_path, 'data/detections/detections[0.4_confidence]/3D_detections')
 PATH_WEIGHT = os.path.join(grandparent_path, 'data/weight')
 PATH_CAMERA_POS = os.path.join(grandparent_path, 'data/camera_positions.json')
 VALID_CAMERA_NUMBERS = [1, 2, 3, 4, 5, 6, 7, 8, 12, 13]
 
-ACTIONS = {
-    1: (48, 230),               
-    2: (1050, 1230),             
-    3: (1850, 2060),            
-    4: (3770, 3990)             
-}
-
-
 # ACTIONS = {
-#     1: (48, 230),
-#     2: (1050, 1230),
-#     3: (1850, 2060),
-#     4: (2620, 2790),
-#     5: (3770, 3990),
-#     6: (4450, 4600)
+#     1: (48, 230),               
+#     2: (1050, 1230),             
+#     3: (1850, 2060),            
+#     4: (3770, 3990)             
 # }
+
+
+ACTIONS = {
+    1: (48, 230),
+    2: (1050, 1230),
+    3: (1850, 2060),
+    4: (2620, 2790),
+    5: (3770, 3990),
+    6: (4450, 4600)
+}
 
 
 

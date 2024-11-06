@@ -17,9 +17,12 @@ CONFIDENCE = 0.4
 
 if CONFIDENCE == 0.4:
     pathPickle = os.path.join(PATH_DETECTIONS_04, 'all_detections.pkl')
+    pathPickle_cam2 = os.path.join(PATH_DETECTIONS_WINDOW_04, 'all_detections.pkl')
 elif CONFIDENCE == 0.5:
     pathPickle = os.path.join(PATH_DETECTIONS_05, 'all_detections.pkl')
+    
 detections = load_pickle(pathPickle)
+detections_cam2 = load_pickle(pathPickle_cam2)
 
 # DICTIONARY (and pkl file) structure:
 # {
@@ -91,11 +94,25 @@ def main():
             points_2d = []
 
             for camera in VALID_CAMERA_NUMBERS:
-                if frame in detections[str(camera)][str(action_number)]:
-                    point2d = detections[str(camera)][str(action_number)][frame]
-                    points_2d.append((camera, point2d))
-                    print(f"Camera {camera} - Point: {point2d}")
-                    
+                if camera != 2:
+                    if frame in detections[str(camera)][str(action_number)]:
+                        point2d = detections[str(camera)][str(action_number)][frame]
+                        points_2d.append((camera, point2d))
+                        print(f"Camera {camera} - Point: {point2d}")
+                else:   
+                    if frame in detections_cam2[str(camera)][str(action_number)]:
+                        point2d = detections_cam2[str(camera)][str(action_number)][frame]
+                        if point2d is not None:
+                            point2d = list(point2d)
+                            # print(point2d[0])
+                            x = int(point2d[0][0])
+                            y = int(point2d[0][1])                        
+                            points_2d.append((camera, (x, y)))
+                            print(f"Camera {camera} - Point: {(x, y)}")
+                        else:
+                            points_2d.append((camera, None))
+                            print(f"Camera {camera} - Point: {None}")
+                            
 
             if len(points_2d) >= 2:
                 for i in range(len(points_2d)):
