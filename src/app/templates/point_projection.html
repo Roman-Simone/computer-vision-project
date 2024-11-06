@@ -166,7 +166,8 @@
                     contentType: 'application/json',
                     data: JSON.stringify({
                         x: x_original,
-                        y: y_original
+                        y: y_original,
+                        camera_src: camera_src,
                     }),
                     success: function (data) {
                         if (!data.error) {
