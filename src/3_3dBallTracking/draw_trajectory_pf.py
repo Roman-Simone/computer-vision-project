@@ -13,6 +13,8 @@ sys.path.append(parent_path)
 from utils.utils import *
 from utils.config import *
 
+seed_value = 60
+
 def get_positions():
     """Get the field corners from the pkl file."""
     with open(PATH_CAMERA_POS, 'r') as file:  
@@ -29,9 +31,9 @@ def set_axes_equal_scaling(ax):
     ax.set_ylim([mean_vals[1] - range_vals, mean_vals[1] + range_vals])
     ax.set_zlim([mean_vals[2] - range_vals, mean_vals[2] + range_vals])
 
-action_number = input("Enter the action number: ")
-while not action_number.isdigit() and int(action_number) not in ACTIONS:
-    action_number = input("Enter a valid action number: ")
+action_number = int(input("Enter the action number: "))
+while action_number not in ACTIONS:
+    action_number = int(input("Enter the action number: "))
 
 detections_path = os.path.join(PATH_3D_DETECTIONS_04, f'points_3d_action{action_number}.pkl')
 with open(detections_path, "rb") as f:
@@ -42,13 +44,16 @@ process_noise_std = 1.0  # process noise
 measurement_noise_std = 2.0  # measurement noise
 initial_state_std = 1.0
 outlier_threshold = 4.0  # thresh for outlier rejection
-SMOOTHING_FACTOR = 2 # 5 - 2 ok
-# SMOOTHING_FACTOR = 10   # 1 ok
+
+SMOOTHING_FACTOR = 2 
+WINDOW_SIZE = 8  
+
+np.random.seed(seed_value)
 
 
+# 1-2-3-5: ok
+# 4: 2 m sopra di z
 
-        
-WINDOW_SIZE = 8  # Adjust window size based on preference
 
 # particle states for first detection
 first_detection_frame = next((k for k, v in detections.items() if len(v) > 0), None)
@@ -57,6 +62,8 @@ if first_detection_frame is not None:
     first_detection = np.mean(first_detection_frame_cut, axis=0)
 else:
     raise ValueError("No detections available to initialize")
+
+print(f"------------> First Detection: {first_detection}")
 
 particles = np.random.normal(
     np.concatenate([first_detection, [0, 0, 0]]),
@@ -104,6 +111,8 @@ for frame in range(frames_with_detections[0], frames_with_detections[-1] + 1):
 
         particle_mean = particles[:, :3].mean(axis=0)
         closest_detection = min(detection_list, key=lambda d: np.linalg.norm(d - particle_mean))    # closest detection
+
+        print(f"Frame: {frame}, Closest Detection: {closest_detection}")
 
         # bounds and outlier check
         if -15 < closest_detection[0] < 15 and -8 < closest_detection[1] < 8 and 0 < closest_detection[2] < 10:
@@ -163,6 +172,8 @@ ax.scatter(field_points[:, 0], field_points[:, 1], field_points[:, 2], color='re
 
 ax.plot(interp_xs, interp_ys, interp_zs, label="Smoothed Trajectory", color="blue", lw=2)
 ax.scatter(xs, ys, zs, label="Detections", color="lightblue", s=15)
+
+print("-------------> SEESD VALUE: ", seed_value)
 
 ax.set_xlabel("X Position")
 ax.set_ylabel("Y Position")

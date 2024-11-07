@@ -152,21 +152,17 @@ def load_existing_results(filename):
     return {}
 
 if __name__ == '__main__':
-    # pickle_file = 'ball_trajectories.pkl'
-    # results = load_existing_results(pickle_file)
 
     cam = int(input("Enter camera number: "))
-    
-    # if str(cam) not in results:
-    #         results[str(cam)] = {}
-            
+    while cam not in VALID_CAMERA_NUMBERS:
+        print("Invalid camera number.")
+        cam = int(input("Enter camera number: "))
+        
     action = int(input("Enter action number: "))
-
+    while action not in ACTIONS:
+        print("Invalid action number.")
+        action = int(input("Enter action number: "))
+    
     print(f"Processing Camera {cam}, Action {action}...")
     trajectory = testModel(cam, action)
-    # results[str(cam)][str(action)] = trajectory
-
-    # with open(pickle_file, 'wb') as f:
-    #     pickle.dump(results, f)
-
-    # print(f"Camera {cam}, Action {action} saved to {pickle_file}")
+    

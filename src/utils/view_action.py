@@ -2,16 +2,11 @@ import os
 import cv2
 import sys
 
-# Add the parent directory to the system path
 current_path = os.path.dirname(os.path.abspath(__file__))
 parent_path = os.path.abspath(os.path.join(current_path, os.pardir))
 sys.path.append(parent_path)
 
-# Now you can import the utils module from the parent directory
 from config import *
-
-# Define valid camera numbers if they are not defined in config
-VALID_CAMERA_NUMBERS = {1, 2, 3, 4, 5}  # Replace with your valid camera numbers
 
 
 def show_frame_number(video_path, START, END, action_number):
@@ -21,11 +16,10 @@ def show_frame_number(video_path, START, END, action_number):
         print("Error opening the video")
         return
     
-    # Set the start frame
     cap.set(cv2.CAP_PROP_POS_FRAMES, START)
     
     frame_idx = START
-    paused = False  # This flag controls pause/play state
+    paused = False  
 
     while cap.isOpened():
         if not paused:
@@ -34,7 +28,6 @@ def show_frame_number(video_path, START, END, action_number):
             if not ret or frame_idx > END:
                 break
             
-            # Display the frame number
             text = f"Frame: {frame_idx}"
             position = (50, 50)
             font = cv2.FONT_HERSHEY_SIMPLEX
@@ -43,28 +36,22 @@ def show_frame_number(video_path, START, END, action_number):
             thickness = 2
             frame = cv2.putText(frame, text, position, font, font_scale, color, thickness, cv2.LINE_AA)
             
-            # Update frame index after reading a frame
             frame_idx += 1
 
-        # Show the frame with the frame number
         cv2.imshow(f"Action {action_number}", frame)
         
-        key = cv2.waitKey(25) & 0xFF  # Wait for 25 ms for a key press
+        key = cv2.waitKey(25) & 0xFF  
         
-        if key == ord('q'):  # Quit on 'q' key
+        if key == ord('q'):  
             break
-        elif key == ord(' '):  # Toggle pause/play on spacebar press
-            paused = not paused  # Toggle the paused flag
+        elif key == ord(' '):  # toggle pause/play on spacebar press
+            paused = not paused  
 
     cap.release()
     cv2.destroyAllWindows()
 
 def main():
     try:
-        # action_number = int(input("Enter the action number: "))
-        # if action_number not in ACTIONS:
-        #     print("Invalid action number.")
-        #     return
 
         camera_number = 2
 

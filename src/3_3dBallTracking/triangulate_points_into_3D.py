@@ -13,14 +13,9 @@ sys.path.append(parent_path)
 from utils.utils import *
 from utils.config import *
 
-CONFIDENCE = 0.4
+pathPickle = os.path.join(PATH_DETECTIONS_04, 'all_detections.pkl')
+pathPickle_cam2 = os.path.join(PATH_DETECTIONS_WINDOW_04, 'all_detections.pkl')
 
-if CONFIDENCE == 0.4:
-    pathPickle = os.path.join(PATH_DETECTIONS_04, 'all_detections.pkl')
-    pathPickle_cam2 = os.path.join(PATH_DETECTIONS_WINDOW_04, 'all_detections.pkl')
-elif CONFIDENCE == 0.5:
-    pathPickle = os.path.join(PATH_DETECTIONS_05, 'all_detections.pkl')
-    
 detections = load_pickle(pathPickle)
 detections_cam2 = load_pickle(pathPickle_cam2)
 
@@ -36,25 +31,10 @@ detections_cam2 = load_pickle(pathPickle_cam2)
 
 camerasInfo = load_pickle(PATH_CALIBRATION_MATRIX)
 
-ACTIONS = {
-    1: (48, 230),
-    2: (1050, 1230),
-    3: (1850, 2060),
-    4: (2620, 2790),
-    5: (3770, 3990),
-    6: (4450, 4600)
-}
-
-# user input for selecting action
-# action_number = -1
-# while action_number not in ACTIONS:
-#     action_number = int(input('Enter the action to analyze: '))
-
 cam = {n: take_info_camera(n, camerasInfo)[0] for n in VALID_CAMERA_NUMBERS}
 
 def get_projection_matrix(cam):
     """Create projection matrix for a given camera from intrinsic and extrinsic matrices."""
-
     K = cam.newcameramtx
     extrinsic_matrix = np.linalg.inv(cam.extrinsic_matrix)
     extrinsic_matrix_3x4 = extrinsic_matrix[:3, :]
@@ -98,20 +78,17 @@ def main():
                     if frame in detections[str(camera)][str(action_number)]:
                         point2d = detections[str(camera)][str(action_number)][frame]
                         points_2d.append((camera, point2d))
-                        print(f"Camera {camera} - Point: {point2d}")
+                        # print(f"Camera {camera} - Point: {point2d}")
                 else:   
                     if frame in detections_cam2[str(camera)][str(action_number)]:
                         point2d = detections_cam2[str(camera)][str(action_number)][frame]
                         if point2d is not None:
                             point2d = list(point2d)
-                            # print(point2d[0])
                             x = int(point2d[0][0])
                             y = int(point2d[0][1])                        
                             points_2d.append((camera, (x, y)))
-                            print(f"Camera {camera} - Point: {(x, y)}")
                         else:
                             points_2d.append((camera, None))
-                            print(f"Camera {camera} - Point: {None}")
                             
 
             if len(points_2d) >= 2:
@@ -129,11 +106,7 @@ def main():
                                 points_3d[frame].append(point3d)
                                 print(f"3D point: {point3d}")
 
-        if CONFIDENCE == 0.4:
-            output_path = os.path.join(PATH_3D_DETECTIONS_04, f'points_3d_action{action_number}.pkl')
-        elif CONFIDENCE == 0.5:
-            output_path = os.path.join(PATH_3D_DETECTIONS_05, f'points_3d_action{action_number}.pkl')
-            
+        output_path = os.path.join(PATH_3D_DETECTIONS_04, f'points_3d_action{action_number}.pkl')
         with open(output_path, 'wb') as f:
             pickle.dump(points_3d, f)
 

@@ -33,16 +33,6 @@ elif torch.backends.mps.is_available():
 else:
     device = 'cpu'
 
-ACTIONS = {
-    1: (48, 230),
-    2: (1050, 1230),
-    3: (1850, 2060),
-    4: (2620, 2790),
-    5: (3770, 3990),
-    6: (4450, 4600),
-    7: (5150, 5330)
-}
-
 selected_cameras = {
     "camera_src": 1,
     "camera_dst": 2

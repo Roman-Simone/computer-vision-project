@@ -7,26 +7,14 @@ import random
 import numpy as np
 from ultralytics import YOLO
 
-# Add the parent directory to the system path
 current_path = os.path.dirname(os.path.abspath(__file__))
 parent_path = os.path.abspath(os.path.join(current_path, os.pardir))
 sys.path.append(parent_path)
 
-# Now you can import the utils module from the parent directory
 from utils.utils import *
 from utils.config import *
 from utils.particleFilter import *
 
-# Action frame ranges
-ACTIONS = {
-    1: (48, 230),
-    2: (1050, 1230),
-    3: (1850, 2060),
-    4: (2620, 2790),
-    5: (3770, 3990),
-    6: (4450, 4600),
-    7: (5150, 5330)
-}
 
 # {
 #     '1' : {     # first camera
