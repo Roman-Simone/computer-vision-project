@@ -1,14 +1,27 @@
+import os
 import cv2
+import sys
 import json
 import numpy as np
-from utils import *
-from config import *
 import matplotlib.pyplot as plt
 
+# Add the parent directory to the system path
+current_path = os.path.dirname(os.path.abspath(__file__))
+parent_path = os.path.abspath(os.path.join(current_path, os.pardir))
+sys.path.append(parent_path)
 
-def calculate_extrinsics(camera_number):
+# Now you can import the utils module from the parent directory
+from utils.utils import *
+from utils.config import *
+
+
+
+def calculate_extrinsics(camera_number, undistortedFlag = False):
     # Read the data
-    coordinates_by_camera = read_json_file_and_structure_data(PATH_JSON)
+    pathToRead = PATH_JSON_DISTORTED
+    if undistortedFlag:
+        pathToRead = PATH_JSON_UNDISTORTED
+    coordinates_by_camera = read_json_file_and_structure_data(pathToRead)
 
     all_camera_coordinates = {}
 
@@ -35,10 +48,13 @@ def calculate_extrinsics(camera_number):
         print(f"Camera info for camera {camera_number} not found.")
         return None
 
+    if undistortedFlag:
+        camera_matrix = np.array(camera_info.newcameramtx, dtype=np.float32)
+    else:
+        camera_matrix = np.array(camera_info.mtx, dtype=np.float32)
     
-    # camera_matrix = camera_info.newcameramtx   # PROBLEM IDK WHY IS BETTER WITH MTX RESPECT TO NEWCAMERAMTX
-    # distortion_coefficients = np.zeros((1, 5), dtype=np.float32)
     camera_matrix = np.array(camera_info.mtx, dtype=np.float32)
+
     distortion_coefficients = np.array(camera_info.dist, dtype=np.float32)
 
     success, rotation_vector, translation_vector = cv2.solvePnP(
@@ -57,13 +73,13 @@ def calculate_extrinsics(camera_number):
     return extrinsic_matrix
 
 
-def find_all_extrinsics():
+def findAllExtrinsics(undistortedFlag = False):
 
     camera_infos = load_pickle(PATH_CALIBRATION_MATRIX)
 
     for camera_number in VALID_CAMERA_NUMBERS:
         _, pos = take_info_camera(camera_number, camera_infos)
-        extrinsic_matrix = calculate_extrinsics(camera_number)
+        extrinsic_matrix = calculate_extrinsics(camera_number, undistortedFlag)
         display_extrinsic_matrix(extrinsic_matrix, camera_number)
         camera_infos[pos].extrinsic_matrix = extrinsic_matrix
     
@@ -88,7 +104,7 @@ def plot_3d_data(extrinsic_matrices, camera_numbers=None):
     ax = fig.add_subplot(111, projection='3d')
 
     # Load data from JSON file
-    with open(PATH_JSON, 'r') as file:
+    with open(PATH_JSON_UNDISTORTED, 'r') as file:
         data = json.load(file)
 
     # Colors for cameras and points
@@ -114,8 +130,8 @@ def plot_3d_data(extrinsic_matrices, camera_numbers=None):
 
         # Plot calculated camera location
         ax.scatter(camera_position[0], camera_position[1], camera_position[2], 
-                   c=calculated_camera_color, marker="o", s=100, 
-                   label='Calculated Camera Positions' if camera_number == camera_numbers[0] else '')
+                c=calculated_camera_color, marker="o", s=100, 
+                label='Calculated Camera Positions' if camera_number == camera_numbers[0] else '')
 
         # Plot camera direction
         direction_vector_size = 5
@@ -125,19 +141,20 @@ def plot_3d_data(extrinsic_matrices, camera_numbers=None):
                 [camera_position[2], camera_direction[2]],
                 c="red", label="Camera Direction" if camera_number == camera_numbers[0] else '')
 
-        # Add camera label for calculated position
-        ax.text(camera_position[0], camera_position[1], camera_position[2], 
+        # Add camera label for calculated position (above the point)
+        ax.text(camera_position[0], camera_position[1], camera_position[2] + 0.5,  # Adjusted to be above
                 f'Calc Cam {camera_number}', fontsize=8)
 
         # Plot real camera position if available in JSON data
         if str(camera_number) in data:
             real_camera_coords = data[str(camera_number)]['camera_coordinates']
             ax.scatter(*real_camera_coords, color=real_camera_color, s=100, 
-                       label='Real Camera Positions' if camera_number == camera_numbers[0] else '')
+                    label='Real Camera Positions' if camera_number == camera_numbers[0] else '')
             
-            # Add camera label for real position
-            ax.text(real_camera_coords[0], real_camera_coords[1], real_camera_coords[2], 
+            # Add camera label for real position (below the point)
+            ax.text(real_camera_coords[0], real_camera_coords[1], real_camera_coords[2] - 0.5,  # Adjusted to be below
                     f'Real Cam {camera_number}', fontsize=8)
+
 
     # Plot world points
     first_point = True
@@ -185,7 +202,7 @@ def plot_camera(camera_number):
     display_extrinsic_matrix(extrinsic_matrix)
     plot_3d_data(extrinsic_matrix, camera_number)
 
-def plot_all_cameras():
+def plotAllCameras():
     camera_infos = load_pickle(PATH_CALIBRATION_MATRIX)
 
     extrinsic_matrices = []
@@ -242,17 +259,18 @@ def rotationMatrixToEulerAngles(R):
 if __name__ == "__main__":
 
     #find extrinsic parameter for all cameras
-    find_all_extrinsics()
+    undistortedFlag = False
+    findAllExtrinsics(undistortedFlag)
 
-    #find the extrinsic matrix for specific camera
+    # find the extrinsic matrix for specific camera
     # camera_number = 2 
     # find_cam_extrinsic(camera_number)
 
 
-    #plot all camera extrinsic matrix
-    plot_all_cameras()
+    # plot all camera extrinsic matrix
+    plotAllCameras()
     
     # plot specific camera extrinsic matrix
-    # camera_number = 12
+    # camera_number = 6
     # plot_camera(camera_number)
     

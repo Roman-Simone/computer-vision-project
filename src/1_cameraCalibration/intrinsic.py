@@ -24,7 +24,7 @@ def findPoints(path_video, cameraInfo, debug=True):
     chess_height = cameraInfo.chessboard_size[1]
 
     # termination criteria
-    criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
+    criteria = (cv2.TERM_CRITERIA_COUNT + cv2.TERM_CRITERIA_EPS, 40, 0.01)
 
     # prepare object points, like (0,0,0), (1,0,0), (2,0,0) ....,(6,5,0)
     objp = np.zeros((chess_width * chess_height,3), np.float32)
@@ -78,13 +78,13 @@ def findPoints(path_video, cameraInfo, debug=True):
             gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
             # Find the chess board corners
-            ret, corners = cv2.findChessboardCorners(gray, (chess_height, chess_width), None)
+            ret, corners = cv2.findChessboardCorners(gray, (chess_height, chess_width), None, flags=cv2.CALIB_CB_ADAPTIVE_THRESH + cv2.CALIB_CB_FAST_CHECK)
 
             # If found, add object points, image points (after refining them)
             if ret == True:
                 retObjpoints.append(objp)
 
-                corners2 = cv2.cornerSubPix(gray,corners, (11,11), (-1,-1), criteria)
+                corners2 = cv2.cornerSubPix(gray, corners, (10, 10), (-1,-1), criteria)
                 retImgpoints.append(corners2)
 
                 if debug:
@@ -113,7 +113,7 @@ def compute_calibration_all(camerasInfo):
         
         path_video = os.path.join(PATH_VIDEOS_CALIBRATION, video)
 
-        camerasInfo[pos_camera].objpoints, camerasInfo[pos_camera].imgpoints, gray = findPoints(path_video, camerasInfo[pos_camera], debug=False)
+        camerasInfo[pos_camera].objpoints, camerasInfo[pos_camera].imgpoints, gray = findPoints(path_video, camerasInfo[pos_camera], debug=True)
 
         if len(camerasInfo[pos_camera].objpoints) == 0:
             print(f"Camera {numero_camera} not calibrated - No points found")
@@ -149,7 +149,7 @@ def compute_calibration_single(cameraInfo):
 
         path_video = os.path.join(PATH_VIDEOS_CALIBRATION, video)
 
-        cameraInfo.objpoints, cameraInfo.imgpoints, gray = findPoints(path_video, cameraInfo, debug=False)
+        cameraInfo.objpoints, cameraInfo.imgpoints, gray = findPoints(path_video, cameraInfo, debug=True)
 
         if len(cameraInfo.objpoints) == 0:
             print(f"Camera {numero_camera} not calibrated - No points found")
@@ -266,8 +266,8 @@ if __name__ == '__main__':
     # calibrateAllIntrinsic()
 
     # CALIBRATE SPECIFIC CAM
-    # camera_number = 2
-    # calibrateCameraIntrinsic(camera_number)
+    camera_number = 6
+    calibrateCameraIntrinsic(camera_number)
 
     # ONLY FOR TESTING
     check_errors()
