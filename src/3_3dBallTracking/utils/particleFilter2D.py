@@ -116,4 +116,4 @@ class ParticleFilter:
                                   [self.frame_width-1, self.frame_height-1]).astype(int))
                 pt2 = tuple(np.clip(self.ball_positions[i], [0, 0], 
                                   [self.frame_width-1, self.frame_height-1]).astype(int))
-                cv2.line(frame, pt1, pt2, self.color, 2)
+                cv2.line(frame, pt1, pt2, self.color, 5)

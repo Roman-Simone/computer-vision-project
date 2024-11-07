@@ -15,7 +15,6 @@ from utils.utils import *
 from utils.config import *
 
 CONFIDENCE = 0.4  # confidence threshold for YOLO detection
-SIZE = 800  # frame resize dimension for YOLO model input
 
 output_file = os.path.join(PATH_DETECTIONS_04, 'all_detections.pkl')  
 pathWeight = os.path.join(PATH_WEIGHT, 'best_v11_800.pt')
@@ -88,7 +87,7 @@ def applyModel(frame, model, regions):
     """
     if camera_number != 2:
         originalSizeHeight, originalSizeWidth, _ = frame.shape
-        frameResized = cv2.resize(frame, (SIZE, SIZE))
+        frameResized = cv2.resize(frame, (YOLO_INPUT_SIZE, YOLO_INPUT_SIZE))
         results = model.track(frameResized, verbose=False, device=device)
 
         detection_point = None
@@ -96,10 +95,10 @@ def applyModel(frame, model, regions):
 
         for box in results[0].boxes:
             x1, y1, x2, y2 = box.xyxy[0]
-            x1 = x1 * originalSizeWidth / SIZE
-            y1 = y1 * originalSizeHeight / SIZE
-            x2 = x2 * originalSizeWidth / SIZE
-            y2 = y2 * originalSizeHeight / SIZE
+            x1 = x1 * originalSizeWidth / YOLO_INPUT_SIZE
+            y1 = y1 * originalSizeHeight / YOLO_INPUT_SIZE
+            x2 = x2 * originalSizeWidth / YOLO_INPUT_SIZE
+            y2 = y2 * originalSizeHeight / YOLO_INPUT_SIZE
 
             confidence = box.conf[0]
             if confidence < CONFIDENCE:

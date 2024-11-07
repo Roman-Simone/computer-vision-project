@@ -118,3 +118,19 @@ def load_existing_detections(file_path):
         with open(file_path, 'rb') as f:
             return pickle.load(f)
     return {}
+
+
+def get_projection_matrix(cam):
+    """
+    Create the projection matrix for a given camera using its intrinsic and extrinsic matrices.
+
+    Parameters:
+        cam (Camera): camera object containing calibration data.
+
+    Returns:
+        numpy.ndarray: 3x4 projection matrix for the camera.
+    """
+    K = cam.newcameramtx
+    extrinsic_matrix = np.linalg.inv(cam.extrinsic_matrix)
+    extrinsic_matrix_3x4 = extrinsic_matrix[:3, :]
+    return np.dot(K, extrinsic_matrix_3x4)
