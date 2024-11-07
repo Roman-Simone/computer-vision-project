@@ -13,7 +13,7 @@ sys.path.append(parent_path)
 
 from utils.utils import *
 from utils.config import *
-from utils.particleFilter import *
+from utils.particleFilter2D import *
 from ultralytics import YOLO
 
 app = Flask(__name__, static_folder=PATH_STATIC)

@@ -1,8 +1,6 @@
 import os
 
 current_path = os.path.dirname(os.path.abspath(__file__))
-# parent_path = os.path.join(current_path, os.pardir)
-# parent_path = os.path.abspath(parent_path)
 grandparent_path = os.path.abspath(os.path.join(current_path, os.pardir, os.pardir))
 
 PATH_FRAME_SAMPLES_CALIBRATION = os.path.join(grandparent_path, 'data/images/samples_calibration')
@@ -25,22 +23,14 @@ PATH_3D_DETECTIONS_04 = os.path.join(grandparent_path, 'data/detections/detectio
 PATH_WEIGHT = os.path.join(grandparent_path, 'data/weight')
 PATH_CAMERA_POS = os.path.join(grandparent_path, 'data/camera_positions.json')
 VALID_CAMERA_NUMBERS = [1, 2, 3, 4, 5, 6, 7, 8, 12, 13]
-
-# ACTIONS = {
-#     1: (48, 230),               
-#     2: (1050, 1230),             
-#     3: (1850, 2060),            
-#     4: (3770, 3990)             
-# }
-
+SEED_VAL = 60
 
 ACTIONS = {
     1: (48, 230),
     2: (1050, 1230),
     3: (1850, 2060),
     4: (2620, 2790),
-    5: (3770, 3990),
-    6: (4450, 4600)
+    5: (3770, 3990)
 }
 
 

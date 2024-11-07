@@ -5,7 +5,7 @@ size = 800
 
 DISTANCE_THRESHOLD = 200
 
-class ParticleFilterBallTracker:
+class ParticleFilter:
     def __init__(self, tracker_id, color, frame_size, num_particles=1000, process_noise=5.0, measurement_noise=2.0):
         self.tracker_id = tracker_id
         self.color = color

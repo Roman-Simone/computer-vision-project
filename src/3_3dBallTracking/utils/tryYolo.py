@@ -4,11 +4,10 @@ import sys
 import cv2
 from yoloWindows import *
 
-
 current_path = os.path.dirname(os.path.abspath(__file__))
 parent_path = os.path.abspath(os.path.join(current_path, os.pardir))
-sys.path.append(parent_path)
-
+grandparent_path = os.path.abspath(os.path.join(parent_path, os.pardir))
+sys.path.append(grandparent_path)
 
 from utils.utils import *
 from utils.config import *
@@ -16,7 +15,6 @@ from cameraInfo import *
 
 # Update PATH_WEIGHT to point to the actual model file
 weight_path = os.path.join(PATH_WEIGHT, 'best_v11_800.pt')
-
 
 def applyModel(frame, windowFlag = False):
 
@@ -93,8 +91,12 @@ def testModel():
 
     # chose the camera to use
     while cameraNumber not in VALID_CAMERA_NUMBERS:
-        print("Select the number of camera (1 - 8) (12 - 13):")
-        cameraNumber = int(input())
+        cameraNumber = int(input("Select the number of camera (1 - 8) (12 - 13):"))
+        while cameraNumber not in VALID_CAMERA_NUMBERS:
+            cameraNumber = int(input("Invalid camera number. Select the number of camera (1 - 8) (12 - 13):"))
+        
+        window = input("Do you want to use the window yolo? (y/n): ")
+        windowFlag = True if window == 'y' else False
 
     for video in videos:
         numero_camera = re.findall(r'\d+', video.replace(".mp4", ""))
@@ -119,7 +121,7 @@ def testModel():
 
             frameUndistorted = undistorted(frame, cameraInfo)
 
-            frameWithBbox = applyModel(frameUndistorted, windowFlag = True)
+            frameWithBbox = applyModel(frameUndistorted, windowFlag)
 
             cv2.imshow('Frame', frameWithBbox)
 

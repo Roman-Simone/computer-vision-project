@@ -6,32 +6,19 @@ import pickle
 import random
 import numpy as np
 from ultralytics import YOLO
+from utils.particleFilter2D import ParticleFilter
 
-# Add the parent directory to the system path
 current_path = os.path.dirname(os.path.abspath(__file__))
 parent_path = os.path.abspath(os.path.join(current_path, os.pardir))
 sys.path.append(parent_path)
 
-# Now you can import the utils module from the parent directory
 from utils.utils import *
 from utils.config import *
-from utils.particleFilter import *
-
-# Action frame ranges
-ACTIONS = {
-    1: (48, 230),
-    2: (1050, 1230),
-    3: (1850, 2060),
-    4: (2620, 2790),            # bad 
-    5: (3770, 3990),            
-    6: (4450, 4600)             # bad
-}
 
 pathWeight = os.path.join(PATH_WEIGHT, 'best_v11_800.pt')
 cameraInfos = load_pickle(PATH_CALIBRATION_MATRIX)
 model = YOLO(pathWeight)
 
-# Select the device to use (CUDA, MPS, or CPU)
 if torch.cuda.is_available():
     device = 'cuda'
 elif torch.backends.mps.is_available():
@@ -41,15 +28,14 @@ else:
 
 print(f'Using device: {device}')
 
-YOLO_INPUT_SIZE = 800  # Size for YOLO model input
-DISTANCE_THRESHOLD = 800  # Threshold distance to detect a new ball
+YOLO_INPUT_SIZE = 800  # size for YOLO model input
+DISTANCE_THRESHOLD = 800  # threshold distance to detect a new ball
 
 def applyModel(frame, model):
+    
     height, width = frame.shape[:2]
-    
-    # Resize for YOLO model
     frameResized = cv2.resize(frame, (YOLO_INPUT_SIZE, YOLO_INPUT_SIZE))
-    
+        
     results = model.track(frameResized, verbose=False, device=device)
     
     center_ret = (-1, -1)
@@ -80,7 +66,6 @@ def testModel(num_cam, action):
     cameraInfo, _ = take_info_camera(num_cam, cameraInfos)
     videoCapture = cv2.VideoCapture(pathVideo)
 
-    # Get video dimensions
     frame_width = int(videoCapture.get(cv2.CAP_PROP_FRAME_WIDTH))
     frame_height = int(videoCapture.get(cv2.CAP_PROP_FRAME_HEIGHT))
     frame_size = (frame_width, frame_height)
@@ -105,28 +90,27 @@ def testModel(num_cam, action):
 
         new_trackers = []
         for detection in detections:
-            # Convert detection to numpy array
             detection_np = np.array(detection)
 
             matched = False
             for tracker in trackers:
-                if tracker.last_position is not None:  # Check if last_position is not None
+                if tracker.last_position is not None:  
                     distance = np.linalg.norm(np.array(tracker.last_position) - detection_np)
                     if distance < DISTANCE_THRESHOLD:
-                        tracker.update(detection_np)  # Pass the numpy array
+                        tracker.update(detection_np)  
                         matched = True
                         break
 
             if not matched:
                 color = (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
-                new_tracker = ParticleFilterBallTracker(len(trackers), color, frame_size)
-                new_tracker.update(detection_np)  # Pass the numpy array
+                new_tracker = ParticleFilter(len(trackers), color, frame_size)
+                new_tracker.update(detection_np)  
                 new_trackers.append(new_tracker)
 
         trackers.extend(new_trackers)
 
         for tracker in trackers:
-            if tracker.last_position is not None:  # Check if last_position is not None
+            if tracker.last_position is not None:  
                 trajectory_points.append(tracker.last_position)
             tracker.update(tracker.last_position)
             tracker.predict()
@@ -143,13 +127,6 @@ def testModel(num_cam, action):
     videoCapture.release()
     cv2.destroyAllWindows()
     return trajectory_points
-
-
-def load_existing_results(filename):
-    if os.path.exists(filename):
-        with open(filename, 'rb') as f:
-            return pickle.load(f)
-    return {}
 
 if __name__ == '__main__':
 

@@ -2,6 +2,8 @@ import os
 import cv2
 import json
 import pickle
+import numpy as np
+from utils.config import *
 
 
 def undistorted(frame1, camera_info):   
@@ -11,7 +13,6 @@ def undistorted(frame1, camera_info):
     undistorted_frame = undistorted_frame[y1:y1+h1, x1:x1+w1]
 
     return undistorted_frame
-
 
 def save_pickle(camerasInfo, filename):
     with open(filename, 'wb') as file:
@@ -82,3 +83,38 @@ def take_info_camera(camera_number, camera_infos):
 
     return None, None
 
+def moving_average(data, window_size):
+    if window_size < 1:
+        return data
+    return np.convolve(data, np.ones(window_size) / window_size, mode='valid')
+
+def get_positions():
+    """Get the field corners from the pkl file."""
+    with open(PATH_CAMERA_POS, 'r') as file:  
+        data = json.load(file)
+        return np.array(data["field_corners"]) 
+
+def set_axes_equal_scaling(ax):
+    """Set equal scaling for 3D plot axes (preservate le proporzioni)."""
+    limits = np.array([ax.get_xlim(), ax.get_ylim(), ax.get_zlim()])
+    mean_vals = np.mean(limits, axis=1)
+    range_vals = 0.5 * np.max(np.abs(limits[:, 1] - limits[:, 0]))
+
+    ax.set_xlim([mean_vals[0] - range_vals, mean_vals[0] + range_vals])
+    ax.set_ylim([mean_vals[1] - range_vals, mean_vals[1] + range_vals])
+    ax.set_zlim([mean_vals[2] - range_vals, mean_vals[2] + range_vals])
+
+def load_existing_detections(file_path):
+    """
+    loads previously saved detections from a specified pickle (.pkl) file.
+
+    parameters:
+        file_path (str): path to the .pkl file containing previously saved detection data.
+
+    returns:
+        dict: a dictionary containing the loaded detections data. if the file does not exist, an empty dictionary is returned.
+    """
+    if os.path.exists(file_path):
+        with open(file_path, 'rb') as f:
+            return pickle.load(f)
+    return {}

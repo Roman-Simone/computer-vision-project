@@ -184,7 +184,7 @@ class yoloWindow:
                     (x1, y1),
                     (x2, y2),
                     (0, 255, 0),
-                    7
+                    2
                 )
 
         if visualizeWindows:
