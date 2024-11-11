@@ -5,35 +5,46 @@ import sys
 from tqdm import tqdm
 from cameraInfo import *
 
-# Add the parent directory to the system path
 current_path = os.path.dirname(os.path.abspath(__file__))
 parent_path = os.path.abspath(os.path.join(current_path, os.pardir))
 sys.path.append(parent_path)
 
-# Now you can import the utils module from the parent directory
 from utils.utils import *
 from utils.config import *
 
 SKIP_FRAME = 342
 
 def extractFrame():
+    """
+    Extracts frames from videos, processes them, and saves them to a dataset.
+    This function performs the following steps:
+    1. Creates the dataset directory if it does not exist.
+    2. Finds and sorts all video files in the specified directory.
+    3. Loads camera calibration information.
+    4. Calculates the total number of frames to process.
+    5. Iterates through each video, extracts frames, undistorts them using camera calibration data, 
+       and saves the processed frames to the dataset directory.
+    The function skips frames based on the SKIP_FRAME parameter and only processes videos from valid cameras.
+    
+    Raises:
+        FileNotFoundError: If the specified video or calibration files are not found.
+        ValueError: If the camera number extracted from the video filename is not valid.
+  
+    Note:
+        This function uses OpenCV for video processing and tqdm for progress display.
+    """
 
-    # Create the dataset folder
     os.makedirs(PATH_DATASET, exist_ok=True)
 
-    # Get list of video files
     videos = find_files(PATH_VIDEOS)
     videos.sort()
 
-    # Load camera calibration information
     camerasInfo = load_pickle(PATH_CALIBRATION_MATRIX)
 
-    # Calculate total number of frames across all videos
     total_frames = 0
     for video in videos:
         path_video = os.path.join(PATH_VIDEOS, video)
         video_capture = cv2.VideoCapture(path_video)
-        # Extract camera number from the video filename
         numero_camera = re.findall(r'\d+', video.replace(".mp4", ""))
         numero_camera = int(numero_camera[0])
 
@@ -44,39 +55,30 @@ def extractFrame():
 
     frame_count = 0
 
-    # Initialize tqdm progress bar with the total number of frames
     with tqdm(total=total_frames, desc="Processing frames", unit="frame") as pbar:
         for video in videos:
-            # Extract camera number from the video filename
             numero_camera = re.findall(r'\d+', video.replace(".mp4", ""))
             numero_camera = int(numero_camera[0])
 
             if numero_camera not in VALID_CAMERA_NUMBERS:
                 continue
 
-            # Get camera information
             cameraInfo, _ = take_info_camera(numero_camera, camerasInfo)
 
-            # Open video file
             path_video = os.path.join(PATH_VIDEOS, video)
             video_capture = cv2.VideoCapture(path_video) 
             
-
-            # Process video frame by frame
             while True:
                 ret, frame = video_capture.read()
                 if not ret:
                     break
 
                 if frame_count % SKIP_FRAME == 0:
-                    # Undistort frame
                     frame = undistorted(frame, cameraInfo)
-                    # Save frame as an image file
                     cv2.imwrite(f"{PATH_DATASET}/{int(frame_count/SKIP_FRAME)}_{numero_camera}.png", frame)
 
-                # Update frame count and progress bar
                 frame_count += 1
-                pbar.update(1)  # Update the progress bar by 1 for each processed frame
+                pbar.update(1)  
 
             video_capture.release()
 

@@ -4,21 +4,26 @@ import sys
 import cv2
 from yoloWindows import *
 
-
 current_path = os.path.dirname(os.path.abspath(__file__))
 parent_path = os.path.abspath(os.path.join(current_path, os.pardir))
 sys.path.append(parent_path)
-
 
 from utils.utils import *
 from utils.config import *
 from cameraInfo import *
 
-# Update PATH_WEIGHT to point to the actual model file
 weight_path = os.path.join(PATH_WEIGHT, 'best_v11_800.pt')
 
-
 def applyModel(frame, windowFlag = False):
+    """
+    Apply YOLO model to the given frame.
+    Parameters:
+    frame (numpy.ndarray): The input image frame to process.
+    windowFlag (bool): Flag to determine whether to use windowed YOLO detection or not. 
+                    If True, uses windowed detection; otherwise, uses standard YOLO detection.
+    Returns:
+    numpy.ndarray: The processed frame with bounding boxes and labels drawn.
+    """
 
     if windowFlag:
         window_yolo = yoloWindow(pathWeight=weight_path, windowSize=(640, 640), overlap=(0.1, 0.1))
@@ -31,7 +36,6 @@ def applyModel(frame, windowFlag = False):
         model = YOLO(weight_path)
         size = 800
 
-        # Select the device to use (CUDA, MPS, or CPU)
         if torch.cuda.is_available():
             device = 'cuda'
         elif torch.backends.mps.is_available():
@@ -62,29 +66,38 @@ def applyModel(frame, windowFlag = False):
             if confidence < 0.5:
                 continue
 
-            # Draw the bounding box
             cv2.rectangle(frame, (int(x1), int(y1)), (int(x2), int(y2)), (0, 255, 0), 2)
-
-            # Prepare the confidence label
             label = f'{confidence:.2f}'
-
-            # Determine position for the label (slightly above the top-left corner of the bbox)
             label_position = (int(x1), int(y1) - 10)
-
-            # Add the confidence score text
             cv2.putText(frame, label, label_position, cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
 
-            #center of the bounding box
             x_center = (x1 + x2) / 2
             y_center = (y1 + y2) / 2
 
-            #draw the center of the bounding box
             cv2.circle(frame, (int(x_center), int(y_center)), 3, (0, 255, 0), -1)
         
         return frame
 
 
 def testModel():
+    """
+    Tests the YOLO model on a set of videos.
+
+    This function performs the following steps:
+    1. Finds and sorts video files from a specified directory.
+    2. Loads camera calibration information.
+    3. Prompts the user to select a camera number.
+    4. Processes each video corresponding to the selected camera number:
+        - Reads the video file.
+        - Undistorts each frame using the camera calibration information.
+        - Applies the YOLO model to each undistorted frame.
+        - Displays the processed frame with bounding boxes in a window.
+        - Allows the user to stop the video processing by pressing the 's' key.
+        
+    Raises:
+        ValueError: If the user inputs an invalid camera number.
+    """
+    
     videos = find_files(PATH_VIDEOS)
     videos.sort()
     cameraInfos = load_pickle(PATH_CALIBRATION_MATRIX)
@@ -129,8 +142,6 @@ def testModel():
 
         videoCapture.release()
         cv2.destroyAllWindows()
-
-
 
 if __name__ == '__main__':
 
