@@ -15,7 +15,16 @@ coordinates_by_camera = read_json_file_and_structure_data(PATH_JSON_DISTORTED)
 camera_infos = load_pickle(PATH_CALIBRATION_MATRIX)
 
 def find_common_points(camera_number_1: int, camera_number_2: int):
+    """
+    Finds common world points between two cameras and retrieves their corresponding image points.
 
+    Parameters:
+        camera_number_1 (int): first camera number.
+        camera_number_2 (int): second camera number.
+
+    Returns:
+        tuple: two lists of image points for the common world points in the two cameras.
+    """
     points_1 = []
     points_2 = []
 
@@ -40,7 +49,18 @@ def find_common_points(camera_number_1: int, camera_number_2: int):
 
 
 def homographyUndistortedCameras(points_1, points_2, camera_number_1, camera_number_2):
+    """
+    Calculates the homography matrix between two cameras using their undistorted common points.
 
+    Parameters:
+        points_1 (numpy.ndarray): image points from the first camera.
+        points_2 (numpy.ndarray): image points from the second camera.
+        camera_number_1 (int): first camera number.
+        camera_number_2 (int): second camera number.
+
+    Returns:
+        numpy.ndarray: homography matrix between the two cameras.
+    """
     camera_info_1, _ = take_info_camera(camera_number_1, camera_infos)
     camera_info_2, _ = take_info_camera(camera_number_2, camera_infos)
 
@@ -48,52 +68,56 @@ def homographyUndistortedCameras(points_1, points_2, camera_number_1, camera_num
         print(f"Too few points to compute the homography map between cam {camera_number_1} - {camera_number_2}")
         hom = None
     else:
-        if camera_number_1 != 0:
-            points_1_undistorted = cv2.undistortPoints(points_1, camera_info_1.mtx, camera_info_1.dist, P=camera_info_1.newcameramtx)
-        else:
-            points_1_undistorted = points_1
-        if camera_number_2 != 0:
-            points_2_undistorted = cv2.undistortPoints(points_2, camera_info_2.mtx, camera_info_2.dist, P=camera_info_2.newcameramtx)
-        else:
-            points_2_undistorted = points_2
+        points_1_undistorted = cv2.undistortPoints(points_1, camera_info_1.mtx, camera_info_1.dist, P=camera_info_1.newcameramtx) if camera_number_1 != 0 else points_1
+        points_2_undistorted = cv2.undistortPoints(points_2, camera_info_2.mtx, camera_info_2.dist, P=camera_info_2.newcameramtx) if camera_number_2 != 0 else points_2
 
-            
         hom, _ = cv2.findHomography(points_1_undistorted, points_2_undistorted, method=0)
     
     return hom
 
 
 def calculateHomographyAllCameras():
-
+    """
+    Computes homography matrices for all pairs of cameras and saves them in a pkl file.
+    """
     HomographyInfolist = []
     cameras = VALID_CAMERA_NUMBERS.copy()
-    cameras.append(0)    # Add the court
+    cameras.append(0)  # Add the court as a virtual camera for homography calculation
     cameras.sort()
 
     for camera_number_1 in cameras:
-        
         for camera_number_2 in cameras:
-
             if camera_number_1 == camera_number_2:
                 continue
 
             points_1, points_2 = find_common_points(camera_number_1, camera_number_2)
-
             homographyMatrix = homographyUndistortedCameras(points_1, points_2, camera_number_1, camera_number_2)
 
             homographyInfo = HomographyInfo(camera_number_1, camera_number_2)
-
             homographyInfo.homography = homographyMatrix
-
             HomographyInfolist.append(homographyInfo)
     
     save_pickle(HomographyInfolist, PATH_HOMOGRAPHY_MATRIX)
 
+
 def testHomography():
+    """
+    Loads homography matrices and allows user to interactively test homographies by selecting points on images.
+    """
     homographyInfos = load_pickle(PATH_HOMOGRAPHY_MATRIX)
     cameras_info = load_pickle(PATH_CALIBRATION_MATRIX)
     
     def mouse_callback(event, x, y, flags, param):
+        """
+        Mouse callback to show corresponding points in two camera views when clicked.
+        
+        Parameters:
+            event (int): type of mouse event (e.g., left button down).
+            x (int): x-coordinate of the mouse click.
+            y (int): y-coordinate of the mouse click.
+            flags (int): additional flags for the mouse event.
+            param (tuple): additional parameters for the callback (unused).
+        """
         if event == cv2.EVENT_LBUTTONDOWN:
             x_original = x / scale_factor_src
             y_original = y / scale_factor_src
@@ -112,11 +136,9 @@ def testHomography():
             y_transformed_resized = int(y_transformed * scale_factor_dst)
 
             cv2.circle(img_src_resized, (int(x), int(y)), 15, (0, 255, 0), -1)
-
             cv2.circle(img_dst_resized, (x_transformed_resized, y_transformed_resized), 15, (0, 255, 0), -1)
 
             concatenated_image = cv2.hconcat([img_src_resized, img_dst_resized])
-
             cv2.imshow(f"Camera {camera_src} and {camera_dst}", concatenated_image)
 
     for homographyInfo in homographyInfos:
@@ -144,7 +166,6 @@ def testHomography():
 
         height_src, width_src = img_src.shape[:2]
         height_dst, width_dst = img_dst.shape[:2]
-
         desired_height = max(height_src, height_dst)
         scale_factor_src = desired_height / height_src
         scale_factor_dst = desired_height / height_dst
@@ -170,9 +191,10 @@ def testHomography():
         cv2.destroyAllWindows()
 
 
-
 if __name__ == '__main__':
-
+    
+    # need to round the field map
+    
     calculateHomographyAllCameras()
-
+    
     testHomography()
