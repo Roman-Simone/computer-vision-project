@@ -4,19 +4,15 @@ import sys
 import numpy as np
 from cameraInfo import *
 
-# Add the parent directory to the system path
 current_path = os.path.dirname(os.path.abspath(__file__))
 parent_path = os.path.abspath(os.path.join(current_path, os.pardir))
 sys.path.append(parent_path)
 
-# Now you can import the utils module from the parent directory
 from utils.utils import *
 from utils.config import *
 
-
 coordinates_by_camera = read_json_file_and_structure_data(PATH_JSON_DISTORTED)
 camera_infos = load_pickle(PATH_CALIBRATION_MATRIX)
-
 
 def find_common_points(camera_number_1: int, camera_number_2: int):
 
@@ -99,37 +95,28 @@ def testHomography():
     
     def mouse_callback(event, x, y, flags, param):
         if event == cv2.EVENT_LBUTTONDOWN:
-            # Map the clicked point back to the original source image coordinates
             x_original = x / scale_factor_src
             y_original = y / scale_factor_src
 
-            # Adjust point based on ROI if applicable
             if camera_src != 0:
                 point = np.array([[x_original + camera_info_1.roi[0], y_original + camera_info_1.roi[1]]], dtype=np.float32)
             else:
                 point = np.array([[x_original, y_original]], dtype=np.float32)
 
-            # Apply homography transformation to map to the destination image
             point_transformed = cv2.perspectiveTransform(point.reshape(-1, 1, 2), homography).reshape(-1, 2)
 
-            # Adjust the transformed point for ROI in the destination image if needed
             x_transformed = point_transformed[0][0] - (camera_info_2.roi[0] if camera_dst != 0 else 0)
             y_transformed = point_transformed[0][1] - (camera_info_2.roi[1] if camera_dst != 0 else 0)
 
-            # Scale the transformed point for the resized destination image
             x_transformed_resized = int(x_transformed * scale_factor_dst)
             y_transformed_resized = int(y_transformed * scale_factor_dst)
 
-            # Draw the point on the source image
             cv2.circle(img_src_resized, (int(x), int(y)), 15, (0, 255, 0), -1)
 
-            # Draw the corresponding transformed point on the destination image
             cv2.circle(img_dst_resized, (x_transformed_resized, y_transformed_resized), 15, (0, 255, 0), -1)
 
-            # Concatenate the images again after drawing points
             concatenated_image = cv2.hconcat([img_src_resized, img_dst_resized])
 
-            # Update the display with the new concatenated image
             cv2.imshow(f"Camera {camera_src} and {camera_dst}", concatenated_image)
 
     for homographyInfo in homographyInfos:
@@ -141,7 +128,6 @@ def testHomography():
             print(f"No homography available for cameras {camera_src} and {camera_dst}")
             continue
         
-        # Load images for both cameras
         img_src = cv2.imread(f"{PATH_FRAME_DISTORTED}/cam_{camera_src}.png")
         img_dst = cv2.imread(f"{PATH_FRAME_DISTORTED}/cam_{camera_dst}.png")
         
@@ -156,27 +142,21 @@ def testHomography():
             print(f"Could not load images for cameras {camera_src} and {camera_dst}")
             continue
 
-        # Get image dimensions
         height_src, width_src = img_src.shape[:2]
         height_dst, width_dst = img_dst.shape[:2]
 
-        # Calculate desired height and scaling factors
         desired_height = max(height_src, height_dst)
         scale_factor_src = desired_height / height_src
         scale_factor_dst = desired_height / height_dst
 
-        # Resize images
         img_src_resized = cv2.resize(img_src, (int(width_src * scale_factor_src), desired_height))
         img_dst_resized = cv2.resize(img_dst, (int(width_dst * scale_factor_dst), desired_height))
 
-        # Concatenate the two images side by side
         concatenated_image = cv2.hconcat([img_src_resized, img_dst_resized])
 
-        # Create a window and set mouse callback
         cv2.namedWindow(f"Camera {camera_src} and {camera_dst}")
         cv2.setMouseCallback(f"Camera {camera_src} and {camera_dst}", mouse_callback)
 
-        # Show the concatenated images
         cv2.imshow(f"Camera {camera_src} and {camera_dst}", concatenated_image)
         
         print(f"Click on the image from Camera {camera_src} to see the corresponding point on Camera {camera_dst}")
@@ -192,8 +172,7 @@ def testHomography():
 
 
 if __name__ == '__main__':
-    # Calculate Homography
+
     calculateHomographyAllCameras()
 
-    # Test Homography
     testHomography()

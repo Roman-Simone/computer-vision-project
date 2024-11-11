@@ -28,8 +28,8 @@ def save_pickle(camerasInfo, filename):
     Saves the camera information to a pickle file.
 
     Parameters:
-        camerasInfo (object): The camera information object to be saved.
-        filename (str): The path and name of the file to save the data to.
+        camerasInfo (object): the camera information object to be saved.
+        filename (str): the path and name of the file to save the data to.
     """
     with open(filename, 'wb') as file:
         pickle.dump(camerasInfo, file)
@@ -39,10 +39,10 @@ def load_pickle(filename):
     Loads camera information from a pickle file.
 
     Parameters:
-        filename (str): The path and name of the pickle file to load data from.
+        filename (str): the path and name of the pickle file to load data from.
 
     Returns:
-        object: The loaded camera information.
+        object: the loaded camera information.
     """
     with open(filename, 'rb') as file:
         camerasInfo = pickle.load(file)
@@ -53,10 +53,10 @@ def find_files(directory):
     Searches for all .mp4 and .png files in a specified directory.
 
     Parameters:
-        directory (str): The directory path to search.
+        directory (str): the directory path to search.
 
     Returns:
-        list: A list of file names with .mp4 or .png extensions.
+        list: list of file names with .mp4 or .png extensions.
     """
     file_mp4 = []
     for file in os.listdir(directory):
@@ -69,10 +69,10 @@ def read_json_file_and_structure_data(file_name):
     Reads a JSON file and structures data by organizing coordinates by camera.
 
     Parameters:
-        file_name (str): The path to the JSON file to be read.
+        file_name (str): the path to the JSON file to be read.
 
     Returns:
-        dict: A dictionary with organized camera data, including world and image coordinates.
+        dict: dictionary with organized camera data, including world and image coordinates.
     """
     coordinates_by_camera = {}
     try:
@@ -112,11 +112,11 @@ def take_info_camera(camera_number, camera_infos):
     Retrieves information about a specific camera by camera number.
 
     Parameters:
-        camera_number (int): The number of the camera to retrieve information for.
-        camera_infos (list): A list of camera information objects.
+        camera_number (int): the number of the camera to retrieve information for.
+        camera_infos (list): list of camera information objects.
 
     Returns:
-        tuple: A tuple containing the camera info object and its position in the list, or (None, None) if not found.
+        tuple: tuple containing the camera info object and its position in the list, or (None, None) if not found.
     """
     for pos, camera_info in enumerate(camera_infos):
         if camera_info.camera_number == camera_number:
@@ -128,11 +128,11 @@ def moving_average(data, window_size):
     Calculates the moving average of a data sequence over a specified window size.
 
     Parameters:
-        data (list or numpy.ndarray): The data sequence for which to calculate the moving average.
-        window_size (int): The window size for the moving average calculation.
+        data (list or numpy.ndarray): the data sequence for which to calculate the moving average.
+        window_size (int): the window size for the moving average calculation.
 
     Returns:
-        numpy.ndarray: The calculated moving average values.
+        numpy.ndarray: calculated moving average values.
     """
     if window_size < 1:
         return data
@@ -140,10 +140,10 @@ def moving_average(data, window_size):
 
 def get_positions():
     """
-    Retrieves field corner positions from a predefined pickle file.
+    Retrieves field corner positions from a predefined (PATH_CAMERA_POS) pickle file.
 
     Returns:
-        numpy.ndarray: An array of field corner positions as specified in the pickle file.
+        numpy.ndarray: an array of field corner positions as specified in the pickle file.
     """
     with open(PATH_CAMERA_POS, 'r') as file:  
         data = json.load(file)
@@ -154,7 +154,7 @@ def set_axes_equal_scaling(ax):
     Sets equal scaling on the 3D plot axes to preserve proportions.
 
     Parameters:
-        ax (matplotlib.axes._subplots.Axes3DSubplot): The 3D axes of a Matplotlib plot.
+        ax (matplotlib.axes._subplots.Axes3DSubplot): the 3D axes of a Matplotlib plot.
     """
     limits = np.array([ax.get_xlim(), ax.get_ylim(), ax.get_zlim()])
     mean_vals = np.mean(limits, axis=1)
@@ -169,10 +169,10 @@ def load_existing_detections(file_path):
     Loads previously saved detections from a pickle file if it exists.
 
     Parameters:
-        file_path (str): The path to the pickle file containing detection data.
+        file_path (str): path to the pickle file containing detection data.
 
     Returns:
-        dict: A dictionary with detection data, or an empty dictionary if the file does not exist.
+        dict: dictionary with detection data, or an empty dictionary if the file does not exist.
     """
     if os.path.exists(file_path):
         with open(file_path, 'rb') as f:
@@ -184,10 +184,10 @@ def get_projection_matrix(cam):
     Creates the projection matrix for a camera using its intrinsic and extrinsic matrices.
 
     Parameters:
-        cam (Camera): Camera object containing calibration data such as the intrinsic matrix and extrinsic matrix.
+        cam (Camera): camera object containing calibration data such as the intrinsic matrix and extrinsic matrix.
 
     Returns:
-        numpy.ndarray: A 3x4 projection matrix for the camera.
+        numpy.ndarray: 3x4 projection matrix for the camera.
     """
     K = cam.newcameramtx
     extrinsic_matrix = np.linalg.inv(cam.extrinsic_matrix)

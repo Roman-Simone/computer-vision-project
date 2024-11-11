@@ -8,8 +8,20 @@ sys.path.append(parent_path)
 
 from config import *
 
-
 def show_frame_number(video_path, START, END, action_number):
+    """
+    Displays frames from a video file with frame numbers overlaid.
+    
+    Args:
+        video_path (str): Path to the video file.
+        START (int): The starting frame number.
+        END (int): The ending frame number.
+        action_number (int): The action number to be displayed in the window title.
+    
+    The function opens the video file specified by `video_path` and starts displaying frames from the `START` frame to the `END` frame. 
+    Each frame is overlaid with its frame number. The display window is titled with the given `action_number`. 
+    The video display can be paused and resumed by pressing the spacebar, and can be exited by pressing the 'q' key.
+    """
     cap = cv2.VideoCapture(video_path)
     
     if not cap.isOpened():
@@ -53,7 +65,7 @@ def show_frame_number(video_path, START, END, action_number):
 def main():
     try:
 
-        camera_number = 2
+        camera_number = 2       # predefined camera number (wider view)
 
         action_number = int(input("Enter the action number: "))
         if action_number not in ACTIONS:
