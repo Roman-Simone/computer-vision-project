@@ -4,6 +4,16 @@ from random import randint
 from ultralytics import YOLO
 
 class yoloWindow:
+    """
+    A class for managing sliding windows over an image, detecting objects within each window using a YOLO model,
+    and visualizing the results.
+    
+    Parameters:
+        pathWeight (str): path to the YOLO model weights.
+        windowSize (tuple)p: size of each sliding window as (width, height).
+        overlap (tuple): overlap percentage between consecutive windows along x and y axes.
+    """
+
     def __init__(self, pathWeight="", windowSize=(640, 640), overlap=(0,0)):
         self.windowSize = windowSize
         self.overlap = overlap
@@ -14,19 +24,20 @@ class yoloWindow:
             self.device = "cuda"
         elif torch.backends.mps.is_available():
             self.device = "mps"
-    
 
     def draWindows(self, frame):
-        """_summary_
-
-        Args:
-            frame: image Frame
+        """
+        Draws the sliding windows as rectangles on the given image frame.
+        
+        Parameters:
+            frame (np.ndarray): image frame on which to draw the windows.
 
         Returns:
-            img: the modified frame with the windows drawn
+            np.ndarray: frame with windows drawn as rectangles.
         """
-        imgSize = frame.shape[:2][::-1]
-        origins = self.createWindow(imgSize)
+        imgSize = frame.shape[:2][::-1]  
+        origins = self.createWindow(imgSize)  
+
         for origin in origins:
             x, y = origin
             cv2.rectangle(
@@ -39,23 +50,33 @@ class yoloWindow:
         return frame
 
     def is_in_any_region(self, x_center, y_center, regions):
-        """Check if the point is in any of the selected regions to ignore."""
+        """
+        Checks if a given point (center of a bounding box) lies within any defined regions to ignore.
+        
+        Parameters:
+            x_center (float): x-coordinate of the point.
+            y_center (float): y-coordinate of the point.
+            regions (list): list of regions defined by tuples (x, y, width, height).
+            
+        Returns:
+            bool: True if the point is in any region; otherwise, False.
+        """
         for region in regions:
             x, y, w, h = region
             if x <= x_center <= x + w and y <= y_center <= y + h:
                 return True
         return False
-    
-    def createWindow(self, imgSize):
-        """_summary_
 
-        Args:
-            imgSize (tupla): (width, height of the image)
+    def createWindow(self, imgSize):
+        """
+        Calculates the origins of sliding windows across the given image size, based on the specified window size and overlap.
+
+        Parameters:
+            imgSize (tuple): size of the image as (width, height).
 
         Returns:
-            list: a list of tuples with the origin of the windows
+            list: list of tuples representing the top-left origin (x, y) of each window.
         """
-
         xOverlay = int(self.windowSize[0] * self.overlap[0])
         yOverlay = int(self.windowSize[1] * self.overlap[1])
 
@@ -64,7 +85,6 @@ class yoloWindow:
 
         padX = (imgSize[0] - self.windowSize[0]) % (self.windowSize[0] - xOverlay)
         padY = (imgSize[1] - self.windowSize[1]) % (self.windowSize[1] - yOverlay)
-
 
         windowsOrigins = []
         for i in range(nX):
@@ -77,26 +97,21 @@ class yoloWindow:
 
     def isRectangleOverlap(self, x1_c, y1_c, w1, h1, x2_c, y2_c, w2, h2):
         """
-        Checks if two rectangles overlap based on their center coordinates and sizes.
+        Checks if two rectangles overlap based on their center coordinates and dimensions.
 
-        Args:
-            x1_c, y1_c: Center coordinates of the first rectangle.
-            w1, h1: Width and height of the first rectangle.
-            x2_c, y2_c: Center coordinates of the second rectangle.
-            w2, h2: Width and height of the second rectangle.
+        Parameters:
+            x1_c, y1_c (float): center coordinates of the first rectangle.
+            w1, h1 (float): width and height of the first rectangle.
+            x2_c, y2_c (float): center coordinates of the second rectangle.
+            w2, h2 (float): width and height of the second rectangle.
 
         Returns:
-            bool: True if rectangles overlap, False otherwise.
+            bool: True if the rectangles overlap, False otherwise.
         """
-        l1 = x1_c - w1 / 2
-        r1 = x1_c + w1 / 2
-        t1 = y1_c - h1 / 2
-        b1 = y1_c + h1 / 2
-
-        l2 = x2_c - w2 / 2
-        r2 = x2_c + w2 / 2
-        t2 = y2_c - h2 / 2
-        b2 = y2_c + h2 / 2
+        l1, r1 = x1_c - w1 / 2, x1_c + w1 / 2
+        t1, b1 = y1_c - h1 / 2, y1_c + h1 / 2
+        l2, r2 = x2_c - w2 / 2, x2_c + w2 / 2
+        t2, b2 = y2_c - h2 / 2, y2_c + h2 / 2
 
         if l1 >= r2 or l2 >= r1:
             return False
@@ -105,24 +120,25 @@ class yoloWindow:
         return True
 
     def detect(self, frame, visualizeBBox=False, visualizeWindows=False, thresholdConfidence=0, regions=[]):
-        """_summary_
-
-        Args:
-            frame : image frame
-            visualizeBBox (bool, optional): flag to draw the bounding boxes. Defaults to False.
-            visualizeWindows (bool, optional): flag to draw the windows. Defaults to False.
-            thresholdConfidence (int, optional): threshold to consider a detection. Defaults to 0.
+        """
+        Detects objects within each sliding window using the YOLO model and returns detections above the confidence threshold.
+        
+        Parameters:
+            frame (np.ndarray):  image frame to process.
+            visualizeBBox (bool): if True, draw bounding boxes around detections. Defaults to False.
+            visualizeWindows (bool): if True, draw the sliding windows on the frame. Defaults to False.
+            thresholdConfidence (float): minimum confidence score to consider a detection.
+            regions (list): regions to ignore, defined as [(x, y, w, h), ...].
 
         Returns:
-            detections, frame: a list of detections and the modified frame resized to the original size
+            tuple: list of detected bounding boxes [(x, y, w, h, confidence), ...] and the modified frame.
         """
-        # Salva la dimensione originale
         original_size = frame.shape[:2][::-1]  # (width, height)
         imgSize = frame.shape[:2][::-1]
 
         windowsOrigins = self.createWindow(imgSize)
-
         windows = []
+
         for origin in windowsOrigins:
             x, y = origin
             window = {
@@ -135,17 +151,15 @@ class yoloWindow:
             windows.append(window)
         
         detections = []
-        batch = []
+        batch = [window["img"] for window in windows]
 
-        for window in windows:
-            img = window["img"]
-            batch.append(img)
-
+        # Run YOLO model on batch of window images
         results = self.model.predict(batch, verbose=False, device=self.device)
 
+        # Process YOLO detections for each window
         for win, result in zip(windows, results):
-            boxes = result.boxes.xywh.cpu().numpy()
-            confs = result.boxes.conf.cpu().numpy()
+            boxes = result.boxes.xywh.cpu().numpy()  # Bounding boxes in [x_center, y_center, width, height] format
+            confs = result.boxes.conf.cpu().numpy()  # Confidence scores
             real_x, real_y, _, _ = win["coordinates"]
 
             for box, conf in zip(boxes, confs):
@@ -162,15 +176,18 @@ class yoloWindow:
                             x_center, y_center, w, h,
                             existing_det[0], existing_det[1], existing_det[2], existing_det[3]
                         ):
-                            if conf > existing_det[4]:
+                            if conf > existing_det[4]:  # Update detection if confidence is higher
                                 detections[i] = detection
                             overlap_found = True
                             break
                     if not overlap_found:
                         detections.append(detection)
 
-        if len(regions) > 0:
-            detections = [detection for detection in detections if not self.is_in_any_region(detection[0], detection[1], regions)]
+        if regions:
+            detections = [
+                detection for detection in detections 
+                if not self.is_in_any_region(detection[0], detection[1], regions)
+            ]
         
         if visualizeBBox:
             for detection in detections:
@@ -190,26 +207,16 @@ class yoloWindow:
         if visualizeWindows:
             frame = self.draWindows(frame)
 
-        # Ridimensiona il frame alle dimensioni originali
         frame = cv2.resize(frame, original_size)
-
-        # Ridimensiona i bounding box alle dimensioni originali
         scale_x = original_size[0] / imgSize[0]
         scale_y = original_size[1] / imgSize[1]
 
-        resized_detections = []
-        for detection in detections:
-            x_center, y_center, w, h, conf = detection
-            x_center *= scale_x
-            y_center *= scale_y
-            w *= scale_x
-            h *= scale_y
-            resized_detections.append((x_center, y_center, w, h, conf))
+        resized_detections = [
+            (x_center * scale_x, y_center * scale_y, w * scale_x, h * scale_y, conf)
+            for x_center, y_center, w, h, conf in detections
+        ]
 
-        if len(resized_detections) == 0:
+        if not resized_detections:
             return None, frame
 
         return resized_detections, frame
-
-
-
