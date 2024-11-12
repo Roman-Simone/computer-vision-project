@@ -259,10 +259,7 @@ if __name__ == "__main__":
     undistortedFlag = True
     findAllExtrinsics(undistortedFlag)
 
-    user_input = input("Enter camera number to plot (or press Enter to plot all cameras): ")
-    if user_input.isdigit():
-        camera_number = int(user_input)
-        plot_camera(camera_number)
-    else:
-        plotAllCameras()
+
+    # plot_camera(camera_number)
+    plotAllCameras()
     

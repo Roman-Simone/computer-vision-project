@@ -453,11 +453,9 @@ def addCourtCoordinates():
 
 if __name__ == "__main__":
     undistortedFlag = False
-    user_input = input("Enter camera number to select points (1-8, 12-13) or press Enter for all cameras: ")
-    if int(user_input) in VALID_CAMERA_NUMBERS:
-        camera_number = int(user_input)
-        selectPointsCamera(camera_number, undistortedFlag)
-    else:
-        selectPointsAllCameras(undistortedFlag)
+    selectPointsAllCameras(undistortedFlag)
+
+    # camera_number = 6
+    # selectPointsCamera(camera_number, undistortedFlag)
     
     addCourtCoordinates()

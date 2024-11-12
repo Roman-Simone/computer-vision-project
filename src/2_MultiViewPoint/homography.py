@@ -194,7 +194,6 @@ def testHomography():
 if __name__ == '__main__':
     
     # need to round the field map
-    
     calculateHomographyAllCameras()
     
     testHomography()

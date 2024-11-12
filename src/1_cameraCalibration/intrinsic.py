@@ -257,16 +257,12 @@ def test_calibration():
 
 
 if __name__ == '__main__':
-    camera_number = input("Enter the camera number to calibrate (press Enter to calibrate all cameras): ")
-    if camera_number == "":
-        print("Calibrating all cameras...")
-        calibrateAllIntrinsic()
-    else:
-        print(f"Calibrating camera {camera_number}...")
-        calibrateCameraIntrinsic(int(camera_number))
+    
+    calibrateAllIntrinsic()
+    
+    # camera_number = 6
+    # calibrateCameraIntrinsic(camera_number)
 
-    if input("Do you want to check calibration errors? (y/n): ") == "y":
-        check_errors()
+    check_errors()
 
-    if input("Do you want to test calibration? (y/n): ") == "y":
-        test_calibration()
+    test_calibration()

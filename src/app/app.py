@@ -4,8 +4,11 @@ import numpy as np
 import os
 import sys
 import torch
-import threading
 import random
+import importlib
+import threading
+
+
 
 current_path = os.path.dirname(os.path.abspath(__file__))
 parent_path = os.path.abspath(os.path.join(current_path, os.pardir))
@@ -13,8 +16,8 @@ sys.path.append(parent_path)
 
 from utils.utils import *
 from utils.config import *
-from utils.particleFilter2D import *
 from ultralytics import YOLO
+particle_filter_module = importlib.import_module("3_3dBallTracking.utils.particleFilter2D")
 
 app = Flask(__name__, static_folder=PATH_STATIC)
 
