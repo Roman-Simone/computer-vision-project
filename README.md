@@ -100,23 +100,46 @@ This is an example of the user interface:
 ## Project Structure
 
 ```
-DeepLearning_project/
-├── datasets/
-│   ├── imagenet-a/
-├── scripts/
-│   ├── utils.py
-│   ├── model.py
-│   ├── gradcam.py
-│   ├── functions.py
-│   ├── augmentations.py
-├── weights/
-│   ├── sam_vit_b_01ec64.pth
-│   ├── weights_model_in_use.pth
-├── notebooks/
-│   ├── DeepLearningProject.ipynb
-├── main.py
-├── requirements.txt
-├── README.md
+src
+├── 1_cameraCalibration
+│   ├── cameraInfo.py
+│   ├── extrinsics.py
+│   ├── intrinsics.py
+│   ├── selectPoints.py
+│   └── utilsCameraCalibration
+│       └── utilsSelectPoints.py
+├── 2_MultiViewPoint
+│   ├── cameraInfo.py
+│   └── homography.py
+├── 3_3dBallTracking
+│   ├── extras
+│   │   ├── cameraInfo.py
+│   │   ├── createDataset.py
+│   │   ├── particleFilter2D.py
+│   │   ├── tracking2D.py
+│   │   ├── tryYolo.py
+│   │   └── yoloWindows.py
+│   ├── plot3Dtrajectory.py
+│   ├── saveDetections.py
+│   ├── saveTriangulation.py
+│   ├── tracking3D.py
+│   └── utils3DBallTracking
+│       ├── cameraInfo.py
+│       ├── particleFilter3D.py
+│       └── yoloWindows.py
+├── app
+│   ├── app.py
+│   ├── cameraInfo.py
+│   ├── static
+│   │   ├── css
+│   │   │   ├── style.css
+│   └── templates
+│       └── point_projection.html
+└── utils
+    ├── cameraInfo.py
+    ├── config.py
+    ├── utils.py
+    └── viewAction.py
 ```
 
 # Contacts
