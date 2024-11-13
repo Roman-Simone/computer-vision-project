@@ -8,8 +8,6 @@ import random
 import importlib
 import threading
 
-
-
 current_path = os.path.dirname(os.path.abspath(__file__))
 parent_path = os.path.abspath(os.path.join(current_path, os.pardir))
 sys.path.append(parent_path)
@@ -17,11 +15,9 @@ sys.path.append(parent_path)
 from utils.utils import *
 from utils.config import *
 from ultralytics import YOLO
-particle_filter_module = importlib.import_module("3_3dBallTracking.utils.particleFilter2D")
 
 app = Flask(__name__, static_folder=PATH_STATIC)
 
-available_cameras = [1, 2, 3, 4, 5, 6, 7, 8, 12, 13]
 interInfo = load_pickle(PATH_HOMOGRAPHY_MATRIX)
 cameras_info = load_pickle(PATH_CALIBRATION_MATRIX)
 YOLO_INPUT_SIZE = 800
@@ -47,15 +43,7 @@ def ret_homography(camera_src, camera_dst):
 
 @app.route('/')
 def index():
-    return render_template('index.html', css_path=PATH_CSS)
-
-@app.route('/point_projection')
-def point_projection():
-    return render_template('point_projection.html', available_cameras=available_cameras, css_path=PATH_CSS)
-
-@app.route('/2D_ball_tracking')
-def ball_tracking():
-    return render_template('2D_ball_tracking.html', available_cameras=available_cameras, css_path=PATH_CSS)
+    return render_template('index.html', css_path=PATH_CSS, available_cameras=VALID_CAMERA_NUMBERS)
 
 @app.route('/set_cameras', methods=['POST'])
 def set_cameras():
@@ -156,134 +144,6 @@ def project_point():
         x_transformed_court=x_transformed_court,
         y_transformed_court=y_transformed_court
     )
-
-def applyModel(frame, model):
-    height, width = frame.shape[:2]
-    
-    # Resize for YOLO model
-    frameResized = cv2.resize(frame, (YOLO_INPUT_SIZE, YOLO_INPUT_SIZE))
-    
-    results = model.track(frameResized, verbose=False, device=device)
-    
-    center_ret = (-1, -1)
-    confidence = -1
-    detections = []
-
-    for box in results[0].boxes:
-        x1, y1, x2, y2 = box.xyxy[0].cpu().numpy()  # Move tensor to CPU and convert to NumPy
-        # Scale back to original size
-        x1 = x1 * width / YOLO_INPUT_SIZE
-        y1 = y1 * height / YOLO_INPUT_SIZE
-        x2 = x2 * width / YOLO_INPUT_SIZE
-        y2 = y2 * height / YOLO_INPUT_SIZE
-        confidence = box.conf[0].cpu().numpy()  # Move tensor to CPU and convert to NumPy
-        class_id = box.cls[0].cpu().numpy()  # Move tensor to CPU and convert to NumPy
-
-        if class_id == 0 and confidence > 0.35:
-            x_center = (x1 + x2) / 2    
-            y_center = (y1 + y2) / 2
-            center_ret = (int(x_center), int(y_center))
-            detections.append(center_ret)
-            cv2.circle(frame, center_ret, 3, (0, 255, 0), -1)
-
-    return detections, center_ret, confidence
-
-def testModel(num_cam, action):
-    pathVideo = os.path.join(PATH_VIDEOS, f'out{num_cam}.mp4')
-    cameraInfo, _ = take_info_camera(num_cam, cameras_info)
-    videoCapture = cv2.VideoCapture(pathVideo)
-
-    # Get video dimensions
-    frame_width = int(videoCapture.get(cv2.CAP_PROP_FRAME_WIDTH))
-    frame_height = int(videoCapture.get(cv2.CAP_PROP_FRAME_HEIGHT))
-    frame_size = (frame_width, frame_height)
-
-    START, END = ACTIONS[action]
-    videoCapture.set(cv2.CAP_PROP_POS_FRAMES, START)
-
-    trackers = []
-    trajectory_points = []
-
-    while True:
-        current_frame = int(videoCapture.get(cv2.CAP_PROP_POS_FRAMES))
-        if current_frame > END:
-            break
-
-        ret, frame = videoCapture.read()
-        if not ret:
-            break
-
-        frameUndistorted = undistorted(frame, cameraInfo)
-        detections, center_ret, confidence = applyModel(frameUndistorted, model)
-
-        new_trackers = []
-        for detection in detections:
-            if detection:  # Check if detection is not empty
-                matched = False
-                # Ensure detection is a tuple of floats or integers
-                detection = np.array(detection, dtype=np.float32)  # Convert to numpy array if needed
-                for tracker in trackers:
-                    if tracker.last_position is not None and tracker.last_position.any():
-                        distance = np.linalg.norm(np.array(tracker.last_position) - detection)
-                        if distance < DISTANCE_THRESHOLD:
-                            tracker.update(detection)
-                            matched = True
-                            break
-                if not matched:
-                    color = (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
-                    new_tracker = ParticleFilterBallTracker(len(trackers), color, frame_size)
-                    new_tracker.update(detection)
-                    new_trackers.append(new_tracker)
-            else:
-                print("No valid detection found.")
-
-        trackers.extend(new_trackers)
-
-        # Draw trackers and trajectories
-        for tracker in trackers:
-            if tracker.last_position is not None and tracker.last_position.any():
-                cv2.circle(frame, tuple(tracker.last_position.astype(int)), 5, tracker.color, -1)
-                tracker.predict()  # Predict the next position
-                tracker.draw_particles(frame)  # Draw particles
-                tracker.draw_estimated_position(frame)  # Draw estimated position
-                tracker.draw_trajectory(frame)  # Draw trajectory
-
-                # Append the last position to the trajectory points
-                trajectory_points.append(tracker.last_position)
-
-        # Draw the trajectory points
-        for i in range(1, len(trajectory_points)):
-            if trajectory_points[i - 1] is None or trajectory_points[i] is None:
-                continue
-            cv2.line(frame, tuple(trajectory_points[i - 1].astype(int)), tuple(trajectory_points[i].astype(int)), (0, 255, 0), 2)
-
-        # Prepare frame for streaming
-        _, buffer = cv2.imencode('.jpg', frame)
-        frame_stream = buffer.tobytes()
-
-        yield (b'--frame\r\n'
-               b'Content-Type: image/jpeg\r\n\r\n' + frame_stream + b'\r\n')
-
-    videoCapture.release()
-
-@app.route('/video_feed')
-def video_feed():
-    camera_number = request.args.get('camera', default=1, type=int)
-    action_number = request.args.get('action', default=1, type=int)
-    return Response(testModel(camera_number, action_number),
-                    mimetype='multipart/x-mixed-replace; boundary=frame')
-
-@app.route('/start_tracking', methods=['POST'])
-def start_tracking():
-    data = request.json
-    camera_number = int(data['camera_number'])
-    action_number = int(data['action_number'])
-
-    # Start a thread to run the video processing function
-    thread = threading.Thread(target=testModel, args=(camera_number, action_number))
-    thread.start()
-
-    return jsonify(success=True)
 
 if __name__ == "__main__":
     app.run(debug=True)

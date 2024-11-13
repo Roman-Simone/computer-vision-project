@@ -4,23 +4,182 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Main Menu - 3D Camera Calibration</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <title>Point Projection - 3D Camera Calibration</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="../static/css/style.css">
+    <style>
+
+    </style>
 </head>
 
-    
 <body>
-
     <div class="title-section">
-        <h1>3D CAMERA CALIBRATION (geometry and 3D reconstruction)</h1>
-        <h2>A project developed by Stefano Bonetto and Simone Roman</h2>
+        <h1 style="font-size: 48px;">3D CAMERA CALIBRATION (geometry and 3D reconstruction)</h1>
+        <br>
+        <hr>
+        <br>
+        <h2 style="font-size: 30px;">A project developed by Stefano Bonetto and Simone Roman</h2>
     </div>
 
     <hr>
-        <div class="button-container">
-            <button class="menu-button" onclick="location.href='/point_projection'">Point Projection</button>
-        </div>
-</body>
+    <hr>
 
+    <div class="camera-selection">
+        <div class="camera-group camera-src">
+            <h1>Source Camera</h1>
+            <div id="source_buttons">
+                {% for camera in available_cameras %}
+                <button class="camera_src_btn" data-camera="{{ camera }}">Camera {{ camera }}</button>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="camera-group camera-dst">
+            <h1>Destination Camera</h1>
+            <div id="destination_buttons">
+                {% for camera in available_cameras %}
+                <button class="camera_dst_btn" data-camera="{{ camera }}">Camera {{ camera }}</button>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <button id="load_images">Load Images</button>
+
+    <div class="image-container">
+        <div class="upper-images">
+            <img id="src_image" src="image1.jpg" alt="Image 1">
+            <img id="dst_image" src="image2.jpg" alt="Image 2">
+        </div>
+        <div class="lower-image">
+            <img id="court_image" src="image3.jpg" alt="Image 3">
+        </div>
+    </div>
+
+    <script>
+        var camera_src = null;
+        var camera_dst = null;
+        var src_image_original = { width: 0, height: 0 };
+        var dst_image_original = { width: 0, height: 0 };
+        var court_image_original = { width: 0, height: 0 };
+
+        $(document).ready(function () {
+            // Handle source camera button click
+            $('.camera_src_btn').on('click', function () {
+                camera_src = $(this).data('camera');
+                $('.camera_src_btn').removeClass('selected');
+                $(this).addClass('selected');
+
+                // Enable all destination buttons and disable the selected source camera button in destination buttons
+                $('.camera_dst_btn').removeClass('disabled').prop('disabled', false);
+                $('.camera_dst_btn[data-camera="' + camera_src + '"]').addClass('disabled').prop('disabled', true);
+            });
+
+            // Handle destination camera button click
+            $('.camera_dst_btn').on('click', function () {
+                camera_dst = $(this).data('camera');
+                $('.camera_dst_btn').removeClass('selected');
+                $(this).addClass('selected');
+
+                // Enable all source buttons and disable the selected destination camera button in source buttons
+                $('.camera_src_btn').removeClass('disabled').prop('disabled', false);
+                $('.camera_src_btn[data-camera="' + camera_dst + '"]').addClass('disabled').prop('disabled', true);
+            });
+
+            // Load images when both cameras are selected
+            $('#load_images').on('click', function () {
+                if (!camera_src || !camera_dst) {
+                    alert("Please select both source and destination cameras.");
+                    return;
+                }
+
+                // Set selected cameras and load images
+                $.ajax({
+                    type: 'POST',
+                    url: '/set_cameras',
+                    contentType: 'application/json',
+                    data: JSON.stringify({
+                        camera_src: camera_src,
+                        camera_dst: camera_dst
+                    }),
+                    success: function () {
+                        // Fetch and display images
+                        $.ajax({
+                            url: '/get_images',
+                            success: function (data) {
+                                if (!data.error) {
+                                    $('#src_image').attr('src', data.src_img + '?' + new Date().getTime());
+                                    $('#dst_image').attr('src', data.dst_img + '?' + new Date().getTime());
+                                    $('#court_image').attr('src', data.court_img + '?' + new Date().getTime());
+
+                                    // Reset image dimensions
+                                    $('#src_image').on('load', function () {
+                                        src_image_original.width = this.naturalWidth;
+                                        src_image_original.height = this.naturalHeight;
+                                    });
+
+                                    $('#dst_image').on('load', function () {
+                                        dst_image_original.width = this.naturalWidth;
+                                        dst_image_original.height = this.naturalHeight;
+                                    });
+
+                                    $('#court_image').on('load', function () {
+                                        court_image_original.width = this.naturalWidth;
+                                        court_image_original.height = this.naturalHeight;
+                                    });
+
+                                } else {
+                                    alert(data.error);
+                                }
+                            }
+                        });
+                    }
+                });
+            });
+
+            // Handle click event on source image to project point
+            $('#src_image').on('click', function (e) {
+                if (!camera_src || !camera_dst) {
+                    alert("Please select both source and destination cameras.");
+                    return;
+                }
+
+                var offset = $(this).offset();
+                var x_scaled = Math.round(e.pageX - offset.left);
+                var y_scaled = Math.round(e.pageY - offset.top);
+
+                // Calculate the scaling factors for width and height
+                var width_scale = src_image_original.width / $(this).width();
+                var height_scale = src_image_original.height / $(this).height();
+
+                // Adjust the coordinates using the scaling factors
+                var x_original = Math.round(x_scaled * width_scale);
+                var y_original = Math.round(y_scaled * height_scale);
+
+                // Project point
+                $.ajax({
+                    type: 'POST',
+                    url: '/project_point',
+                    contentType: 'application/json',
+                    data: JSON.stringify({
+                        x: x_original,
+                        y: y_original,
+                        camera_src: camera_src,
+                    }),
+                    success: function (data) {
+                        if (!data.error) {
+                            // Update images with projected points
+                            $('#src_image').attr('src', data.src_img + '?' + new Date().getTime());
+                            $('#dst_image').attr('src', data.dst_img + '?' + new Date().getTime());
+                            $('#court_image').attr('src', data.court_img + '?' + new Date().getTime());
+                        } else {
+                            alert(data.error);
+                        }
+                    }
+                });
+            });
+        });
+    </script>
+</body>
 
 </html>
