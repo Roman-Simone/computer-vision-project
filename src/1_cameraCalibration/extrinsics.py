@@ -14,16 +14,17 @@ from utils.config import *
 
 def calculate_extrinsics(camera_number, undistortedFlag=False):
     """
-    Calculates the extrinsic matrix for a specified camera, including rotation and translation.
+    Calculates the extrinsic matrix for a specified camera, including rotation matrix and translation vector.
 
     Parameters:
         camera_number (int): the number of the camera to calculate extrinsics for.
-        undistortedFlag (bool): if True, undistorts the image points before solving for extrinsics.
+        undistortedFlag (bool): if True, undistorts the image points and later compute extrinsic parameter with new_mtx.
 
     Returns:
-        numpy.ndarray: the 4x4 extrinsic matrix, including rotation and translation, if calculation is successful;
+        numpy.ndarray: the 4x4 extrinsic matrix, including rotation matrix and translation vector if calculation is successful;
                       otherwise, None.
     """
+    
     pathToRead = PATH_JSON_DISTORTED
     coordinates_by_camera = read_json_file_and_structure_data(pathToRead)
     all_camera_coordinates = {}
@@ -58,7 +59,7 @@ def calculate_extrinsics(camera_number, undistortedFlag=False):
 
     distortion_coefficients = np.array(camera_info.dist, dtype=np.float32)
 
-    success, rotation_vector, translation_vector = cv2.solvePnP(
+    _, rotation_vector, translation_vector = cv2.solvePnP(
         world_points, image_points, camera_matrix, distortion_coefficients
     )
 
@@ -71,13 +72,14 @@ def calculate_extrinsics(camera_number, undistortedFlag=False):
     return extrinsic_matrix
 
 
-def findAllExtrinsics(undistortedFlag=False):
+def compute_all_extrinsics(undistortedFlag=False):
     """
-    Finds the extrinsic parameters for all valid cameras and updates them in the calibration file.
+    Compute the extrinsic parameters for all valid cameras and updates them in the calibration file.
 
     Parameters:
         undistortedFlag (bool): if True, calculates undistorted extrinsics for each camera.
     """
+    
     camera_infos = load_pickle(PATH_CALIBRATION_MATRIX)
 
     for camera_number in VALID_CAMERA_NUMBERS:
@@ -97,6 +99,7 @@ def plot_3d_data(extrinsic_matrices, camera_numbers=None):
         camera_numbers (list, optional): list of camera numbers corresponding to extrinsic matrices.
                                          If None, uses sequential numbering.
     """
+    
     fig = plt.figure(figsize=(12, 8))
     ax = fig.add_subplot(111, projection='3d')
 
@@ -105,7 +108,7 @@ def plot_3d_data(extrinsic_matrices, camera_numbers=None):
 
     calculated_camera_color = 'red'
     real_camera_color = 'green'
-    point_color = 'blue'
+    points_color = 'blue'
 
     all_points = []
 
@@ -145,7 +148,7 @@ def plot_3d_data(extrinsic_matrices, camera_numbers=None):
         for point in camera_data['points']:
             world_coord = point['world_coordinate']
             all_points.append(world_coord)
-            ax.scatter(*world_coord, color=point_color, s=50, 
+            ax.scatter(*world_coord, color=points_color, s=50, 
                        label='World Points' if first_point else '')
             first_point = False
 
@@ -172,6 +175,7 @@ def plot_camera(camera_number):
     Parameters:
         camera_number (int): camera number to plot.
     """
+    
     if camera_number not in VALID_CAMERA_NUMBERS:
         print(f"Camera {camera_number} is not a valid camera number.")
         return
@@ -184,10 +188,11 @@ def plot_camera(camera_number):
     plot_3d_data(extrinsic_matrix, camera_number)
 
 
-def plotAllCameras():
+def plot_all_cameras():
     """
     Plots the extrinsic matrices and 3D data for all available cameras.
     """
+    
     camera_infos = load_pickle(PATH_CALIBRATION_MATRIX)
     extrinsic_matrices = []
     camera_numbers = []
@@ -208,6 +213,7 @@ def display_extrinsic_matrix(extrinsic_matrix, camera_number=None):
         extrinsic_matrix (numpy.ndarray): extrinsic matrix to display.
         camera_number (int, optional): camera number, if applicable, to identify the matrix.
     """
+    
     if extrinsic_matrix is not None:
         print(f"\nExtrinsic Matrix for Camera {camera_number}:")
         print(extrinsic_matrix)
@@ -220,7 +226,7 @@ def display_extrinsic_matrix(extrinsic_matrix, camera_number=None):
         print("\nTranslation Vector:")
         print(translation)
 
-        euler_angles = rotationMatrixToEulerAngles(rotation)
+        euler_angles = rotation_matrix_to_euler_angles(rotation)
         print("\nEuler Angles (in degrees):")
         print(f"Roll: {np.degrees(euler_angles[0]):.2f}")
         print(f"Pitch: {np.degrees(euler_angles[1]):.2f}")
@@ -229,7 +235,7 @@ def display_extrinsic_matrix(extrinsic_matrix, camera_number=None):
         print(f"Unable to calculate extrinsic matrix for Camera {camera_number}")
 
 
-def rotationMatrixToEulerAngles(R):
+def rotation_matrix_to_euler_angles(R):
     """
     Converts a rotation matrix to Euler angles.
 
@@ -239,6 +245,7 @@ def rotationMatrixToEulerAngles(R):
     Returns:
         numpy.ndarray: euler angles (roll, pitch, yaw) in radians.
     """
+    
     sy = np.sqrt(R[0, 0] * R[0, 0] + R[1, 0] * R[1, 0])
     singular = sy < 1e-6
 
@@ -256,10 +263,10 @@ def rotationMatrixToEulerAngles(R):
 if __name__ == "__main__":
 
     #find extrinsic parameter for all cameras
-    undistortedFlag = True
-    findAllExtrinsics(undistortedFlag)
+    undistortedFlag = False
+    compute_all_extrinsics(undistortedFlag)
 
-
+    # camera_number = 1
     # plot_camera(camera_number)
-    plotAllCameras()
+    plot_all_cameras()
     

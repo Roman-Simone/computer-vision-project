@@ -16,7 +16,7 @@ from utils.config import *
 all_chessboard_sizes = {1: (5, 7), 2: (5, 7), 3: (5, 7), 4: (5, 7), 5: (6, 9), 6: (6, 9), 7: (5, 7), 8: (6, 9), 12: (5, 7), 13: (5, 7)}
 SKIP_FRAME = 10
 
-def findPoints(path_video, cameraInfo, debug=True):
+def find_points(path_video, cameraInfo, debug=True):
     """
     Detects and collects chessboard corner points from frames in a video for camera calibration.
 
@@ -28,6 +28,7 @@ def findPoints(path_video, cameraInfo, debug=True):
     Returns:
         tuple: tuple containing object points, image points, and the grayscale version of the last frame.
     """
+    
     chess_width = cameraInfo.chessboard_size[0]
     chess_height = cameraInfo.chessboard_size[1]
     criteria = (cv2.TERM_CRITERIA_COUNT + cv2.TERM_CRITERIA_EPS, 40, 0.01)
@@ -57,10 +58,12 @@ def findPoints(path_video, cameraInfo, debug=True):
             os.remove(os.path.join(output_dir_corners, file))
 
     frame_count = 0
+    # Iterate over frames
     with tqdm(total=numberOf_frame, desc="Processing Video", unit="frame") as pbar:
         while True:
             frame_count += 1
             ret, img = video_capture.read()
+            
             if not ret:
                 break  
             if frame_count % SKIP_FRAME != 0:
@@ -94,6 +97,7 @@ def compute_calibration_all(camerasInfo):
     Returns:
         list: updated list of CameraInfo objects with calibration parameters.
     """
+    
     videosCalibration = find_files(PATH_VIDEOS_CALIBRATION)
     videosCalibration.sort()
 
@@ -102,7 +106,7 @@ def compute_calibration_all(camerasInfo):
         _, pos_camera = take_info_camera(numero_camera, camerasInfo)
         path_video = os.path.join(PATH_VIDEOS_CALIBRATION, video)
 
-        camerasInfo[pos_camera].objpoints, camerasInfo[pos_camera].imgpoints, gray = findPoints(path_video, camerasInfo[pos_camera], debug=True)
+        camerasInfo[pos_camera].objpoints, camerasInfo[pos_camera].imgpoints, gray = find_points(path_video, camerasInfo[pos_camera], debug=True)
 
         if len(camerasInfo[pos_camera].objpoints) == 0:
             print(f"Camera {numero_camera} not calibrated - No points found")
@@ -134,6 +138,7 @@ def compute_calibration_single(cameraInfo):
     Returns:
         CameraInfo: updated camera information object with calibration parameters.
     """
+    
     videosCalibration = find_files(PATH_VIDEOS_CALIBRATION)
     videosCalibration.sort()
 
@@ -144,7 +149,7 @@ def compute_calibration_single(cameraInfo):
             continue
 
         path_video = os.path.join(PATH_VIDEOS_CALIBRATION, video)
-        cameraInfo.objpoints, cameraInfo.imgpoints, gray = findPoints(path_video, cameraInfo, debug=True)
+        cameraInfo.objpoints, cameraInfo.imgpoints, gray = find_points(path_video, cameraInfo, debug=True)
 
         if len(cameraInfo.objpoints) == 0:
             print(f"Camera {numero_camera} not calibrated - No points found")
@@ -165,7 +170,7 @@ def compute_calibration_single(cameraInfo):
     return cameraInfo
 
 
-def calibrateAllIntrinsic():
+def calibrate_all_intrinsic():
     """
     Initiates the intrinsic calibration for all cameras using preset chessboard sizes.
     """
@@ -176,13 +181,14 @@ def calibrateAllIntrinsic():
         camerasInfo.append(camera)
     camerasInfo = compute_calibration_all(camerasInfo)
 
-def calibrateCameraIntrinsic(camera_number):
+def calibrate_camera_intrinsic(camera_number):
     """
     Calibrates a specific camera using intrinsic parameters and saves the calibration.
 
     Parameters:
         camera_number (int): camera number to calibrate.
     """
+    
     camerasInfo = load_pickle(PATH_CALIBRATION_MATRIX)
     cameraInfo = None
 
@@ -210,6 +216,7 @@ def check_errors():
     """
     Checks calibration errors for each camera and prints the mean reprojection error.
     """
+    
     camera_infos = load_pickle(PATH_CALIBRATION_MATRIX)
 
     for elem in camera_infos:
@@ -227,6 +234,7 @@ def test_calibration():
     """
     Tests calibration by displaying undistorted frames side by side with original frames for visual validation.
     """
+    
     videos = find_files(PATH_VIDEOS)
     videos.sort()
     camera_infos = load_pickle(PATH_CALIBRATION_MATRIX)
@@ -258,10 +266,10 @@ def test_calibration():
 
 if __name__ == '__main__':
     
-    calibrateAllIntrinsic()
+    calibrate_all_intrinsic()
     
     # camera_number = 6
-    # calibrateCameraIntrinsic(camera_number)
+    # calibrate_camera_intrinsic(camera_number)
 
     check_errors()
 

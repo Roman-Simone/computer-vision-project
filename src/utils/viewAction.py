@@ -2,10 +2,6 @@ import os
 import cv2
 import sys
 
-current_path = os.path.dirname(os.path.abspath(__file__))
-parent_path = os.path.abspath(os.path.join(current_path, os.pardir))
-sys.path.append(parent_path)
-
 from config import *
 
 def show_frame_number(video_path, START, END, action_number):

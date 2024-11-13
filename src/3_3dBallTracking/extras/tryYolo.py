@@ -5,12 +5,12 @@ import cv2
 from yoloWindows import *
 
 current_path = os.path.dirname(os.path.abspath(__file__))
-parent_path = os.path.abspath(os.path.join(current_path, os.pardir))
-grandparent_path = os.path.abspath(os.path.join(parent_path, os.pardir))
+grandparent_path = os.path.abspath(os.path.join(current_path, os.pardir, os.pardir))
 sys.path.append(grandparent_path)
 
 from utils.utils import *
 from utils.config import *
+
 from cameraInfo import *
 
 weight_path = os.path.join(PATH_WEIGHT, 'best_v11_800.pt')
@@ -27,7 +27,7 @@ def applyModel(frame, windowFlag = False):
     """
 
     if windowFlag:
-        window_yolo = yoloWindow(pathWeight=weight_path, windowSize=(640, 640), overlap=(0.1, 0.1))
+        window_yolo = yoloWindows(pathWeight=weight_path, windowSize=(640, 640), overlap=(0.1, 0.1))
         detections, processed_frame = window_yolo.detect(
             frame, visualizeBBox=True, visualizeWindows=True
         )

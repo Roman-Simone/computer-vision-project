@@ -14,6 +14,7 @@ from utils.config import *
 coordinates_by_camera = read_json_file_and_structure_data(PATH_JSON_DISTORTED)
 camera_infos = load_pickle(PATH_CALIBRATION_MATRIX)
 
+
 def find_common_points(camera_number_1: int, camera_number_2: int):
     """
     Finds common world points between two cameras and retrieves their corresponding image points.
@@ -25,6 +26,7 @@ def find_common_points(camera_number_1: int, camera_number_2: int):
     Returns:
         tuple: two lists of image points for the common world points in the two cameras.
     """
+    
     points_1 = []
     points_2 = []
 
@@ -48,7 +50,7 @@ def find_common_points(camera_number_1: int, camera_number_2: int):
     return points_1, points_2
 
 
-def homographyUndistortedCameras(points_1, points_2, camera_number_1, camera_number_2):
+def homography_undistorted_cameras(points_1, points_2, camera_number_1, camera_number_2):
     """
     Calculates the homography matrix between two cameras using their undistorted common points.
 
@@ -61,6 +63,7 @@ def homographyUndistortedCameras(points_1, points_2, camera_number_1, camera_num
     Returns:
         numpy.ndarray: homography matrix between the two cameras.
     """
+    
     camera_info_1, _ = take_info_camera(camera_number_1, camera_infos)
     camera_info_2, _ = take_info_camera(camera_number_2, camera_infos)
 
@@ -76,10 +79,11 @@ def homographyUndistortedCameras(points_1, points_2, camera_number_1, camera_num
     return hom
 
 
-def calculateHomographyAllCameras():
+def calculate_homography_all_cameras():
     """
     Computes homography matrices for all pairs of cameras and saves them in a pkl file.
     """
+    
     HomographyInfolist = []
     cameras = VALID_CAMERA_NUMBERS.copy()
     cameras.append(0)  # Add the court as a virtual camera for homography calculation
@@ -91,7 +95,7 @@ def calculateHomographyAllCameras():
                 continue
 
             points_1, points_2 = find_common_points(camera_number_1, camera_number_2)
-            homographyMatrix = homographyUndistortedCameras(points_1, points_2, camera_number_1, camera_number_2)
+            homographyMatrix = homography_undistorted_cameras(points_1, points_2, camera_number_1, camera_number_2)
 
             homographyInfo = HomographyInfo(camera_number_1, camera_number_2)
             homographyInfo.homography = homographyMatrix
@@ -100,7 +104,7 @@ def calculateHomographyAllCameras():
     save_pickle(HomographyInfolist, PATH_HOMOGRAPHY_MATRIX)
 
 
-def testHomography():
+def test_homography():
     """
     Loads homography matrices and allows user to interactively test homographies by selecting points on images.
     """
@@ -185,15 +189,14 @@ def testHomography():
         
         while True:
             key = cv2.waitKey(1) & 0xFF
-            if key == ord('q'):
+            if key == ord('s'):
                 break
         
         cv2.destroyAllWindows()
 
 
 if __name__ == '__main__':
+
+    calculate_homography_all_cameras()
     
-    # need to round the field map
-    calculateHomographyAllCameras()
-    
-    testHomography()
+    test_homography()

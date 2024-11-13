@@ -19,11 +19,12 @@ PATH_CSS = os.path.join(grandparent_path, 'src/app/static/css')
 PATH_DETECTIONS = os.path.join(grandparent_path, 'data/detections')
 PATH_DETECTIONS_WINDOW_04 = os.path.join(grandparent_path, 'data/detections/detections[windows]')
 PATH_DETECTIONS_04 = os.path.join(grandparent_path, 'data/detections/detections')
-PATH_3D_DETECTIONS_04 = os.path.join(grandparent_path, 'data/detections/detections[0.4_confidence]/3D_detections')
+PATH_3D_DETECTIONS_04 = os.path.join(grandparent_path, 'data/detections/detections/3D_detections')
 PATH_WEIGHT = os.path.join(grandparent_path, 'data/weights')
 PATH_CAMERA_POS = os.path.join(grandparent_path, 'data/camera_positions.json')
+
 VALID_CAMERA_NUMBERS = [1, 2, 3, 4, 5, 6, 7, 8, 12, 13]
-SEED_VAL = 60
+
 YOLO_INPUT_SIZE = 800  # size for YOLO model input
 
 ACTIONS = {

@@ -1,10 +1,8 @@
-import pickle
-import numpy as np
-import cv2
 import os
 import sys
-import matplotlib.pyplot as plt
-import json
+import cv2
+import pickle
+import numpy as np
 
 current_path = os.path.dirname(os.path.abspath(__file__))
 parent_path = os.path.abspath(os.path.join(current_path, os.pardir))
@@ -31,11 +29,11 @@ detections_cam2 = load_pickle(pathPickle_cam2)
 
 camerasInfo = load_pickle(PATH_CALIBRATION_MATRIX)
 cam = {n: take_info_camera(n, camerasInfo)[0] for n in VALID_CAMERA_NUMBERS}
-projection_matrices = {n: get_projection_matrix(cam[n]) for n in VALID_CAMERA_NUMBERS}
+projection_matrices = { n: get_projection_matrix(cam[n]) for n in VALID_CAMERA_NUMBERS }
 
 def triangulate(cam1, cam2, point2d1, point2d2):
     """
-    Triangulate a 3D point from two 2D points in different camera views.
+    Triangulate a 3D point from two correspondent 2D points from different camera views.
 
     Parameters:
         cam1 (Camera): first camera object with calibration data.
@@ -46,14 +44,13 @@ def triangulate(cam1, cam2, point2d1, point2d2):
     Returns:
         numpy.ndarray: 3D coordinates of the triangulated point.
     """
+    
     proj1 = get_projection_matrix(cam1)
     proj2 = get_projection_matrix(cam2)
 
-    # Format points for OpenCV triangulatePoints function
     point2d1 = np.array([point2d1], dtype=np.float32)  # Shape (1, 2)
     point2d2 = np.array([point2d2], dtype=np.float32)  # Shape (1, 2)
 
-    # Triangulation
     point4d = cv2.triangulatePoints(proj1, proj2, point2d1.T, point2d2.T)
 
     # Convert to 3D coordinates by normalizing the homogeneous coordinates
@@ -61,11 +58,12 @@ def triangulate(cam1, cam2, point2d1, point2d2):
     
     return point3d
 
-def main():
+def triangulate_all_points():
     """
-    Main function to triangulate 3D points from 2D detections across multiple cameras
+    Main function to triangulate 3D points from all 2D detections across multiple cameras
     and save the results for each action.
     """
+    
     for action_number in ACTIONS:
         frame_start, frame_end = ACTIONS[action_number]
 
@@ -108,4 +106,4 @@ def main():
         print(f"3D points saved successfully at {output_path}")
 
 if __name__ == "__main__":
-    main()
+    triangulate_all_points()

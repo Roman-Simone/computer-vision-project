@@ -5,13 +5,11 @@ import torch
 import random
 import numpy as np
 from ultralytics import YOLO
-from utils.particleFilter2D import ParticleFilter
+from particleFilter2D import ParticleFilter
 
 current_path = os.path.dirname(os.path.abspath(__file__))
-parent_path = os.path.abspath(os.path.join(current_path, os.pardir))
-sys.path.append(parent_path)
-
-CONFIDENCE = 0.4
+grandparent_path = os.path.abspath(os.path.join(current_path, os.pardir, os.pardir))
+sys.path.append(grandparent_path)
 
 from utils.utils import *
 from utils.config import *
@@ -20,6 +18,8 @@ pathWeight = os.path.join(PATH_WEIGHT, 'best_v11_800.pt')
 cameraInfos = load_pickle(PATH_CALIBRATION_MATRIX)
 model = YOLO(pathWeight)
 
+CONFIDENCE = 0.4  # confidence threshold for YOLO detection
+
 if torch.cuda.is_available():
     device = 'cuda'
 elif torch.backends.mps.is_available():
@@ -27,11 +27,9 @@ elif torch.backends.mps.is_available():
 else:
     device = 'cpu'
 
-print(f'Using device: {device}')
-
 DISTANCE_THRESHOLD = 800  # threshold distance to associate detections with trackers
 
-def applyModel(frame, model):
+def apply_model(frame, model):
     """
     Applies the YOLO model to detect objects in a given frame.
 
@@ -45,6 +43,7 @@ def applyModel(frame, model):
             - center_ret (tuple): coordinates of the detected object's center, or (-1, -1) if none detected.
             - confidence (float): confidence score of the detection.
     """
+    
     height, width = frame.shape[:2]
     frameResized = cv2.resize(frame, (YOLO_INPUT_SIZE, YOLO_INPUT_SIZE))
         
@@ -75,7 +74,7 @@ def applyModel(frame, model):
     return detections, center_ret, confidence
 
     
-def testModel(num_cam, action):
+def test_model(num_cam, action):
     """
     Processes a video from a specific camera and action, using YOLO and particle filters to track objects.
 
@@ -86,6 +85,7 @@ def testModel(num_cam, action):
     Returns:
         list: trajectory points recorded during the tracking.
     """
+    
     pathVideo = os.path.join(PATH_VIDEOS, f'out{num_cam}.mp4')
     cameraInfo, _ = take_info_camera(num_cam, cameraInfos)
     videoCapture = cv2.VideoCapture(pathVideo)
@@ -111,7 +111,7 @@ def testModel(num_cam, action):
 
         frameUndistorted = undistorted(frame, cameraInfo)
 
-        detections, _, _ = applyModel(frameUndistorted, model)
+        detections, _, _ = apply_model(frameUndistorted, model)
 
         new_trackers = []
         for detection in detections:
@@ -151,7 +151,6 @@ def testModel(num_cam, action):
 
     videoCapture.release()
     cv2.destroyAllWindows()
-    return trajectory_points
 
 if __name__ == '__main__':
 
@@ -166,4 +165,4 @@ if __name__ == '__main__':
         action = int(input("Enter action number: "))
     
     print(f"Processing Camera {cam}, Action {action}...")
-    trajectory = testModel(cam, action)
+    test_model(cam, action)

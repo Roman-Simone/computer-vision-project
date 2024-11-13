@@ -6,8 +6,9 @@ from tqdm import tqdm
 from cameraInfo import *
 
 current_path = os.path.dirname(os.path.abspath(__file__))
-parent_path = os.path.abspath(os.path.join(current_path, os.pardir))
-sys.path.append(parent_path)
+grandparent_path = os.path.abspath(os.path.join(current_path, os.pardir, os.pardir))
+sys.path.append(grandparent_path)
+
 
 from utils.utils import *
 from utils.config import *
@@ -18,20 +19,13 @@ def extractFrame():
     """
     Extracts frames from videos, processes them, and saves them to a dataset.
     This function performs the following steps:
-    1. Creates the dataset directory if it does not exist.
-    2. Finds and sorts all video files in the specified directory.
-    3. Loads camera calibration information.
-    4. Calculates the total number of frames to process.
-    5. Iterates through each video, extracts frames, undistorts them using camera calibration data, 
-       and saves the processed frames to the dataset directory.
+        1. Creates the dataset directory if it does not exist.
+        2. Finds and sorts all video files in the specified directory.
+        3. Loads camera calibration information.
+        4. Calculates the total number of frames to process.
+        5. Iterates through each video, extracts frames, undistorts them using camera calibration data, 
+           and saves the processed frames to the dataset directory.
     The function skips frames based on the SKIP_FRAME parameter and only processes videos from valid cameras.
-    
-    Raises:
-        FileNotFoundError: If the specified video or calibration files are not found.
-        ValueError: If the camera number extracted from the video filename is not valid.
-  
-    Note:
-        This function uses OpenCV for video processing and tqdm for progress display.
     """
 
     os.makedirs(PATH_DATASET, exist_ok=True)

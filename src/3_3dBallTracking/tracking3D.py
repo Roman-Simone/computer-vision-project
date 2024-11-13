@@ -17,7 +17,7 @@ outlier_threshold = 4.0
 SMOOTHING_FACTOR = 2
 WINDOW_SIZE = 8
 
-SEED_VAL = 61
+SEED_VAL = 60
 np.random.seed(SEED_VAL)
 
 def smooth_trajectory(trajectory):
@@ -91,6 +91,13 @@ def plot_trajectory(interp_xs, interp_ys, interp_zs, trajectory, action_number):
 
 
 def track_ball_pf_3D():
+    
+    """
+    Tracks a 3D ball using a particle filter based on detections from a specified action.
+    The function initializes a particle filter with the first valid detection, and iteratively updates the filter
+    based on subsequent detections to estimate the ball's trajectory. At the end it applies smoothing 
+    operations to the trajectory and plotting the results.    
+    """
     
     action_number = int(input("Enter the action number: "))
     while action_number not in ACTIONS:

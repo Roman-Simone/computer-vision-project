@@ -3,7 +3,7 @@ import torch
 from random import randint
 from ultralytics import YOLO
 
-class yoloWindow:
+class yoloWindows:
     """
     A class for managing sliding windows over an image, detecting objects within each window using a YOLO model,
     and visualizing the results.

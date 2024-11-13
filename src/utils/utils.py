@@ -5,7 +5,6 @@ import pickle
 import numpy as np
 from utils.config import *
 
-
 def undistorted(frame1, camera_info):
     """
     Undistorts a given frame using the provided camera calibration data.
