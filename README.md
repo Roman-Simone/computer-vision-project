@@ -90,16 +90,19 @@ python3 intrinsic.py
 
 This is an example of the result:
 
-<div style="display: flex; justify-content: center; gap: 20px;">
-  <div>
-    <img src="data/images/distorted/cam_2.png" alt="Distorted Image" width="300"/>
-    <p align="center"><i>Figure 1: Distorted Image Before Calibration</i></p>
-  </div>
-  <div>
-    <img src="data/images/undistorted/cam_2.png" alt="Undistorted Image" width="380"/>
-    <p align="center"><i>Figure 2: Undistorted Image After Calibration</i></p>
-  </div>
-</div>
+<p align="center">
+  <img src="data/images/distorted/cam_2.png" alt="Distorted Image" width="300"/>
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  <img src="data/images/undistorted/cam_2.png" alt="Undistorted Image" width="380"/>
+</p>
+
+<p align="center">
+  <i>Figure 1: Distorted Image Before Calibration</i> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <i>Figure 2: Undistorted Image After Calibration</i>
+</p>
+
+
+
+
 
 
 ### Extrinsic Parameters
@@ -122,7 +125,7 @@ python3 extrinsic.py
 This is the result:
 
 <p align="center"> 
-  <img src="data/images/exampleExtrinsic.png" alt="Extrinsic Parameters" width="40%"/> <br> <i>Figure 4: Extrinsic parameters.</i> 
+  <img src="data/images/exampleExtrinsic.png" alt="Extrinsic Parameters" width="30%"/> <br> <i>Figure 4: Extrinsic parameters.</i> 
 </p> 
 
 
@@ -169,7 +172,7 @@ To track the trajectory of a vollay ball during a match, different steps are req
   ```
 
 <p align="center"> 
-  <img src="data/images/plot3D.png" alt="Extrinsic Parameters" width="50%"/> <br> <i>Figure 6: 3D plot of ball trajectory.</i> 
+  <img src="data/images/plot3D.png" alt="Extrinsic Parameters" width="30%"/> <br> <i>Figure 6: 3D plot of ball trajectory.</i> 
 </p> 
 
 
