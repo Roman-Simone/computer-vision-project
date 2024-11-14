@@ -17,7 +17,7 @@ outlier_threshold = 4.0
 SMOOTHING_FACTOR = 2
 WINDOW_SIZE = 8
 
-SEED_VAL = 60
+SEED_VAL = 61
 np.random.seed(SEED_VAL)
 
 def smooth_trajectory(trajectory):
