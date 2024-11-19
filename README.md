@@ -19,6 +19,9 @@ This repository contains the code and resources for a Computer Vision project ce
 - [2. Homography:](#2-homography)
 - [3. 3D ball tracking](#3-3d-ball-tracking)
 
+## Video presentation
+We’ve created a video presentation to showcase our project in action—check it out [here on YouTube](https://youtu.be/S4Q2eL1fSJU)!
+
 ## Description
 
 This project focuses on processing and analyzing a volleyball match captured from 10 different camera views. The project has been developed through these 3 main subtasks:
@@ -176,8 +179,6 @@ To track the trajectory of a vollay ball during a match, different steps are req
 </p> 
 
 
-# Video presentation
-We’ve created a video presentation to showcase our project in action—check it out [here on YouTube](https://youtu.be/S4Q2eL1fSJU)!
 
 
 # Contacts
